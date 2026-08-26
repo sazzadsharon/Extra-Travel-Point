@@ -1,0 +1,176 @@
+// Prisma Schema for Extra Travel Point
+// Supports both SQLite (dev) and PostgreSQL (production)
+
+datasource db {
+  provider = env("DB_PROVIDER")
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  phone            String            @unique
+  email            String?           @unique
+  fullName         String?
+  passwordHash     String
+  role             String            @default("customer")
+  qrToken          String            @default(uuid())
+  twoFactorEnabled Boolean           @default(false)
+  twoFactorSecret  String?
+  isActive         Boolean           @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  serviceProviders ServiceProvider[]
+  bookings         Booking[]
+  qrLogs           QrLog[]
+  sessions         Session[]
+  reviews          Review[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model ServiceProvider {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id])
+  businessName   String
+  category       String
+  description    String?
+  address        String
+  city           String?
+  latitude       Float?
+  longitude      Float?
+  phone          String?
+  logo           String?
+  commissionRate Float     @default(10.00)
+  isVerified     Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  rating         Float     @default(0)
+  totalReviews   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  bookings       Booking[]
+  qrLogs         QrLog[]
+  rooms          Room[]
+
+  @@map("service_providers")
+}
+
+model Room {
+  id          Int             @id @default(autoincrement())
+  providerId  Int
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name        String
+  type        String
+  description String?
+  price       Float
+  capacity    Int             @default(2)
+  amenities   String?
+  images      String?
+  isAvailable Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("rooms")
+}
+
+model Booking {
+  id             Int             @id @default(autoincrement())
+  bookingCode    String          @unique @default(uuid())
+  userId         Int
+  user           User            @relation(fields: [userId], references: [id])
+  providerId     Int
+  provider       ServiceProvider @relation(fields: [providerId], references: [id])
+  category       String
+  bookingDate    DateTime
+  travelDate     DateTime
+  returnDate     DateTime?
+  numberOfPeople Int             @default(1)
+  totalAmount    Float
+  discountAmount Float           @default(0.00)
+  finalAmount    Float
+  status         String          @default("pending")
+  paymentStatus  String          @default("pending")
+  qrCode         String?
+  specialRequest String?
+  cancelledAt    DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  qrLogs    QrLog[]
+  payments  Payment[]
+  review    Review?
+
+  @@index([userId])
+  @@index([providerId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model QrLog {
+  id           Int             @id @default(autoincrement())
+  bookingId    Int
+  booking      Booking         @relation(fields: [bookingId], references: [id])
+  userId       Int
+  user         User            @relation(fields: [userId], references: [id])
+  providerId   Int
+  provider     ServiceProvider @relation(fields: [providerId], references: [id])
+  qrToken      String
+  discountType String
+  discountValue Float
+  scannedAt    DateTime        @default(now())
+  isUsed       Boolean         @default(false)
+
+  @@map("qr_logs")
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  bookingId       Int
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  amount          Float
+  method          String
+  transactionId   String   @unique
+  status          String
+  gatewayResponse String?
+  paidAt          DateTime?
+  refundedAt      DateTime?
+  refundReason    String?
+  createdAt       DateTime @default(now())
+
+  @@index([bookingId])
+  @@map("payments")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  bookingId  Int      @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@map("reviews")
+}

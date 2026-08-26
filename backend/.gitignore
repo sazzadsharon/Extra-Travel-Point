@@ -1,0 +1,30 @@
+# Backend
+node_modules/
+dist/
+*.log
+
+# Environment
+.env
+.env.local
+.env.production.local
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
