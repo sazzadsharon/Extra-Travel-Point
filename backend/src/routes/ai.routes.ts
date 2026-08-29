@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { authenticateJWT, AuthRequest } from '../middleware/auth';
 import { prisma } from '../prisma';
+import { aiFactory } from '../ai';
 
 const router = Router();
 
-// POST /api/v1/ai/assistant
-router.post('/assistant', async (req, res) => {
+router.post('/assistant', async (req: Request, res: Response) => {
   try {
     const { prompt, maxBudget, origin, destination, durationDays } = req.body;
 
@@ -20,7 +20,27 @@ router.post('/assistant', async (req, res) => {
     const localTransport = Math.floor(budget * 0.10);
     const emergencyFund = budget - (busFare + hotelCost + foodEstimate + localTransport);
 
-    const recommendations = {
+    let aiMessage = '';
+    const provider = await aiFactory.getDefaultProvider();
+    
+    if (provider) {
+      try {
+        const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app. 
+        A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
+        Provide a helpful, concise response in Bengali mixed with English.`;
+        
+        const response = await provider.generateText(
+          `${context}\n\nUser query: ${prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`}`
+        );
+        aiMessage = response.content;
+      } catch (aiError) {
+        aiMessage = `আপনার ৳${budget} বাজেটে ${dest} ৩ দিনের জন্য বাস ৳${busFare}, হোটেল ৳${hotelCost}, খাবার ৳${foodEstimate}, লোকাল ট্রান্সপোর্ট ৳${localTransport} এবং ৳${emergencyFund} ইমার্জেন্সি ফান্ড বরাদ্দ করা হয়েছে।`;
+      }
+    } else {
+      aiMessage = `আপনার ৳${budget} বাজেটে ${dest} ৩ দিনের জন্য বাস ৳${busFare}, হোটেল ৳${hotelCost}, খাবার ৳${foodEstimate}, লোকাল ট্রান্সপোর্ট ৳${localTransport} এবং ৳${emergencyFund} ইমার্জেন্সি ফান্ড বরাদ্দ করা হয়েছে।`;
+    }
+
+    return res.json({
       query: prompt || `${startCity} to ${dest} ${days} Days Trip within BDT ${budget}`,
       destination: dest,
       origin: startCity,
@@ -73,10 +93,8 @@ router.post('/assistant', async (req, res) => {
         details: 'Includes Non-AC Bus & Standard Guest House.'
       },
 
-      aiMessage: `আপনার ৳${budget} বাজেটে ${dest} ৩ দিনের জন্য বাস ৳${busFare}, হোটেল ৳${hotelCost}, খাবার ৳${foodEstimate}, লোকাল ট্রান্সপোর্ট ৳${localTransport} এবং ৳${emergencyFund} ইমার্জেন্সি ফান্ড বরাদ্দ করা হয়েছে।`
-    };
-
-    return res.json(recommendations);
+      aiMessage
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }

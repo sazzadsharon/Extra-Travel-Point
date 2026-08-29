@@ -3,18 +3,6 @@ import { authenticateJWT, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-// POST /api/v1/emergency/sos
-router.post('/sos', authenticateJWT, async (req: AuthRequest, res) => {
-  const { latitude, longitude, tripId, emergencyType } = req.body;
-  return res.json({
-    success: true,
-    alertId: `SOS-${Date.now()}`,
-    message: 'Emergency SOS Broadcasted to Police Hotline (999) & Travel Support Team',
-    status: 'ACTIVE_DISPATCH',
-    timestamp: new Date()
-  });
-});
-
 // POST /api/v1/emergency/sos (Enhanced SOS Dispatch with Live GPS & Trip Info)
 router.post('/sos', authenticateJWT, async (req: AuthRequest, res) => {
   const { latitude, longitude, tripId, emergencyType, description } = req.body;

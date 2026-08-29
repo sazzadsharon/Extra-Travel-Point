@@ -25,20 +25,31 @@ export default function AdminDashboard() {
     { id: 3, businessName: 'Sylhet Resort & Spa', category: 'hotel', commissionRate: 12, isVerified: false, address: 'Sreemangal, Sylhet' }
   ]);
 
+  // Mock chart data for revenue chart
+  const chartData = [
+    { month: 'Jan', revenue: 4000, discount: 400 },
+    { month: 'Feb', revenue: 3000, discount: 300 },
+    { month: 'Mar', revenue: 5000, discount: 500 },
+    { month: 'Apr', revenue: 4000, discount: 400 },
+    { month: 'May', revenue: 6000, discount: 600 },
+    { month: 'Jun', revenue: 5000, discount: 500 },
+  ];
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const revRes = await fetch('http://localhost:5000/api/v1/admin/revenue');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const revRes = await fetch(`${API_URL}/api/v1/admin/revenue`);
         if (revRes.ok) {
           const revData = await revRes.json();
           setStats(revData);
         }
-        const bkgRes = await fetch('http://localhost:5000/api/v1/admin/bookings');
+        const bkgRes = await fetch(`${API_URL}/api/v1/admin/bookings`);
         if (bkgRes.ok) {
           const bkgData = await bkgRes.json();
           if (Array.isArray(bkgData) && bkgData.length > 0) setRecentBookings(bkgData);
         }
-        const prvRes = await fetch('http://localhost:5000/api/v1/admin/providers');
+        const prvRes = await fetch(`${API_URL}/api/v1/admin/providers`);
         if (prvRes.ok) {
           const prvData = await prvRes.json();
           if (Array.isArray(prvData) && prvData.length > 0) setProviders(prvData);

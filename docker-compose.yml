@@ -9,7 +9,7 @@ services:
       - PORT=5000
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/extratravel?schema=public
       - JWT_SECRET=supersecretjwtkey_extratravelpoint_2026
-      - QR_SECRET=supersecretqrkey_hmac_2026
+      - QR_SECRET_KEY=supersecretqrkey_hmac_2026
     depends_on:
       - postgres
       - redis
@@ -19,7 +19,16 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+      - NEXT_PUBLIC_API_URL=http://backend:5000/api/v1
+    depends_on:
+      - backend
+
+  mobile-app:
+    build: ./mobile-app
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:5000/api/v1
     depends_on:
       - backend
 

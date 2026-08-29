@@ -61,21 +61,7 @@ router.get('/history', authenticateJWT, async (req: AuthRequest, res) => {
   });
 });
 
-// GET /api/v1/loyalty/referral
-router.get('/points', authenticateJWT, async (req: AuthRequest, res) => {
-  return res.json({
-    userId: req.user!.id,
-    totalPoints: 450,
-    tier: 'Gold Member',
-    redeemableValueBDT: 225,
-    history: [
-      { id: 1, action: 'Booking Cashback', points: 150, date: new Date() },
-      { id: 2, action: 'Referral Bonus', points: 300, date: new Date() }
-    ]
-  });
-});
-
-// GET /api/v1/loyalty/referral
+// GET /api/v1/loyalty/history (Reward History)
 router.get('/referral', authenticateJWT, async (req: AuthRequest, res) => {
   return res.json({
     referralCode: `ETP-REF-${req.user!.id * 777}`,

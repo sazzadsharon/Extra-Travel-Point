@@ -78,6 +78,38 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
+// Root route
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    name: 'Extra Travel Point Backend API',
+    version: '1.0.0',
+    description: 'Travel Super App - Backend API Engine',
+    endpoints: {
+      health: '/health',
+      auth: '/api/v1/auth',
+      bookings: '/api/v1/bookings',
+      providers: '/api/v1/providers',
+      qr: '/api/v1/qr',
+      payments: '/api/v1/payments',
+      admin: '/api/v1/admin',
+      loyalty: '/api/v1/loyalty',
+      reviews: '/api/v1/reviews',
+      analytics: '/api/v1/analytics',
+      discovery: '/api/v1/discovery',
+      transport: '/api/v1/transport',
+      hotel: '/api/v1/hotels',
+      tracking: '/api/v1/tracking',
+      emergency: '/api/v1/emergency',
+      ai: '/api/v1/ai',
+      notification: '/api/v1/notifications',
+      security: '/api/v1/security',
+      packages: '/api/v1/packages',
+      webhooks: '/api/v1/webhooks',
+      upload: '/api/v1/upload'
+    }
+  });
+});
+
 app.get('/health/depth', async (req: Request, res: Response) => {
   try {
     await prisma.$queryRaw`SELECT 1`;

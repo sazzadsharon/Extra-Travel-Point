@@ -53,3 +53,6 @@ etp-rn-app/etp-rn-app/ios/
 mobile-app/android/
 mobile-app/ios/
 flutter-mobile-app/build/
+desktop.ini 
+backend/.env.production 
+backend/.env.production
