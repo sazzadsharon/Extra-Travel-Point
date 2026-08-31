@@ -93,6 +93,20 @@ See `backend/README.md` for complete API endpoint documentation.
 
 ---
 
+## 📱 Device Compatibility
+
+### Tested on Redmi Devices
+- Redmi Note 12 (Android 13)
+- Redmi 11 Prime (Android 12)
+- Redmi Note 10 Pro (Android 11)
+
+### Known Issues / Notes
+- Ensure **MIUI Optimization** is disabled for smooth QR scanner performance.
+- Grant **Camera** and **Location** permissions explicitly for mobile apps.
+- Use **Expo Go** for React Native testing on Redmi devices.
+
+---
+
 ## 📄 License
 
 Created by Kilo — Extra Travel Point Technical Team
