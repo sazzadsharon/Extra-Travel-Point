@@ -8,8 +8,8 @@ import { notifyUser } from '../utils/notifications';
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'extratravel_point_super_secret_jwt_key_2026';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'extratravel_point_refresh_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-refresh-secret-change-me' : '');
 
 // Fields a vendor is allowed to edit on their own profile
 const EDITABLE_PROVIDER_FIELDS = [
@@ -587,7 +587,11 @@ router.get('/dashboard', authenticateJWT, requireRole(['vendor']), async (req: A
 
     const bookings = await prisma.booking.findMany({
       where: { providerId: { in: vendorProviderIds } },
-      include: { payments: true }
+      select: {
+        finalAmount: true,
+        paymentStatus: true,
+        status: true
+      }
     });
 
     const countByStatus = (s: string) => bookings.filter(b => b.status === s).length;

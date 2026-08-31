@@ -5,33 +5,26 @@ node_modules/
 .env
 .env.local
 .env.production
+.env.staging
 .env.test
 
 # Logs
 *.log
 *.debug
-*.trace
 
 # Runtime data
-*.pid
-*.seed
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Build artifacts
-*.tsbuildinfo
-*.build
-
-# Temporary files
-*.temp
 *.tmp
 
-# Test artifacts
-coverage/
-.nyc_output/
+# Build artifacts
+.next
+*.build
+*.tsbuildinfo
+
+# Static files
+public/assets/
+
+# Temp files
+temp/
 
 # IDE
 .vscode/

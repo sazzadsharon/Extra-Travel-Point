@@ -97,7 +97,16 @@ router.get('/audit-logs', async (req: AuthRequest, res) => {
 router.get('/bookings', async (req: AuthRequest, res) => {
   try {
     const bookings = await prisma.booking.findMany({
-      include: { user: true, provider: true, payments: true },
+      select: {
+        id: true,
+        bookingCode: true,
+        status: true,
+        paymentStatus: true,
+        finalAmount: true,
+        createdAt: true,
+        category: true,
+        travelDate: true
+      },
       orderBy: { createdAt: 'desc' }
     });
     return res.json(bookings);
@@ -109,10 +118,13 @@ router.get('/bookings', async (req: AuthRequest, res) => {
 // GET /api/v1/admin/revenue
 router.get('/revenue', async (req: AuthRequest, res) => {
   try {
-    const totalBookings = await prisma.booking.count();
-    const paidBookings = await prisma.booking.findMany({
-      where: { paymentStatus: 'paid' }
-    });
+    const [totalBookings, paidBookings] = await Promise.all([
+      prisma.booking.count(),
+      prisma.booking.findMany({
+        where: { paymentStatus: 'paid' },
+        select: { finalAmount: true, discountAmount: true }
+      })
+    ]);
 
     const totalRevenue = paidBookings.reduce((sum, b) => sum + b.finalAmount, 0);
     const totalDiscountsGiven = paidBookings.reduce((sum, b) => sum + b.discountAmount, 0);

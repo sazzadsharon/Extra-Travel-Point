@@ -44,15 +44,19 @@ export default function Footer() {
             <h3 className="font-semibold text-lg mb-4">Support</h3>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center space-x-2">
-                <Phone className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-400">+880 1712 345678</span>
+                <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <a href="tel:01309494898" className="text-gray-400 hover:text-white transition-colors break-all">
+                  01309494898
+                </a>
               </li>
               <li className="flex items-center space-x-2">
-                <Mail className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-400">support@etp.com</span>
+                <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <a href="mailto:sharrron@yahoo.com" className="text-gray-400 hover:text-white transition-colors break-all">
+                  sharrron@yahoo.com
+                </a>
               </li>
               <li className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-gray-400" />
+                <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <span className="text-gray-400">Dhaka, Bangladesh</span>
               </li>
             </ul>

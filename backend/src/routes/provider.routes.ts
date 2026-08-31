@@ -1,8 +1,19 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { prisma } from '../prisma';
 import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
 
 const router = Router();
+
+// Input validation for provider creation
+const providerCreateSchema = z.object({
+  businessName: z.string().min(2).max(200),
+  category: z.string().min(1).max(50),
+  address: z.string().min(1).max(500),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  commissionRate: z.number().min(0).max(100).optional()
+});
 
 // GET /api/v1/providers/dashboard/stats (Vendor Dashboard Stats)
 router.get('/dashboard/stats', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
@@ -59,12 +70,28 @@ router.get('/dashboard/payouts', authenticateJWT, requireRole(['vendor', 'admin'
   }
 });
 
-// GET /api/v1/providers (Public list)
+// GET /api/v1/providers (Public list - no private data exposed)
 router.get('/', async (req, res) => {
   try {
     const providers = await prisma.serviceProvider.findMany({
-      include: {
-        user: { select: { fullName: true, email: true, phone: true } }
+      where: { status: 'APPROVED', isActive: true },
+      select: {
+        id: true,
+        businessName: true,
+        category: true,
+        description: true,
+        address: true,
+        city: true,
+        latitude: true,
+        longitude: true,
+        isVerified: true,
+        createdAt: true,
+        user: {
+          select: {
+            fullName: true
+            // email and phone are NOT exposed publicly
+          }
+        }
       }
     });
     return res.json(providers);
@@ -73,12 +100,42 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/v1/providers/:id
+// GET /api/v1/providers/:id (Public details - no private data exposed)
 router.get('/:id', async (req, res) => {
   try {
     const provider = await prisma.serviceProvider.findUnique({
       where: { id: parseInt(req.params.id) },
-      include: { user: true }
+      select: {
+        id: true,
+        businessName: true,
+        category: true,
+        description: true,
+        address: true,
+        city: true,
+        latitude: true,
+        longitude: true,
+        isVerified: true,
+        status: true,
+        createdAt: true,
+        services: {
+          where: { status: 'ACTIVE', isActive: true },
+          select: {
+            id: true,
+            name: true,
+            category: true,
+            description: true,
+            route: true,
+            price: true,
+            capacity: true
+          }
+        },
+        user: {
+          select: {
+            fullName: true
+            // email and phone are NOT exposed publicly
+          }
+        }
+      }
     });
     if (!provider) return res.status(404).json({ error: 'Service provider not found' });
     return res.json(provider);
@@ -90,7 +147,20 @@ router.get('/:id', async (req, res) => {
 // POST /api/v1/providers (Create provider / Vendor setup)
 router.post('/', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
   try {
-    const { businessName, category, address, latitude, longitude, commissionRate } = req.body;
+    const parse = providerCreateSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+
+    const { businessName, category, address, latitude, longitude, commissionRate } = parse.data;
+
+    // Check for duplicate provider for this user
+    const existingProvider = await prisma.serviceProvider.findFirst({
+      where: { userId: req.user!.id }
+    });
+    if (existingProvider) {
+      return res.status(409).json({ error: 'User already has a provider account' });
+    }
 
     const provider = await prisma.serviceProvider.create({
       data: {
@@ -98,9 +168,13 @@ router.post('/', authenticateJWT, requireRole(['vendor', 'admin']), async (req: 
         businessName,
         category,
         address,
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
-        commissionRate: commissionRate ? parseFloat(commissionRate) : 10.00
+        latitude: latitude || null,
+        longitude: longitude || null,
+        // Only admins can set commissionRate; vendors get default
+        commissionRate: req.user!.role === 'admin' && commissionRate ? commissionRate : 10.00,
+        status: 'PENDING',
+        isVerified: false,
+        isActive: false
       }
     });
 

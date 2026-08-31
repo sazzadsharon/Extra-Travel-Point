@@ -17,10 +17,14 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET || 'extratravel_point_super_secret_jwt_key_2026';
+  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
+
+  if (!secret) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
 
   try {
-    const decoded = jwt.verify(token, secret) as { id: number; phone: string; role: string };
+    const decoded = jwt.verify(token, secret) as unknown as { id: number; phone: string; role: string };
     req.user = decoded;
     next();
   } catch (err) {

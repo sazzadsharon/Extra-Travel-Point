@@ -2,12 +2,26 @@ import { Router, Request, Response } from 'express';
 import { authenticateJWT, AuthRequest } from '../middleware/auth';
 import { prisma } from '../prisma';
 import { aiFactory } from '../ai';
+import { z } from 'zod';
 
 const router = Router();
 
+const aiRequestSchema = z.object({
+  prompt: z.string().max(1000).optional(),
+  maxBudget: z.number().min(100).max(500000).optional(),
+  origin: z.string().max(100).optional(),
+  destination: z.string().max(100).optional(),
+  durationDays: z.number().min(1).max(30).optional()
+});
+
 router.post('/assistant', async (req: Request, res: Response) => {
   try {
-    const { prompt, maxBudget, origin, destination, durationDays } = req.body;
+    const parse = aiRequestSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+
+    const { prompt, maxBudget, origin, destination, durationDays } = parse.data;
 
     const budget = Math.max(1000, Number(maxBudget) || 5000);
     const dest = destination || 'Kuakata';

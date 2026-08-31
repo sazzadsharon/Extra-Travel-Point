@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'extratravel_point_super_secret_jwt_key_2026';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'extratravel_point_refresh_secret_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-refresh-secret-change-me' : '');
 
 const registerSchema = z.object({
   phone: z.string().min(10).max(15),
@@ -50,6 +50,15 @@ router.post('/register', async (req, res) => {
     const accessToken = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
     const refreshToken = jwt.sign({ id: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
+    // Set refresh token as HttpOnly cookie (not accessible via JavaScript)
+    res.cookie('etp_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/v1/auth'
+    });
+
     return res.status(201).json({
       message: 'User registered successfully',
       user: {
@@ -92,6 +101,15 @@ router.post('/login', async (req, res) => {
     const accessToken = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
     const refreshToken = jwt.sign({ id: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
 
+    // Set refresh token as HttpOnly cookie (not accessible via JavaScript)
+    res.cookie('etp_refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/v1/auth'
+    });
+
     return res.json({
       message: 'Login successful',
       user: {
@@ -113,7 +131,8 @@ router.post('/login', async (req, res) => {
 
 // POST /api/v1/auth/refresh-token
 router.post('/refresh-token', async (req, res) => {
-  const { refreshToken } = req.body;
+  // Support both cookie and body for backward compatibility
+  const refreshToken = req.cookies?.etp_refresh_token || req.body?.refreshToken;
   if (!refreshToken) {
     return res.status(400).json({ error: 'Refresh token required' });
   }
@@ -128,14 +147,36 @@ router.post('/refresh-token', async (req, res) => {
 
     const newAccessToken = jwt.sign({ id: user.id, phone: user.phone, role: user.role }, JWT_SECRET, { expiresIn: '2h' });
     const newRefreshToken = jwt.sign({ id: user.id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
-    
-    return res.json({ 
+
+    // Set new refresh token as HttpOnly cookie
+    res.cookie('etp_refresh_token', newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/api/v1/auth'
+    });
+
+    return res.json({
       accessToken: newAccessToken,
       refreshToken: newRefreshToken
     });
   } catch (err) {
     return res.status(403).json({ error: 'Invalid or expired refresh token' });
   }
+});
+
+// POST /api/v1/auth/logout
+router.post('/logout', async (req, res) => {
+  // Clear the refresh token cookie
+  res.clearCookie('etp_refresh_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/api/v1/auth'
+  });
+
+  return res.json({ message: 'Logged out successfully' });
 });
 
 // POST /api/v1/auth/verify-otp

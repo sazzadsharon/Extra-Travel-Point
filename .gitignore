@@ -1,58 +1,105 @@
 # Dependencies
 node_modules/
-.pnpm-store/
+.yarn/install-state.gz
+.pnp.*
+
+# Testing
+coverage/
+.nyc_output/
+.jest/
 
 # Build outputs
-dist/
 build/
-.next/
-.expo/
-.webpack/
+dist/
+.lib/
+*.tsbuildinfo
 
-# Database
-*.db
-*.db-journal
-*.sqlite
-
-# Environment files
+# Environment files (secrets)
 .env
 .env.local
-.env.production.local
-.env.*.local
+.env.development
+.env.production
+.env.staging
 
 # Logs
+logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log.*
+
+# Database
+sqlite-*.db
+*.db
+*.sqlite
+
+# Temporary files
+tmp/
+.temp/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Uploads
-backend/uploads/*
-!backend/uploads/.gitkeep
+# Cloud services
+.cloud/
+.aws/
+.gcp/
 
-# Testing
-coverage/
-.nyc_output/
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+npm-debug.log.*
 
-# Docker
-docker-compose.override.yml
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
 
-# Mobile
-etp-rn-app/etp-rn-app/android/
-etp-rn-app/etp-rn-app/ios/
-mobile-app/android/
-mobile-app/ios/
-flutter-mobile-app/build/
-desktop.ini 
-backend/.env.production 
-backend/.env.production
+# Lint
+.eslintcache
+.eslintignore
+.jshintrc
+
+# Misc
+.DS_Store
+.idea
+.vscode
+*.log
+*.log.*
+*.env
+*.env.*
+
+# ETP specific
+backend/.env
+backend/pid.txt
+backend/smoke.cjs
+backend/backend.log
+backend/test.log
+backend/server.log
+backend/seed.log
+
+web-app/.env
+
+# Archives
+*.zip
+*.rar
+*.tar
+*.gz
+
+# Generated content
+generated/
+
+# Backup files
+*backup*
+*backup*
+
+# Temporary build files
+dist/
+build/
