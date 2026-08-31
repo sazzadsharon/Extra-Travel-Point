@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Bus, MapPin, Users, CreditCard } from 'lucide-react';
@@ -18,9 +18,11 @@ export default function BookingNewView() {
   const travelDate = searchParams.get('travelDate') || '';
   const seatsParam = searchParams.get('seats') || '';
   const totalPriceParam = searchParams.get('totalPrice') || '0';
-  const vehicleType = searchParams.get('vehicleType') || 'bus';
+  const vehicleType = searchParams.get('category') || searchParams.get('vehicleType') || 'bus';
+  const fromCity = searchParams.get('fromCity') || '';
+  const toCity = searchParams.get('toCity') || '';
 
-  const selectedSeats: string[] = seatsParam ? seatsParam.split(',') : [];
+  const selectedSeats: string[] = useMemo(() => seatsParam ? seatsParam.split(',') : [], [seatsParam]);
   const totalPrice = parseFloat(totalPriceParam);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,12 +39,17 @@ export default function BookingNewView() {
     try {
       const { default: axios } = await import('axios');
 
+      const route = fromCity && toCity ? `${fromCity} → ${toCity}` : undefined;
+
       const bookingPayload = {
         providerId: parseInt(providerId),
         category: vehicleType,
         bookingDate: new Date().toISOString().split('T')[0],
         travelDate: travelDate,
         numberOfPeople: formData.passengers.length,
+        seatNumbers: selectedSeats,
+        passengers: formData.passengers,
+        route,
         totalAmount: totalPrice
       };
 
@@ -52,10 +59,11 @@ export default function BookingNewView() {
       );
 
       const result = response.data;
-
       const bookingId = result.booking?.id;
       if (bookingId) {
-        router.push(`/booking/payment?bookingId=${bookingId}&totalAmount=${totalPrice}&vehicleId=${vehicleId}&providerId=${providerId}&travelDate=${travelDate}&seats=${seatsParam}&totalPrice=${totalPrice}&vehicleType=${vehicleType}`);
+        const finalAmount = result.booking?.finalAmount ?? totalPrice;
+        const routeQuery = `fromCity=${encodeURIComponent(fromCity)}&toCity=${encodeURIComponent(toCity)}&travelDate=${encodeURIComponent(travelDate)}`;
+        router.push(`/booking/payment?bookingId=${bookingId}&totalAmount=${finalAmount}&vehicleId=${vehicleId}&providerId=${providerId}&category=${vehicleType}&${routeQuery}&seats=${seatsParam}&totalPrice=${finalAmount}`);
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.error?.message
@@ -65,13 +73,13 @@ export default function BookingNewView() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, providerId, vehicleType, travelDate, totalPrice, router, vehicleId, seatsParam]);
+  }, [user, providerId, vehicleType, travelDate, totalPrice, router, vehicleId, seatsParam, fromCity, toCity, selectedSeats]);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
-          href={`/booking/seats?vehicleId=${vehicleId}&providerId=${providerId}&travelDate=${travelDate}&vehicleType=${vehicleType}`}
+          href={`/booking/seats?vehicleId=${vehicleId}&providerId=${providerId}&category=${vehicleType}&fromCity=${encodeURIComponent(fromCity)}&toCity=${encodeURIComponent(toCity)}&travelDate=${travelDate}`}
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -109,6 +117,18 @@ export default function BookingNewView() {
                   </span>
                   <span className="font-medium text-gray-900 capitalize">{vehicleType}</span>
                 </div>
+
+                {(fromCity || toCity) && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Route
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {fromCity ? `${fromCity}` : 'Any'} → {toCity ? `${toCity}` : 'Any'}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500 flex items-center gap-2">

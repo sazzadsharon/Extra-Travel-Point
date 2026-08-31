@@ -15,7 +15,7 @@
     "db:push": "prisma db push",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

@@ -10,9 +10,12 @@ import type { Vehicle } from '../../types/transport';
 interface BusCardProps {
   bus: Vehicle;
   index?: number;
+  fromCity?: string;
+  toCity?: string;
+  travelDate?: string;
 }
 
-export default function BusCard({ bus, index = 0 }: BusCardProps) {
+export default function BusCard({ bus, index = 0, fromCity, toCity, travelDate }: BusCardProps) {
   // Default values for optional fields
   const baseFare = bus.baseFare ?? 0;
   const capacity = bus.capacity ?? 0;
@@ -91,7 +94,7 @@ export default function BusCard({ bus, index = 0 }: BusCardProps) {
             <span className="text-xs text-gray-400">(128 reviews)</span>
           </div>
           <Link
-            href={`/transport/${bus.id}`}
+            href={`/transport/${bus.id}?fromCity=${encodeURIComponent(fromCity || '')}&toCity=${encodeURIComponent(toCity || '')}&travelDate=${encodeURIComponent(travelDate || '')}`}
             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
           >
             View details

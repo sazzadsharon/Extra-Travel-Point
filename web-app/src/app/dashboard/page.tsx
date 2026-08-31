@@ -324,23 +324,23 @@ export default function DashboardPage() {
                 {/* Actions */}
                 <div className="border-t border-gray-100 p-4 bg-gray-50">
                   <div className="flex flex-col gap-2">
-                    <Link
-                      href={`/booking/${booking.id}`}
-                      className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                    >
-                      View Details
-                      <ArrowRight className="w-3 h-3" />
-                    </Link>
-                    <div className="flex gap-2">
-                      {booking.qrCode && (
-                        <button
-                          onClick={() => window.open(`/booking/success?bookingId=${booking.id}&payment=success`, '_blank')}
-                          className="flex-1 text-center bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                        >
-                          <QrCode className="w-3 h-3" />
-                          Ticket
-                        </button>
-                      )}
+                     <Link
+                       href={`/ticket/${booking.id}`}
+                       className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                     >
+                       View Details
+                       <ArrowRight className="w-3 h-3" />
+                     </Link>
+                     <div className="flex gap-2">
+                       {booking.qrCode && (
+                         <Link
+                           href={`/ticket/${booking.id}`}
+                           className="flex-1 text-center bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                         >
+                           <QrCode className="w-3 h-3" />
+                           Ticket
+                         </Link>
+                       )}
                       {(booking.status === 'confirmed' || booking.status === 'pending') && (
                         <button
                           onClick={() => cancelBooking(booking.id)}

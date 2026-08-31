@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, MapPin, Users, Shield, Star, CreditCard, Bus as BusIcon, Car, Plane, Train } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -25,7 +25,11 @@ interface Provider {
 export default function TransportDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const vehicleId = parseInt(params.id as string, 10);
+  const fromCity = searchParams.get('fromCity') || '';
+  const toCity = searchParams.get('toCity') || '';
+  const selectedTravelDate = searchParams.get('travelDate') || '';
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [provider, setProvider] = useState<Provider | null>(null);
@@ -72,7 +76,9 @@ export default function TransportDetailPage() {
 
   const handleContinue = () => {
     if (!vehicle) return;
-    router.push(`/booking/seats?vehicleId=${vehicle.id}&providerId=${provider?.id || 2}&travelDate=${new Date().toISOString().split('T')[0]}`);
+    const travelDate = selectedTravelDate || new Date().toISOString().split('T')[0];
+    const routeQuery = `fromCity=${encodeURIComponent(fromCity)}&toCity=${encodeURIComponent(toCity)}&travelDate=${encodeURIComponent(travelDate)}`;
+    router.push(`/booking/seats?vehicleId=${vehicle.id}&providerId=${provider?.id || 2}&category=bus&${routeQuery}`);
   };
 
   if (isLoading) {
@@ -198,9 +204,9 @@ export default function TransportDetailPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-blue-700">Route</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {vehicle.route || `${city} Route`}
-                    </p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {fromCity && toCity ? `${fromCity} → ${toCity}` : (vehicle.route || `${city} Route`)}
+                </p>
                   </div>
                 </div>
               </div>

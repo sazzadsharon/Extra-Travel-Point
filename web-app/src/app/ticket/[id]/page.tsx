@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Bus, MapPin, Calendar, Users, CreditCard, Download, Share2, ArrowLeft } from 'lucide-react';
+import {
+  CheckCircle, Bus, MapPin, Calendar, Users, CreditCard, Download, Share2, ArrowLeft, Ticket, AlertCircle
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../contexts/AuthContext';
 import { API_CONFIG } from '../../../config/api';
@@ -50,13 +52,10 @@ interface QrResponse {
   qrDataUrl: string;
 }
 
-export default function SuccessView() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function TicketPage() {
+  const params = useParams();
+  const bookingId = params.id as string;
   const { user } = useAuth();
-
-  const bookingId = searchParams.get('bookingId') || '';
-  const paymentStatus = searchParams.get('payment') || 'success';
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [qrData, setQrData] = useState<QrResponse | null>(null);
@@ -75,19 +74,21 @@ export default function SuccessView() {
     try {
       const { default: axios } = await import('axios');
 
-      // Fetch booking details
       const bookingRes = await axios.get<BookingDetail>(
         `${API_CONFIG.API_BASE_URL}/bookings/${bookingId}`
       );
       setBooking(bookingRes.data);
 
-      // Generate QR code
-      const qrRes = await axios.get<QrResponse>(
-        `${API_CONFIG.API_BASE_URL}/qr/generate/${bookingId}`
-      );
-      setQrData(qrRes.data);
+      try {
+        const qrRes = await axios.get<QrResponse>(
+          `${API_CONFIG.API_BASE_URL}/qr/generate/${bookingId}`
+        );
+        setQrData(qrRes.data);
+      } catch {
+        /* QR is optional */
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load booking details');
+      setError(err.response?.data?.error || 'Failed to load ticket');
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +110,7 @@ export default function SuccessView() {
     if (!qrData) return;
     const link = document.createElement('a');
     link.href = qrData.qrDataUrl;
-    link.download = `etp-qr-${bookingId}.png`;
+    link.download = `etp-ticket-${bookingId}.png`;
     link.click();
   };
 
@@ -117,12 +118,12 @@ export default function SuccessView() {
     if (navigator.share && booking) {
       try {
         await navigator.share({
-          title: 'ETP Booking Confirmation',
-          text: `Booking #${booking.bookingCode} confirmed. Travel on ${formatDate(booking.travelDate)}`,
+          title: 'ETP Travel Ticket',
+          text: `Ticket #${booking.bookingCode} confirmed. Travel on ${formatDate(booking.travelDate)}`,
           url: window.location.href
         });
-      } catch (err) {
-        console.log('Share failed:', err);
+      } catch {
+        /* user cancelled */
       }
     }
   };
@@ -132,7 +133,7 @@ export default function SuccessView() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Please login to view your booking</p>
+          <p className="text-gray-600 mb-4">Please login to view your ticket</p>
           <Link
             href="/login"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -168,10 +169,10 @@ export default function SuccessView() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto px-4 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Bus className="w-8 h-8 text-gray-400" />
+            <Ticket className="w-8 h-8 text-gray-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Booking Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || 'Could not load booking details'}</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Ticket Not Found</h2>
+          <p className="text-gray-600 mb-6">{error || 'Could not load this ticket'}</p>
           <Link
             href="/dashboard"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
@@ -183,30 +184,56 @@ export default function SuccessView() {
     );
   }
 
-  const baseFare = booking.totalAmount;
   const discount = booking.discountAmount;
   const finalAmount = booking.finalAmount;
+
+  let passengers: Array<{ name: string; email: string; phone: string; seatNumber?: string }> = [];
+  try {
+    if (booking.passengerInfo) {
+      const parsed = JSON.parse(booking.passengerInfo);
+      if (Array.isArray(parsed)) passengers = parsed;
+    }
+  } catch {
+    /* ignore */
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Dashboard
+        </Link>
+
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 text-center"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6"
         >
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Ticket className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Extra Travel Point · E-Ticket</p>
+                  <p className="text-xl font-bold">#{booking.bookingCode}</p>
+                </div>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                booking.status === 'confirmed'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {booking.status}
+              </span>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {paymentStatus === 'success' ? 'Booking Confirmed!' : 'Booking Received'}
-          </h1>
-          <p className="text-gray-600">
-            {paymentStatus === 'success'
-              ? 'Your payment has been processed successfully'
-              : 'Your booking is being processed'}
-          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -215,15 +242,15 @@ export default function SuccessView() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center sticky top-24"
             >
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">E-Ticket (QR)</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Boarding QR</h2>
 
               {qrData && qrData.qrDataUrl ? (
                 <div
                   className="w-40 h-40 mx-auto rounded-lg border border-gray-200 mb-4 flex items-center justify-center overflow-hidden"
                   role="img"
-                  aria-label="Booking QR Code"
+                  aria-label="Ticket QR Code"
                   style={{
                     backgroundImage: `url(${qrData.qrDataUrl})`,
                     backgroundSize: 'contain',
@@ -233,11 +260,7 @@ export default function SuccessView() {
                 />
               ) : qrData?.qrObject ? (
                 <div className="w-40 h-40 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
-                  <QRCodeSVG
-                    value={JSON.stringify(qrData.qrObject)}
-                    size={160}
-                    level="H"
-                  />
+                  <QRCodeSVG value={JSON.stringify(qrData.qrObject)} size={160} level="H" />
                 </div>
               ) : (
                 <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">
@@ -245,9 +268,7 @@ export default function SuccessView() {
                 </div>
               )}
 
-              <p className="text-xs text-gray-500 mb-3">
-                Show this QR at the boarding counter
-              </p>
+              <p className="text-xs text-gray-500 mb-3">Show this QR at the boarding counter</p>
 
               <div className="flex gap-2">
                 <button
@@ -275,37 +296,29 @@ export default function SuccessView() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Booking Details</h2>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  booking.status === 'confirmed'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {booking.status}
-                </span>
-              </div>
-
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Trip Details</h2>
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                  <dt className="text-sm text-gray-500">Booking ID</dt>
-                  <dd className="font-medium text-gray-900">#{booking.bookingCode}</dd>
+                  <dt className="text-sm text-gray-500 flex items-center gap-1">
+                    <Bus className="w-4 h-4" /> Service
+                  </dt>
+                  <dd className="font-medium text-gray-900 capitalize">{booking.category}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500 flex items-center gap-1">
+                    <MapPin className="w-4 h-4" /> Route
+                  </dt>
+                  <dd className="font-medium text-gray-900">{booking.route || 'N/A'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-gray-500 flex items-center gap-1">
+                    <Calendar className="w-4 h-4" /> Travel Date
+                  </dt>
+                  <dd className="font-medium text-gray-900">{formatDate(booking.travelDate)}</dd>
                 </div>
                 <div>
                   <dt className="text-sm text-gray-500">Booking Date</dt>
                   <dd className="font-medium text-gray-900">{formatDate(booking.bookingDate)}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Travel Date</dt>
-                  <dd className="font-medium text-gray-900">{formatDate(booking.travelDate)}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Category</dt>
-                  <dd className="font-medium text-gray-900 capitalize">{booking.category}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-gray-500">Passengers</dt>
-                  <dd className="font-medium text-gray-900">{booking.numberOfPeople} person(s)</dd>
                 </div>
                 {booking.provider?.businessName && (
                   <div>
@@ -313,6 +326,10 @@ export default function SuccessView() {
                     <dd className="font-medium text-gray-900">{booking.provider.businessName}</dd>
                   </div>
                 )}
+                <div>
+                  <dt className="text-sm text-gray-500">Passengers</dt>
+                  <dd className="font-medium text-gray-900">{booking.numberOfPeople} person(s)</dd>
+                </div>
               </dl>
             </motion.div>
 
@@ -324,15 +341,15 @@ export default function SuccessView() {
             >
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-gray-500" />
-                Passenger & Seat Information
+                Seats & Passengers
               </h2>
 
               {booking.seatNumbers && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-500">Seat(s)</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
+                  <p className="text-sm text-gray-500 mb-1">Seat Number(s)</p>
+                  <div className="flex flex-wrap gap-2">
                     {booking.seatNumbers.split(',').map((s) => (
-                      <span key={s} className="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium">
+                      <span key={s} className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium">
                         {s.trim()}
                       </span>
                     ))}
@@ -340,48 +357,34 @@ export default function SuccessView() {
                 </div>
               )}
 
-              {(() => {
-                try {
-                  const passengers = booking.passengerInfo ? JSON.parse(booking.passengerInfo) : null;
-                  if (Array.isArray(passengers) && passengers.length > 0) {
-                    return (
-                      <div className="space-y-3">
-                        {passengers.map((p: any, i: number) => (
-                          <div key={i} className="border border-gray-100 rounded-lg p-3">
-                            <p className="font-medium text-gray-900">
-                              {p.name}
-                              {p.seatNumber && (
-                                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Seat {p.seatNumber}</span>
-                              )}
-                            </p>
-                            <p className="text-sm text-gray-500">{p.phone} · {p.email}</p>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                } catch {
-                  /* ignore parse errors */
-                }
-                return booking.user ? (
-                  <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">Name</dt>
-                      <dd className="font-medium text-gray-900">{booking.user.fullName || 'N/A'}</dd>
+              {passengers.length > 0 ? (
+                <div className="space-y-3">
+                  {passengers.map((p, i) => (
+                    <div key={i} className="border border-gray-100 rounded-lg p-3">
+                      <p className="font-medium text-gray-900">
+                        {p.name}
+                        {p.seatNumber && (
+                          <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Seat {p.seatNumber}</span>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500">{p.phone} · {p.email}</p>
                     </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Phone</dt>
-                      <dd className="font-medium text-gray-900">{booking.user.phone || 'N/A'}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Email</dt>
-                      <dd className="font-medium text-gray-900">{booking.user.email || 'N/A'}</dd>
-                    </div>
-                  </dl>
-                ) : (
-                  <p className="text-gray-500">Passenger details not available</p>
-                );
-              })()}
+                  ))}
+                </div>
+              ) : booking.user ? (
+                <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                  <div>
+                    <dt className="text-sm text-gray-500">Name</dt>
+                    <dd className="font-medium text-gray-900">{booking.user.fullName || 'N/A'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Phone</dt>
+                    <dd className="font-medium text-gray-900">{booking.user.phone || 'N/A'}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-gray-500">Passenger details not available</p>
+              )}
             </motion.div>
 
             <motion.div
@@ -392,35 +395,40 @@ export default function SuccessView() {
             >
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-gray-500" />
-                Payment Information
+                Payment Summary
               </h2>
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mb-4">
                 <div>
                   <dt className="text-sm text-gray-500">Payment Status</dt>
-                  <dd className="font-medium text-gray-900 capitalize">{booking.paymentStatus}</dd>
+                  <dd className="font-medium text-gray-900 capitalize flex items-center gap-1">
+                    {booking.paymentStatus === 'paid' ? (
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    )}
+                    {booking.paymentStatus}
+                  </dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-gray-500">Payment Method</dt>
-                  <dd className="font-medium text-gray-900">Online via Gateway</dd>
+                  <dt className="text-sm text-gray-500">Booking Status</dt>
+                  <dd className="font-medium text-gray-900 capitalize">{booking.status}</dd>
                 </div>
               </dl>
 
-              <div className="border-t border-gray-200 mt-4 pt-4">
-                <div className="space-y-2">
+              <div className="border-t border-gray-200 pt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Subtotal</span>
+                  <span className="text-gray-900">BDT {booking.totalAmount.toFixed(2)}</span>
+                </div>
+                {discount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Subtotal</span>
-                    <span className="text-gray-900">BDT {baseFare.toFixed(2)}</span>
+                    <span className="text-gray-500">Discount</span>
+                    <span className="text-green-600 font-medium">-BDT {discount.toFixed(2)}</span>
                   </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Discount</span>
-                      <span className="text-green-600 font-medium">-BDT {discount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
-                    <span>Total Paid</span>
-                    <span className="text-blue-700">BDT {finalAmount.toFixed(2)}</span>
-                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
+                  <span>Total Paid</span>
+                  <span className="text-blue-700">BDT {finalAmount.toFixed(2)}</span>
                 </div>
               </div>
             </motion.div>
@@ -438,19 +446,12 @@ export default function SuccessView() {
                 <ArrowLeft className="w-4 h-4" />
                 Go to Dashboard
               </Link>
-              <Link
-                href={`/ticket/${booking.id}`}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-medium text-center transition-colors flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                View Ticket
-              </Link>
               <button
                 onClick={downloadQrCode}
                 className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
-                Download E-Ticket
+                Download Ticket
               </button>
             </motion.div>
           </div>

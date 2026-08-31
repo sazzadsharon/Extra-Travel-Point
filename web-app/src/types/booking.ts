@@ -2,6 +2,17 @@
  * Booking types for the ETP Web App
  */
 
+import type { Service } from './vendor';
+
+export interface PassengerInfo {
+  name: string;
+  email: string;
+  phone: string;
+  age?: number;
+  gender?: 'male' | 'female' | 'other';
+  seatNumber?: string;
+}
+
 export interface Booking {
   id: number;
   bookingCode: string;
@@ -18,6 +29,11 @@ export interface Booking {
   status: BookingStatus;
   paymentStatus: PaymentStatus;
   qrCode: string | null;
+  seatNumbers?: string | null;
+  passengerInfo?: string | null;
+  route?: string | null;
+  serviceId?: number | null;
+  service?: Service | null;
   createdAt: string;
   updatedAt: string;
   provider?: ServiceProvider;
@@ -85,5 +101,8 @@ export interface CreateBookingRequest {
   bookingDate: string;
   travelDate: string;
   numberOfPeople: number;
-  totalAmount: number;
+  seatNumbers?: string[];
+  passengers?: PassengerInfo[];
+  route?: string;
+  totalAmount?: number;
 }

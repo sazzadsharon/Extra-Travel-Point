@@ -61,8 +61,12 @@ model ServiceProvider {
   phone          String?
   logo           String?
   commissionRate Float     @default(10.00)
+  status         String    @default("PENDING")
   isVerified     Boolean   @default(false)
   isActive       Boolean   @default(true)
+  verifiedAt     DateTime?
+  reviewedBy     Int?
+  rejectionReason String?
   rating         Float     @default(0)
   totalReviews   Int       @default(0)
   createdAt      DateTime  @default(now())
@@ -71,8 +75,48 @@ model ServiceProvider {
   bookings       Booking[]
   qrLogs         QrLog[]
   rooms          Room[]
+  services       Service[]
 
   @@map("service_providers")
+}
+
+model Service {
+  id          Int             @id @default(autoincrement())
+  providerId  Int
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  name        String
+  category    String
+  description String?
+  route       String?
+  price       Float
+  currency    String          @default("BDT")
+  capacity    Int?
+  availability String?
+  status      String          @default("ACTIVE")
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  bookings    Booking[]
+  availabilities ServiceAvailability[]
+
+  @@map("services")
+}
+
+model ServiceAvailability {
+  id          Int      @id @default(autoincrement())
+  serviceId   Int
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  date        DateTime
+  startTime   String?
+  endTime     String?
+  capacity    Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceId, date])
+  @@map("service_availabilities")
 }
 
 model Room {
@@ -100,6 +144,8 @@ model Booking {
   user           User            @relation(fields: [userId], references: [id])
   providerId     Int
   provider       ServiceProvider @relation(fields: [providerId], references: [id])
+  serviceId      Int?
+  service        Service?        @relation(fields: [serviceId], references: [id])
   category       String
   bookingDate    DateTime
   travelDate     DateTime
@@ -111,10 +157,14 @@ model Booking {
   status         String          @default("pending")
   paymentStatus  String          @default("pending")
   qrCode         String?
+  seatNumbers     String?         // Comma-separated booked seat numbers (e.g. "A1,B2")
+  passengerInfo   String?         // JSON string of passenger details per seat
+  route           String?         // Human readable route (e.g. "Dhaka -> Cox's Bazar")
   specialRequest String?
+  rejectionReason String?
   cancelledAt    DateTime?
   completedAt    DateTime?
-  createdAt      DateTime        @default(now())
+  createdAt      DateTime          @default(now())
   updatedAt      DateTime        @updatedAt
 
   qrLogs    QrLog[]
@@ -123,6 +173,7 @@ model Booking {
 
   @@index([userId])
   @@index([providerId])
+  @@index([serviceId])
   @@index([status])
   @@map("bookings")
 }

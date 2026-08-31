@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (phone: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (phone: string, password: string, fullName?: string, email?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  setSession: (user: User, token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -95,8 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('etp_user');
   };
 
+  const setSession = (u: User, token: string) => {
+    setUser(u);
+    setAccessToken(token);
+    localStorage.setItem('etp_user', JSON.stringify(u));
+    localStorage.setItem('etp_access_token', token);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isLoading, login, register, logout, setSession }}>
       {children}
     </AuthContext.Provider>
   );

@@ -129,7 +129,89 @@ router.get('/revenue', async (req: AuthRequest, res) => {
   }
 });
 
-// GET /api/v1/admin/providers
+// GET /api/v1/admin/vendors (Vendor list with optional status filter)
+router.get('/vendors', async (req: AuthRequest, res) => {
+  try {
+    const { status } = req.query;
+    const where: any = {};
+    if (typeof status === 'string') where.status = status;
+
+    const providers = await prisma.serviceProvider.findMany({
+      where,
+      include: {
+        user: { select: { id: true, fullName: true, email: true, phone: true } },
+        _count: { select: { services: true, bookings: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const counts = await prisma.serviceProvider.groupBy({ by: ['status'], _count: { id: true } });
+
+    return res.json({ providers, counts });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/v1/admin/vendors/:id (Vendor details)
+router.get('/vendors/:id', async (req: AuthRequest, res) => {
+  try {
+    const providerId = parseInt(req.params.id);
+    const provider = await prisma.serviceProvider.findUnique({
+      where: { id: providerId },
+      include: {
+        user: { select: { id: true, fullName: true, email: true, phone: true, createdAt: true } },
+        services: { orderBy: { createdAt: 'desc' } },
+        bookings: {
+          orderBy: { createdAt: 'desc' },
+          take: 25,
+          include: { user: { select: { id: true, fullName: true, phone: true } }, service: true }
+        }
+      }
+    });
+
+    if (!provider) return res.status(404).json({ error: 'Vendor not found' });
+
+    return res.json(provider);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+async function setVendorStatus(res: any, providerId: number, adminId: number, status: string, extra: Record<string, any> = {}) {
+  try {
+    const provider = await prisma.serviceProvider.update({
+      where: { id: providerId },
+      data: { status, reviewedBy: adminId, verifiedAt: new Date(), isVerified: status === 'APPROVED', isActive: status === 'APPROVED', ...extra }
+    });
+    return res.json({ message: `Vendor ${status.toLowerCase()} successfully`, provider });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+}
+
+// PATCH /api/v1/admin/vendors/:id/approve
+router.patch('/vendors/:id/approve', async (req: AuthRequest, res) => {
+  return setVendorStatus(res, parseInt(req.params.id), req.user!.id, 'APPROVED');
+});
+
+// PATCH /api/v1/admin/vendors/:id/reject
+router.patch('/vendors/:id/reject', async (req: AuthRequest, res) => {
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason : null;
+  return setVendorStatus(res, parseInt(req.params.id), req.user!.id, 'REJECTED', { rejectionReason: reason });
+});
+
+// PATCH /api/v1/admin/vendors/:id/suspend
+router.patch('/vendors/:id/suspend', async (req: AuthRequest, res) => {
+  return setVendorStatus(res, parseInt(req.params.id), req.user!.id, 'SUSPENDED');
+});
+
+// PATCH /api/v1/admin/vendors/:id/restore
+router.patch('/vendors/:id/restore', async (req: AuthRequest, res) => {
+  return setVendorStatus(res, parseInt(req.params.id), req.user!.id, 'APPROVED');
+});
+
+// GET /api/v1/admin/providers (legacy list, kept for compatibility)
 router.get('/providers', async (req: AuthRequest, res) => {
   try {
     const providers = await prisma.serviceProvider.findMany({
@@ -141,13 +223,13 @@ router.get('/providers', async (req: AuthRequest, res) => {
   }
 });
 
-// PATCH /api/v1/admin/providers/:id/verify
+// PATCH /api/v1/admin/providers/:id/verify (legacy verify -> APPROVED)
 router.patch('/providers/:id/verify', async (req: AuthRequest, res) => {
   try {
     const providerId = parseInt(req.params.id);
     const provider = await prisma.serviceProvider.update({
       where: { id: providerId },
-      data: { isVerified: true }
+      data: { isVerified: true, status: 'APPROVED', reviewedBy: req.user!.id, verifiedAt: new Date(), isActive: true }
     });
 
     return res.json({ message: 'Service provider verified successfully', provider });

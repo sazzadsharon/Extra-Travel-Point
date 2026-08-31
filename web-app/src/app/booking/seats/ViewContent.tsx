@@ -26,6 +26,8 @@ export default function SeatingView() {
   const providerId = searchParams.get('providerId') || '2';
   const travelDate = searchParams.get('travelDate') || '';
   const vehicleType = searchParams.get('vehicleType') || 'bus';
+  const fromCity = searchParams.get('fromCity') || '';
+  const toCity = searchParams.get('toCity') || '';
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [seatMap, setSeatMap] = useState<SeatMapResponse | null>(null);
@@ -98,8 +100,9 @@ export default function SeatingView() {
     }
 
     const lockResult = await handleLockSeats(selectedSeats);
+    const routeQuery = `fromCity=${encodeURIComponent(fromCity)}&toCity=${encodeURIComponent(toCity)}&travelDate=${encodeURIComponent(travelDate)}`;
     router.push(
-      `/booking/new?vehicleId=${vehicleId}&providerId=${providerId}&travelDate=${travelDate}&seats=${selectedSeats.map(s => s.seatNumber).join(',')}&totalPrice=${totalPrice}&vehicleType=${vehicleType}`
+      `/booking/new?vehicleId=${vehicleId}&providerId=${providerId}&category=${vehicleType}&${routeQuery}&seats=${selectedSeats.map(s => s.seatNumber).join(',')}&totalPrice=${totalPrice}`
     );
   };
 
@@ -193,6 +196,18 @@ export default function SeatingView() {
                   </span>
                   <span className="font-medium text-gray-900 capitalize">{vehicleType}</span>
                 </div>
+
+                {(fromCity || toCity) && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Route
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {fromCity ? `${fromCity}` : 'Any'} → {toCity ? `${toCity}` : 'Any'}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-500 flex items-center gap-2">

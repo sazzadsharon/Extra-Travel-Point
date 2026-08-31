@@ -54,7 +54,7 @@ async function main() {
   // Create service providers
   const hotelProvider = await prisma.serviceProvider.upsert({
     where: { id: 1 },
-    update: {},
+    update: { status: 'APPROVED' },
     create: {
       userId: vendorUser.id,
       businessName: 'Hotel Sea View Cox\'s Bazar',
@@ -65,6 +65,7 @@ async function main() {
       latitude: 21.4272,
       longitude: 92.0058,
       phone: '01912345678',
+      status: 'APPROVED',
       isVerified: true,
       rating: 4.5,
       totalReviews: 128
@@ -74,7 +75,7 @@ async function main() {
 
   const busProvider = await prisma.serviceProvider.upsert({
     where: { id: 2 },
-    update: {},
+    update: { status: 'APPROVED' },
     create: {
       userId: vendorUser.id,
       businessName: 'Green Line Paribahan',
@@ -83,6 +84,7 @@ async function main() {
       address: 'Kalabagan, Dhaka',
       city: 'Dhaka',
       phone: '01912345679',
+      status: 'APPROVED',
       isVerified: true,
       rating: 4.2,
       totalReviews: 256
@@ -92,7 +94,7 @@ async function main() {
 
   const restaurantProvider = await prisma.serviceProvider.upsert({
     where: { id: 3 },
-    update: {},
+    update: { status: 'APPROVED' },
     create: {
       userId: vendorUser.id,
       businessName: 'Kolatoli Restaurant',
@@ -101,6 +103,7 @@ async function main() {
       address: 'Kolatoli, Cox\'s Bazar',
       city: 'Cox\'s Bazar',
       phone: '01912345680',
+      status: 'APPROVED',
       isVerified: true,
       rating: 4.7,
       totalReviews: 89

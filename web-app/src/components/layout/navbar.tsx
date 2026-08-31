@@ -3,14 +3,20 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, Globe } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const accountHref = user?.role === 'vendor' ? '/vendor' : user?.role === 'admin' ? '/admin/vendors' : '/dashboard';
+  const accountLabel = user?.role === 'vendor' ? 'Vendor' : user?.role === 'admin' ? 'Admin' : 'Dashboard';
 
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/destinations', label: 'Destinations' },
     { href: '/plan-trip', label: 'Plan Trip' },
+    { href: '/ai-assistant', label: 'AI Assistant' },
     { href: '/transport', label: 'Transport' },
     { href: '/about', label: 'About' },
     { href: '/business', label: 'Business' },
@@ -40,10 +46,10 @@ export default function Navbar() {
             ))}
 
             <Link
-              href="/dashboard"
+              href={accountHref}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
             >
-              Dashboard
+              {accountLabel}
             </Link>
           </div>
 
@@ -69,11 +75,11 @@ export default function Navbar() {
                 </Link>
               ))}
               <Link
-                href="/dashboard"
+                href={accountHref}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium text-center"
                 onClick={() => setIsOpen(false)}
               >
-                Dashboard
+                {accountLabel}
               </Link>
             </div>
           </div>

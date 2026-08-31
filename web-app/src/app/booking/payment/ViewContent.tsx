@@ -122,7 +122,7 @@ export default function PaymentView() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
-          href={`/booking/new?vehicleId=${searchParams.get('vehicleId')}&providerId=${searchParams.get('providerId')}&travelDate=${searchParams.get('travelDate')}&seats=${searchParams.get('seats')}&totalPrice=${searchParams.get('totalPrice')}&vehicleType=${searchParams.get('vehicleType')}`}
+          href={`/booking/new?vehicleId=${searchParams.get('vehicleId')}&providerId=${searchParams.get('providerId')}&category=${searchParams.get('category') || searchParams.get('vehicleType')}&fromCity=${encodeURIComponent(searchParams.get('fromCity') || '')}&toCity=${encodeURIComponent(searchParams.get('toCity') || '')}&travelDate=${searchParams.get('travelDate')}&seats=${searchParams.get('seats')}&totalPrice=${searchParams.get('totalPrice')}`}
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
