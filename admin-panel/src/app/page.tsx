@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { LayoutDashboard, Users, BookOpen, QrCode, CreditCard, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, QrCode, CreditCard, CheckCircle, Clock, TrendingUp, BarChart3, Settings } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import UserManagement from './users/page';
+import AnalyticsReports from './analytics/page';
+import SystemSettings from './settings/page';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -13,7 +16,7 @@ export default function AdminDashboard() {
     currency: 'BDT'
   });
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'providers' | 'qr'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'providers' | 'users' | 'analytics' | 'settings'>('dashboard');
   const [recentBookings, setRecentBookings] = useState<any[]>([
     { id: 'BKG-101', user: { fullName: 'Shakib Al Hasan' }, category: 'hotel', totalAmount: 12000, discountAmount: 1200, status: 'confirmed', createdAt: '2026-08-25' },
     { id: 'BKG-102', user: { fullName: 'Tamim Iqbal' }, category: 'flight', totalAmount: 8500, discountAmount: 850, status: 'confirmed', createdAt: '2026-08-25' },
@@ -97,6 +100,27 @@ export default function AdminDashboard() {
             >
               <Users size={18} />
               <span>সার্ভিস প্রোভাইডার</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${activeTab === 'users' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+            >
+              <Users size={18} />
+              <span>User Management</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${activeTab === 'analytics' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+            >
+              <BarChart3 size={18} />
+              <span>Reports & Analytics</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${activeTab === 'settings' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-800'}`}
+            >
+              <Settings size={18} />
+              <span>Settings</span>
             </button>
           </nav>
         </div>

@@ -32,3 +32,58 @@ export interface SearchFilters {
   date: string;
   passengers: number;
 }
+
+export interface BusProvider {
+  id: number;
+  businessName: string;
+  category?: string;
+  description?: string | null;
+  address?: string;
+  city?: string | null;
+  phone?: string | null;
+  rating: number;
+  totalReviews: number;
+  isVerified: boolean;
+}
+
+export interface BusAvailabilitySlot {
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+  capacity: number | null;
+}
+
+export interface Bus {
+  id: number;
+  name: string;
+  route: string | null;
+  description: string | null;
+  price: number;
+  currency: string;
+  capacity: number;
+  provider: BusProvider;
+  availability: BusAvailabilitySlot[];
+}
+
+export interface BusSeat {
+  seatNumber: string;
+  isAvailable: boolean;
+  isLocked?: boolean;
+  price: number;
+  type: 'Window' | 'Aisle';
+}
+
+export interface BusSeatMapResponse {
+  busId: number;
+  date: string;
+  totalSeats: number;
+  availableSeats: number;
+  pricePerSeat: number;
+  currency: string;
+  seats: BusSeat[];
+}
+
+export interface BusListResponse {
+  count: number;
+  buses: Bus[];
+}

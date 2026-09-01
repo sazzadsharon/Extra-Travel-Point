@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { prisma } from '../prisma';
-import { authenticateJWT, AuthRequest } from '../middleware/auth';
+import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
 import { z } from 'zod';
 import { notifyUser } from '../utils/notifications';
+import { generateHmacSignature, createQRCodeDataURL, QRPayload } from '../utils/qr';
 
 const router = Router();
 
@@ -76,17 +77,151 @@ const bookingSchema = z.object({
 });
 
 // POST /api/v1/bookings/seats/lock (Real-time Seat Lock - 10 Mins Hold)
+const seatLockSchema = z.object({
+  seatNumbers: z.array(z.string().min(1)).min(1).max(10),
+  providerId: z.number().int().positive(),
+  category: z.enum(['bus', 'flight', 'hotel', 'food', 'tour']).default('bus'),
+  travelDate: z.string().refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid travelDate' })
+});
+
+const SEAT_LOCK_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 router.post('/seats/lock', authenticateJWT, async (req: AuthRequest, res) => {
   try {
-    const { seatNumbers, providerId, travelDate } = req.body;
-    const lockExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins hold
-    
+    const parse = seatLockSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+    const { seatNumbers, providerId, category, travelDate } = parse.data;
+
+    // Validate seats exist in the layout for this category
+    const layout = buildSeatLayout(category, totalSeatsFor(category));
+    const validSeats = new Set(layout.map(s => s.seatNumber));
+    const invalid = seatNumbers.filter(s => !validSeats.has(s));
+    if (invalid.length > 0) {
+      return res.status(400).json({ error: `Invalid seat number(s): ${invalid.join(', ')}` });
+    }
+    if (new Set(seatNumbers).size !== seatNumbers.length) {
+      return res.status(400).json({ error: 'Duplicate seat selection' });
+    }
+
+    const travelDateObj = new Date(travelDate);
+    const now = new Date();
+
+    // Already-booked seats (confirmed/pending) cannot be locked
+    const conflicting = await prisma.booking.findMany({
+      where: {
+        providerId,
+        category,
+        status: { in: ['confirmed', 'pending'] }
+      },
+      select: { travelDate: true, seatNumbers: true }
+    });
+    const booked = new Set<string>();
+    for (const b of conflicting) {
+      if (b.travelDate.toISOString().split('T')[0] !== travelDate) continue;
+      if (!b.seatNumbers) continue;
+      b.seatNumbers.split(',').forEach(s => booked.add(s.trim()));
+    }
+    const alreadyBooked = seatNumbers.filter(s => booked.has(s));
+    if (alreadyBooked.length > 0) {
+      return res.status(409).json({ error: `Seat(s) already booked: ${alreadyBooked.join(', ')}` });
+    }
+
+    // Existing active locks (not expired, not released) by OTHER users block new locks
+    const activeLocks = await prisma.seatLock.findMany({
+      where: {
+        providerId,
+        category,
+        travelDate: travelDateObj,
+        releasedAt: null,
+        expiresAt: { gt: now }
+      },
+      select: { seatNumber: true, userId: true }
+    });
+    const takenByOthers = new Set(
+      activeLocks.filter(l => l.userId !== req.user!.id).map(l => l.seatNumber)
+    );
+    const taken = seatNumbers.filter(s => takenByOthers.has(s));
+    if (taken.length > 0) {
+      return res.status(409).json({ error: `Seat(s) held by another customer: ${taken.join(', ')}` });
+    }
+
+    const expiresAt = new Date(now.getTime() + SEAT_LOCK_TTL_MS);
+
+    // Atomic per-seat lock acquisition using a transaction so concurrent
+    // requests for the same seat can't both succeed.
+    const acquired = await prisma.$transaction(async (tx) => {
+      const takenByOthersNow = await tx.seatLock.findFirst({
+        where: {
+          providerId,
+          category,
+          travelDate: travelDateObj,
+          seatNumber: { in: seatNumbers },
+          userId: { not: req.user!.id },
+          releasedAt: null,
+          expiresAt: { gt: now }
+        },
+        select: { seatNumber: true }
+      });
+      if (takenByOthersNow) {
+        return { conflict: takenByOthersNow.seatNumber };
+      }
+
+      // Refresh our own existing locks (if any) and create new ones for the rest.
+      const oursExisting = await tx.seatLock.findMany({
+        where: {
+          providerId,
+          category,
+          travelDate: travelDateObj,
+          seatNumber: { in: seatNumbers },
+          userId: req.user!.id,
+          releasedAt: null
+        }
+      });
+      const existingSeats = new Set(oursExisting.map(l => l.seatNumber));
+      const toCreate = seatNumbers.filter(s => !existingSeats.has(s));
+      const toUpdate = seatNumbers.filter(s => existingSeats.has(s));
+
+      for (const s of toUpdate) {
+        await tx.seatLock.updateMany({
+          where: {
+            providerId, category, travelDate: travelDateObj,
+            seatNumber: s, userId: req.user!.id, releasedAt: null
+          },
+          data: { expiresAt, releasedAt: null, bookingId: null }
+        });
+      }
+      if (toCreate.length > 0) {
+        await tx.seatLock.createMany({
+          data: toCreate.map(seatNumber => ({
+            providerId, category, travelDate: travelDateObj,
+            seatNumber, userId: req.user!.id, expiresAt
+          }))
+        });
+      }
+
+      const all = await tx.seatLock.findMany({
+        where: {
+          providerId, category, travelDate: travelDateObj,
+          seatNumber: { in: seatNumbers }, userId: req.user!.id, releasedAt: null
+        },
+        orderBy: { id: 'asc' }
+      });
+      return { locks: all };
+    });
+
+    if ('conflict' in acquired) {
+      return res.status(409).json({ error: `Seat(s) held by another customer: ${acquired.conflict}` });
+    }
+
     return res.json({
       success: true,
       message: 'Seats locked temporarily for payment',
-      lockedSeats: seatNumbers,
-      expiresAt: lockExpiresAt,
-      holdTimeSeconds: 600
+      lockedSeats: acquired.locks.map(r => r.seatNumber),
+      expiresAt,
+      holdTimeSeconds: SEAT_LOCK_TTL_MS / 1000,
+      lockIds: acquired.locks.map(r => r.id)
     });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
@@ -94,13 +229,41 @@ router.post('/seats/lock', authenticateJWT, async (req: AuthRequest, res) => {
 });
 
 // POST /api/v1/bookings/seats/release (Auto/Manual Seat Release)
+const seatReleaseSchema = z.object({
+  seatNumbers: z.array(z.string()).optional(),
+  lockIds: z.array(z.number().int().positive()).optional(),
+  providerId: z.number().int().positive().optional(),
+  category: z.enum(['bus', 'flight', 'hotel', 'food', 'tour']).optional(),
+  travelDate: z.string().optional()
+}).refine(d => d.seatNumbers || d.lockIds, { message: 'seatNumbers or lockIds required' });
+
 router.post('/seats/release', authenticateJWT, async (req: AuthRequest, res) => {
   try {
-    const { seatNumbers } = req.body;
+    const parse = seatReleaseSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+    const { seatNumbers, lockIds, providerId, category, travelDate } = parse.data;
+
+    const where: any = {
+      userId: req.user!.id,
+      releasedAt: null
+    };
+    if (lockIds && lockIds.length > 0) where.id = { in: lockIds };
+    if (seatNumbers && seatNumbers.length > 0) where.seatNumber = { in: seatNumbers };
+    if (providerId) where.providerId = providerId;
+    if (category) where.category = category;
+    if (travelDate) where.travelDate = new Date(travelDate);
+
+    const updated = await prisma.seatLock.updateMany({
+      where,
+      data: { releasedAt: new Date() }
+    });
+
     return res.json({
       success: true,
       message: 'Seats released back to available pool',
-      releasedSeats: seatNumbers
+      releasedCount: updated.count
     });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
@@ -186,9 +349,23 @@ router.get('/seats/map', async (req, res) => {
       b.seatNumbers.split(',').forEach(s => occupied.add(s.trim()));
     }
 
+    // 3. Overlay active in-flight seat locks (held by other customers during checkout)
+    const activeLocks = await prisma.seatLock.findMany({
+      where: {
+        providerId,
+        category,
+        travelDate: new Date(date),
+        releasedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      select: { seatNumber: true }
+    });
+    const locked = new Set(activeLocks.map(l => l.seatNumber));
+
     const seatMap = seats.map(seat => ({
       ...seat,
-      isAvailable: !occupied.has(seat.seatNumber)
+      isAvailable: !occupied.has(seat.seatNumber),
+      isLocked: locked.has(seat.seatNumber) && !occupied.has(seat.seatNumber)
     }));
 
     return res.json({
@@ -358,6 +535,21 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
       include: { provider: true, user: true, service: true }
     });
 
+    // Mark this customer's active locks for these seats as released & link to the new booking
+    if (normalizedSeats.length > 0) {
+      await prisma.seatLock.updateMany({
+        where: {
+          userId: req.user!.id,
+          providerId,
+          category,
+          travelDate: new Date(travelDate),
+          seatNumber: { in: normalizedSeats },
+          releasedAt: null
+        },
+        data: { releasedAt: new Date(), bookingId: booking.id }
+      });
+    }
+
     notifyUser(
       booking.provider.userId,
       'NEW_BOOKING',
@@ -423,6 +615,110 @@ router.patch('/:id/cancel', authenticateJWT, async (req: AuthRequest, res) => {
     );
 
     return res.json({ message: 'Booking cancelled successfully', booking: updated });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/v1/bookings/:id/ticket  (post-payment e-ticket with secure QR)
+// Customer (owner) or admin only. Returns QR-ready payload only for confirmed/paid bookings
+// (or completed), so the QR cannot be used before payment is verified.
+router.get('/:id/ticket', authenticateJWT, async (req: AuthRequest, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { provider: true, user: true, service: true }
+    });
+
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    if (!['confirmed', 'completed', 'paid'].includes(booking.status) || booking.paymentStatus !== 'paid') {
+      return res.status(402).json({
+        error: 'Ticket is not available until payment is verified',
+        bookingStatus: booking.status,
+        paymentStatus: booking.paymentStatus
+      });
+    }
+
+    const validFrom = booking.travelDate.toISOString().split('T')[0];
+    const validUntilDate = new Date(booking.travelDate);
+    validUntilDate.setDate(validUntilDate.getDate() + 5);
+    const validUntil = validUntilDate.toISOString().split('T')[0];
+
+    const qrPayload: QRPayload = {
+      booking_id: `BKG-${booking.id}`,
+      user_id: `USR-${booking.userId}`,
+      provider_id: `PRV-${booking.providerId}`,
+      category: booking.category,
+      valid_from: validFrom,
+      valid_until: validUntil,
+      discounts: [
+        {
+          type: 'combo',
+          provider: `PRV-${booking.providerId}`,
+          value: booking.discountAmount,
+          unit: 'BDT'
+        }
+      ]
+    };
+    const signature = generateHmacSignature(qrPayload);
+    const qrObject = { payload: qrPayload, signature };
+
+    // Persist the data URL (for caching) only if it isn't set yet
+    let qrDataUrl = booking.qrCode;
+    if (!qrDataUrl) {
+      qrDataUrl = await createQRCodeDataURL(qrObject);
+      await prisma.booking.update({
+        where: { id: booking.id },
+        data: { qrCode: qrDataUrl }
+      });
+    }
+
+    const passengers = booking.passengerInfo ? JSON.parse(booking.passengerInfo) : null;
+
+    return res.json({
+      ticketId: `ETP-TKT-${booking.id}`,
+      bookingCode: booking.bookingCode,
+      bookingStatus: booking.status,
+      paymentStatus: booking.paymentStatus,
+      category: booking.category,
+      route: booking.route,
+      travelDate: booking.travelDate,
+      bookingDate: booking.bookingDate,
+      seats: booking.seatNumbers ? booking.seatNumbers.split(',') : [],
+      passengers,
+      fare: {
+        total: booking.totalAmount,
+        discount: booking.discountAmount,
+        final: booking.finalAmount,
+        currency: 'BDT'
+      },
+      provider: {
+        id: booking.provider.id,
+        businessName: booking.provider.businessName,
+        category: booking.provider.category,
+        city: booking.provider.city,
+        phone: booking.provider.phone
+      },
+      customer: {
+        id: booking.user.id,
+        fullName: booking.user.fullName,
+        phone: booking.user.phone
+      },
+      service: booking.service
+        ? { id: booking.service.id, name: booking.service.name, route: booking.service.route }
+        : null,
+      qr: {
+        object: qrObject,
+        dataUrl: qrDataUrl,
+        validFrom,
+        validUntil
+      }
+    });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
