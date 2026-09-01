@@ -3,26 +3,26 @@ import { AIProvider, ChatMessage, AIResponse, StructuredAIResponse, AIProviderCo
 
 export class OllamaProvider extends BaseAIProvider implements AIProvider {
   public readonly name = 'ollama';
-  
+
   private readonly baseUrl: string;
   private readonly model: string;
-  
+
   constructor(config: AIProviderConfig = {}) {
     super(config);
-    
+
     this.baseUrl = config.baseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
     this.model = config.model || process.env.OLLAMA_MODEL || 'llama2';
   }
 
   async chat(messages: ChatMessage[]): Promise<AIResponse> {
     this.validateMessages(messages);
-    
+
     try {
       const formattedMessages = messages.map(msg => ({
         role: msg.role,
         content: msg.content
       }));
-      
+
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
         headers: {
@@ -44,7 +44,7 @@ export class OllamaProvider extends BaseAIProvider implements AIProvider {
       }
 
       const data = await response.json();
-      
+
       return {
         content: data.message.content,
         finishReason: data.done ? 'stop' : 'length',
@@ -64,7 +64,7 @@ export class OllamaProvider extends BaseAIProvider implements AIProvider {
 
   async generateText(prompt: string): Promise<AIResponse> {
     this.validatePrompt(prompt);
-    
+
     try {
       const response = await fetch(`${this.baseUrl}/api/generate`, {
         method: 'POST',
@@ -87,7 +87,7 @@ export class OllamaProvider extends BaseAIProvider implements AIProvider {
       }
 
       const data = await response.json();
-      
+
       return {
         content: data.response,
         finishReason: data.done ? 'stop' : 'length',
@@ -111,11 +111,11 @@ export class OllamaProvider extends BaseAIProvider implements AIProvider {
   ): Promise<StructuredAIResponse<T>> {
     this.validatePrompt(prompt);
     this.validateSchema(schema);
-    
+
     try {
       // For Ollama, we'll generate text and then attempt to parse it as JSON
       const response = await this.generateText(prompt);
-      
+
       try {
         const parsedData = JSON.parse(response.content) as T;
         return {
@@ -148,7 +148,7 @@ export class OllamaProvider extends BaseAIProvider implements AIProvider {
       const response = await fetch(`${this.baseUrl}/api/tags`, {
         method: 'GET'
       });
-      
+
       return response.ok;
     } catch {
       return false;

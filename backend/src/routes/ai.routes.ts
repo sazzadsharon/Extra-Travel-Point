@@ -36,13 +36,13 @@ router.post('/assistant', async (req: Request, res: Response) => {
 
     let aiMessage = '';
     const provider = await aiFactory.getDefaultProvider();
-    
+
     if (provider) {
       try {
-        const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app. 
+        const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
         A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
         Provide a helpful, concise response in Bengali mixed with English.`;
-        
+
         const response = await provider.generateText(
           `${context}\n\nUser query: ${prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`}`
         );
@@ -60,7 +60,7 @@ router.post('/assistant', async (req: Request, res: Response) => {
       origin: startCity,
       durationDays: days,
       totalBudget: budget,
-      
+
       budgetBreakdown: {
         busTicket: busFare,
         hotelCost: hotelCost,

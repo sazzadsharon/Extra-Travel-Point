@@ -21,7 +21,7 @@ interface SeatMapResponse {
 export default function SeatingView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const vehicleId = searchParams.get('vehicleId');
   const providerId = searchParams.get('providerId') || '2';
   const travelDate = searchParams.get('travelDate') || '';

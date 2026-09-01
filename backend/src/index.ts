@@ -28,6 +28,7 @@ import securityRoutes from './routes/security.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import discoveryRoutes from './routes/discovery.routes';
 import packagesRoutes from './routes/packages.routes';
+import flightRoutes from './routes/flight.routes';
 
 dotenv.config();
 
@@ -42,7 +43,7 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN 
+const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : [];
 
@@ -50,17 +51,17 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
-    
+
     // In development, allow all if no CORS_ORIGIN is set
     if (process.env.NODE_ENV !== 'production' && allowedOrigins.length === 0) {
       return callback(null, true);
     }
-    
+
     // In production, only allow explicitly configured origins
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
@@ -178,6 +179,7 @@ app.use('/api/v1/tracking', trackingRoutes);
 app.use('/api/v1/emergency', emergencyRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
+app.use('/api/v1/flights', flightRoutes);
 app.use('/api/v1/transport', transportRoutes);
 app.use('/api/v1/vendors', vendorRoutes);
 app.use('/api/v1/security', securityRoutes);

@@ -20,14 +20,14 @@ describe('Phase 2: Ollama Real Inference', () => {
     it('should load OLLAMA_BASE_URL and OLLAMA_MODEL from env', () => {
       const originalBase = process.env.OLLAMA_BASE_URL;
       const originalModel = process.env.OLLAMA_MODEL;
-      
+
       process.env.OLLAMA_BASE_URL = 'http://example:11434';
       process.env.OLLAMA_MODEL = 'mistral';
-      
+
       const provider = new OllamaProvider();
       expect((provider as any).baseUrl).toBe('http://example:11434');
       expect((provider as any).model).toBe('mistral');
-      
+
       // Restore
       if (originalBase !== undefined) process.env.OLLAMA_BASE_URL = originalBase;
       else delete process.env.OLLAMA_BASE_URL;
@@ -42,13 +42,13 @@ describe('Phase 2: Error handling when Ollama unavailable', () => {
     // Use a port that is guaranteed not to have Ollama
     const provider = new OllamaProvider({ baseUrl: 'http://127.0.0.1:65535' });
     const messages: ChatMessage[] = [{ role: 'user', content: 'hi' }];
-    
+
     await expect(provider.chat(messages)).rejects.toThrow(/Ollama/);
   });
 
   it('generateText() should throw with a network/connection error when Ollama is down', async () => {
     const provider = new OllamaProvider({ baseUrl: 'http://127.0.0.1:65535' });
-    
+
     await expect(provider.generateText('hello')).rejects.toThrow(/Ollama/);
   });
 
@@ -145,7 +145,7 @@ describe('Phase 2: Live integration (skipped if Ollama is not running)', () => {
       console.log('SKIP: Ollama not available for live integration test');
       return;
     }
-    
+
     const messages: ChatMessage[] = [
       { role: 'user', content: 'Say "pong" and nothing else.' }
     ];
@@ -160,7 +160,7 @@ describe('Phase 2: Live integration (skipped if Ollama is not running)', () => {
       console.log('SKIP: Ollama not available for live integration test');
       return;
     }
-    
+
     const response: AIResponse = await liveProvider.generateText('Reply with the single word: ping');
     expect(response.content).toBeDefined();
     expect(typeof response.content).toBe('string');
@@ -172,7 +172,7 @@ describe('Phase 2: Live integration (skipped if Ollama is not running)', () => {
       console.log('SKIP: Ollama not available for live integration test');
       return;
     }
-    
+
     // The LLM may or may not return strict JSON; both outcomes are valid
     const result: StructuredAIResponse<any> = await liveProvider.generateStructuredResponse(
       'Return JSON: {"answer":"pong"}',

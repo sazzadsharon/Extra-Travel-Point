@@ -2,9 +2,9 @@ import { AIProvider, ChatMessage, AIResponse, StructuredAIResponse, AIProviderCo
 
 export abstract class BaseAIProvider implements AIProvider {
   abstract name: string;
-  
+
   protected config: AIProviderConfig;
-  
+
   constructor(config: AIProviderConfig = {}) {
     this.config = {
       temperature: 0.7,
@@ -15,21 +15,21 @@ export abstract class BaseAIProvider implements AIProvider {
   }
 
   abstract chat(messages: ChatMessage[]): Promise<AIResponse>;
-  
+
   abstract generateText(prompt: string): Promise<AIResponse>;
-  
+
   abstract generateStructuredResponse<T>(
     prompt: string,
     schema: Record<string, unknown>
   ): Promise<StructuredAIResponse<T>>;
-  
+
   abstract isAvailable(): Promise<boolean>;
 
   protected validateMessages(messages: ChatMessage[]): void {
     if (!messages || messages.length === 0) {
       throw new Error('Messages array cannot be empty');
     }
-    
+
     for (const message of messages) {
       if (!message.role || !['system', 'user', 'assistant'].includes(message.role)) {
         throw new Error(`Invalid message role: ${message.role}`);

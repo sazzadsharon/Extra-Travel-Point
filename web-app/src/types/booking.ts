@@ -71,7 +71,7 @@ export interface User {
   updatedAt: string;
 }
 
-export type BookingStatus = 
+export type BookingStatus =
   | 'pending'
   | 'confirmed'
   | 'cancelled'
@@ -79,7 +79,7 @@ export type BookingStatus =
   | 'refunded'
   | 'expired';
 
-export type PaymentStatus = 
+export type PaymentStatus =
   | 'pending'
   | 'paid'
   | 'failed'

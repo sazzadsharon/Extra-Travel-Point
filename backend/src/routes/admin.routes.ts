@@ -58,10 +58,28 @@ router.get('/reports/summary', async (req: AuthRequest, res) => {
 router.get('/users', async (req: AuthRequest, res) => {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, phone: true, email: true, fullName: true, role: true, createdAt: true },
+      select: { id: true, phone: true, email: true, fullName: true, role: true, isActive: true, createdAt: true },
       orderBy: { createdAt: 'desc' }
     });
     return res.json(users);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/admin/users/:id/toggle
+router.patch('/users/:id/toggle', async (req: AuthRequest, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.role === 'admin') return res.status(403).json({ error: 'Cannot deactivate admin' });
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: !user.isActive },
+      select: { id: true, isActive: true }
+    });
+    return res.json({ message: 'User status updated', user: updated });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }

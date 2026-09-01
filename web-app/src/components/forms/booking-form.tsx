@@ -62,7 +62,7 @@ export default function BookingForm({
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) passengerErrors.push('Invalid email');
       if (!p.phone.trim()) passengerErrors.push('Phone is required');
       else if (!/^01[3-9]\d{8}$/.test(p.phone)) passengerErrors.push('Invalid BD phone (01X-XXXXXXXX)');
-      
+
       if (passengerErrors.length > 0) {
         newErrors[`${prefix}error`] = passengerErrors.join(', ');
         hasErrors = true;

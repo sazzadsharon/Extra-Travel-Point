@@ -1,105 +1,37 @@
-# Dependencies
+﻿# Dependencies
 node_modules/
-.yarn/install-state.gz
-.pnp.*
 
-# Testing
-coverage/
-.nyc_output/
-.jest/
+# Next.js
+.next/
+out/
 
-# Build outputs
-build/
-dist/
-.lib/
+# Expo / React Native
+.expo/
+.expo-shared/
+
+# Build / TypeScript
 *.tsbuildinfo
+dist/
+build/
 
-# Environment files (secrets)
-.env
-.env.local
-.env.development
-.env.production
-.env.staging
+# Cache
+node_modules/.cache/
+.cache/
 
 # Logs
-logs/
 *.log
-*.log.*
-
-# Database
-sqlite-*.db
-*.db
-*.sqlite
-
-# Temporary files
-tmp/
-.temp/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Cloud services
-.cloud/
-.aws/
-.gcp/
-
-# Package managers
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-npm-debug.log.*
+pnpm-debug.log*
 
-# Runtime data
-*.pid
-*.seed
-*.pid.lock
+# OS files
+desktop.ini
+Thumbs.db
 
-# Lint
-.eslintcache
-.eslintignore
-.jshintrc
+# Environment
+.env
+.env.local
+.env.*.local
 
-# Misc
-.DS_Store
-.idea
-.vscode
-*.log
-*.log.*
-*.env
-*.env.*
-
-# ETP specific
-backend/.env
-backend/pid.txt
-backend/smoke.cjs
-backend/backend.log
-backend/test.log
-backend/server.log
-backend/seed.log
-
-web-app/.env
-
-# Archives
-*.zip
-*.rar
-*.tar
-*.gz
-
-# Generated content
-generated/
-
-# Backup files
-*backup*
-*backup*
-
-# Temporary build files
-dist/
-build/
+# Next.js build cache
+web-app/tsconfig.tsbuildinfo

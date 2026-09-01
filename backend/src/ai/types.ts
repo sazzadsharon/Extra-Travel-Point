@@ -31,16 +31,16 @@ export interface AIProviderConfig {
 
 export interface AIProvider {
   name: string;
-  
+
   chat(messages: ChatMessage[]): Promise<AIResponse>;
-  
+
   generateText(prompt: string): Promise<AIResponse>;
-  
+
   generateStructuredResponse<T>(
     prompt: string,
     schema: Record<string, unknown>
   ): Promise<StructuredAIResponse<T>>;
-  
+
   isAvailable(): Promise<boolean>;
 }
 
