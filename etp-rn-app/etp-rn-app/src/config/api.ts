@@ -54,6 +54,10 @@ export const ENDPOINTS = {
   // QR
   QR: '/qr',
   VERIFY_QR: '/qr/verify',
+  // Travel Pass (shared with Web)
+  TRAVEL_PASS_ISSUE: '/travel-passes',
+  TRAVEL_PASS_BY_CODE: (code: string) => `/travel-passes/${code}`,
+  TRAVEL_PASS_VERIFY: '/travel-passes/verify',
 
   // Hotels
   HOTELS: '/hotels',

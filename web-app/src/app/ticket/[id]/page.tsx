@@ -7,8 +7,8 @@ import {
   CheckCircle, Bus, MapPin, Calendar, Users, CreditCard, Download, Share2, ArrowLeft, Ticket, AlertCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface BookingDetail {
@@ -46,10 +46,50 @@ interface BookingDetail {
   };
 }
 
-interface QrResponse {
-  bookingId: number;
-  qrObject: Record<string, unknown>;
-  qrDataUrl: string;
+interface TicketQrObject {
+  payload: Record<string, unknown>;
+  signature: string;
+}
+
+interface Ticket {
+  ticketId: string;
+  bookingCode: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  category: string;
+  route: string | null;
+  travelDate: string;
+  bookingDate: string;
+  seats: string[];
+  passengers: Array<{
+    name: string;
+    email: string;
+    phone: string;
+    age?: number;
+    gender?: 'male' | 'female' | 'other';
+    seatNumber?: string;
+  }> | null;
+  fare: {
+    total: number;
+    discount: number;
+    final: number;
+    currency: string;
+  };
+  provider: {
+    id: number;
+    businessName: string;
+    category: string;
+    city: string | null;
+    phone: string | null;
+  };
+  customer: { id: number; fullName: string | null; phone: string };
+  service: { id: number; name: string; route: string | null } | null;
+  qr: {
+    object: TicketQrObject;
+    dataUrl: string | null;
+    validFrom: string;
+    validUntil: string;
+  } | null;
 }
 
 export default function TicketPage() {
@@ -58,7 +98,8 @@ export default function TicketPage() {
   const { user } = useAuth();
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
-  const [qrData, setQrData] = useState<QrResponse | null>(null);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [paymentPending, setPaymentPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,20 +113,23 @@ export default function TicketPage() {
     setError(null);
 
     try {
-      const { default: axios } = await import('axios');
-
-      const bookingRes = await axios.get<BookingDetail>(
-        `${API_CONFIG.API_BASE_URL}/bookings/${bookingId}`
+      const bookingRes = await api.get<BookingDetail>(
+        `/bookings/${bookingId}`
       );
       setBooking(bookingRes.data);
 
+      // Secure, payment-gated e-ticket (contains the QR). Backend returns 402
+      // until payment is verified, so unpaid bookings do not expose a QR.
       try {
-        const qrRes = await axios.get<QrResponse>(
-          `${API_CONFIG.API_BASE_URL}/qr/generate/${bookingId}`
+        const ticketRes = await api.get<Ticket>(
+          `/bookings/${bookingId}/ticket`
         );
-        setQrData(qrRes.data);
-      } catch {
-        /* QR is optional */
+        setTicket(ticketRes.data);
+      } catch (ticketErr: any) {
+        if (ticketErr?.response?.status === 402) {
+          setPaymentPending(true);
+        }
+        // Otherwise QR stays unavailable — booking details remain visible.
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load ticket');
@@ -107,9 +151,9 @@ export default function TicketPage() {
   };
 
   const downloadQrCode = () => {
-    if (!qrData) return;
+    if (!ticket?.qr?.dataUrl) return;
     const link = document.createElement('a');
-    link.href = qrData.qrDataUrl;
+    link.href = ticket.qr.dataUrl;
     link.download = `etp-ticket-${bookingId}.png`;
     link.click();
   };
@@ -221,7 +265,7 @@ export default function TicketPage() {
                   <Ticket className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-100">Extra Travel Point · E-Ticket</p>
+                  <p className="text-sm text-blue-100">Extra Travel Point · Travel Pass</p>
                   <p className="text-xl font-bold">#{booking.bookingCode}</p>
                 </div>
               </div>
@@ -244,23 +288,27 @@ export default function TicketPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center sticky top-24"
             >
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Boarding QR</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Travel Pass QR</h2>
 
-              {qrData && qrData.qrDataUrl ? (
+              {paymentPending ? (
+                <div className="w-40 h-40 mx-auto bg-gray-50 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">
+                  <span className="text-gray-400 text-sm">Payment required</span>
+                </div>
+              ) : ticket?.qr?.dataUrl ? (
                 <div
                   className="w-40 h-40 mx-auto rounded-lg border border-gray-200 mb-4 flex items-center justify-center overflow-hidden"
                   role="img"
                   aria-label="Ticket QR Code"
                   style={{
-                    backgroundImage: `url(${qrData.qrDataUrl})`,
+                    backgroundImage: `url(${ticket.qr.dataUrl})`,
                     backgroundSize: 'contain',
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'center'
                   }}
                 />
-              ) : qrData?.qrObject ? (
+              ) : ticket?.qr?.object ? (
                 <div className="w-40 h-40 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
-                  <QRCodeSVG value={JSON.stringify(qrData.qrObject)} size={160} level="H" />
+                  <QRCodeSVG value={JSON.stringify(ticket.qr.object)} size={160} level="H" />
                 </div>
               ) : (
                 <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">

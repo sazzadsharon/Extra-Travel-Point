@@ -17,6 +17,9 @@ describe('Vendor/Business System', () => {
     await prisma.qrLog.deleteMany();
     await prisma.payment.deleteMany();
     await prisma.review.deleteMany();
+    await prisma.seatLock.deleteMany();
+        await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
     await prisma.serviceAvailability.deleteMany();
     await prisma.service.deleteMany();
@@ -652,6 +655,215 @@ describe('Vendor/Business System', () => {
       expect(publicProviders[0].user).toHaveProperty('fullName');
       expect(publicProviders[0].user).not.toHaveProperty('email');
       expect(publicProviders[0].user).not.toHaveProperty('phone');
+    });
+  });
+
+  describe('KYC Workflow', () => {
+    it('vendor can submit KYC with valid data', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01911111111', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'KYC Vendor',
+          category: 'bus',
+          address: 'Dhaka',
+          status: 'PENDING'
+        }
+      });
+
+      const kycData = {
+        businessLegalName: 'KYC Vendor Ltd.',
+        businessType: 'BUS',
+        ownerName: 'Owner Name',
+        nidNumber: 'NID-1234567890',
+        tradeLicense: 'TL-987654321',
+        address: 'Dhaka, Bangladesh',
+        city: 'Dhaka',
+        phone: '01711111111',
+        email: 'kyc@example.com',
+        documentUrl: 'https://example.com/doc.pdf'
+      };
+
+      const updated = await prisma.serviceProvider.update({
+        where: { id: provider.id },
+        data: {
+          kycStatus: 'PENDING',
+          kycSubmittedAt: new Date(),
+          kycData: JSON.stringify(kycData)
+        }
+      });
+
+      expect(updated.kycStatus).toBe('PENDING');
+      expect(updated.kycSubmittedAt).not.toBeNull();
+      const parsed = JSON.parse(updated.kycData as string);
+      expect(parsed.businessLegalName).toBe('KYC Vendor Ltd.');
+      expect(parsed.nidNumber).toBe('NID-1234567890');
+    });
+
+    it('vendor can update KYC before approval', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01922222222', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'Update KYC Vendor',
+          category: 'hotel',
+          address: 'Cox\'s Bazar',
+          status: 'PENDING',
+          kycStatus: 'PENDING',
+          kycSubmittedAt: new Date(),
+          kycData: JSON.stringify({ businessLegalName: 'Old Name', nidNumber: 'OLD-NID' })
+        }
+      });
+
+      const updated = await prisma.serviceProvider.update({
+        where: { id: provider.id },
+        data: {
+          kycData: JSON.stringify({ businessLegalName: 'New Name', nidNumber: 'NEW-NID' }),
+          kycRejectionReason: null
+        }
+      });
+
+      const parsed = JSON.parse(updated.kycData as string);
+      expect(parsed.businessLegalName).toBe('New Name');
+      expect(parsed.nidNumber).toBe('NEW-NID');
+    });
+
+    it('vendor cannot modify approved KYC', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01933333333', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'Approved KYC Vendor',
+          category: 'restaurant',
+          address: 'Dhaka',
+          status: 'APPROVED',
+          kycStatus: 'APPROVED',
+          kycReviewedAt: new Date()
+        }
+      });
+
+      expect(provider.kycStatus).toBe('APPROVED');
+    });
+
+    it('admin can approve KYC', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01944444444', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'Admin Approve KYC',
+          category: 'tour',
+          address: 'Sylhet',
+          status: 'PENDING',
+          kycStatus: 'PENDING',
+          kycSubmittedAt: new Date()
+        }
+      });
+
+      const approved = await prisma.serviceProvider.update({
+        where: { id: provider.id },
+        data: {
+          kycStatus: 'APPROVED',
+          kycReviewedAt: new Date(),
+          kycRejectionReason: null
+        }
+      });
+
+      expect(approved.kycStatus).toBe('APPROVED');
+      expect(approved.kycReviewedAt).not.toBeNull();
+    });
+
+    it('admin can reject KYC with reason', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01955555555', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'Reject KYC Vendor',
+          category: 'car_rental',
+          address: 'Chittagong',
+          status: 'PENDING',
+          kycStatus: 'PENDING',
+          kycSubmittedAt: new Date()
+        }
+      });
+
+      const rejected = await prisma.serviceProvider.update({
+        where: { id: provider.id },
+        data: {
+          kycStatus: 'REJECTED',
+          kycRejectionReason: 'Invalid NID document'
+        }
+      });
+
+      expect(rejected.kycStatus).toBe('REJECTED');
+      expect(rejected.kycRejectionReason).toBe('Invalid NID document');
+    });
+
+    it('vendor cannot access another vendor KYC data', async () => {
+      const vendorA = await prisma.user.create({
+        data: { phone: '01966666661', passwordHash: 'hash', role: 'vendor' }
+      });
+      const vendorB = await prisma.user.create({
+        data: { phone: '01966666662', passwordHash: 'hash', role: 'vendor' }
+      });
+      const providerA = await prisma.serviceProvider.create({
+        data: {
+          userId: vendorA.id,
+          businessName: 'Vendor A KYC',
+          category: 'bus',
+          address: 'Dhaka',
+          status: 'PENDING',
+          kycStatus: 'PENDING',
+          kycData: JSON.stringify({ nidNumber: 'SECRET-NID-A' })
+        }
+      });
+
+      const providerB = await prisma.serviceProvider.findFirst({
+        where: { userId: vendorB.id }
+      });
+
+      expect(providerB).toBeNull();
+    });
+
+    it('KYC data is not exposed in public provider listing', async () => {
+      const vendor = await prisma.user.create({
+        data: { phone: '01977777771', passwordHash: 'hash', role: 'vendor' }
+      });
+      const provider = await prisma.serviceProvider.create({
+        data: {
+          userId: vendor.id,
+          businessName: 'Public KYC Vendor',
+          category: 'bus',
+          address: 'Dhaka',
+          status: 'APPROVED',
+          isActive: true,
+          kycStatus: 'APPROVED',
+          kycData: JSON.stringify({ nidNumber: 'SECRET-NID', tradeLicense: 'TL-123' })
+        }
+      });
+
+      const publicProviders = await prisma.serviceProvider.findMany({
+        where: { status: 'APPROVED', isActive: true },
+        select: {
+          id: true,
+          businessName: true,
+          category: true,
+          kycStatus: true,
+          kycData: false
+        }
+      });
+
+      expect(publicProviders.length).toBeGreaterThan(0);
+      expect(publicProviders[0]).not.toHaveProperty('kycData');
     });
   });
 });

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../prisma';
 import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
+import { resolveCommissionRate } from '../utils/commission';
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.get('/dashboard/stats', authenticateJWT, requireRole(['vendor', 'admin'])
     const totalBookings = bookings.length;
     const completedBookings = bookings.filter(b => b.status === 'completed' || b.status === 'confirmed').length;
     const totalSales = bookings.reduce((sum, b) => sum + (b.paymentStatus === 'paid' ? b.finalAmount : 0), 0);
-    const commissionRate = provider?.commissionRate || 10.0;
+    const commissionRate = await resolveCommissionRate({ providerRate: provider?.commissionRate });
     const totalCommission = (totalSales * commissionRate) / 100;
     const netPayout = totalSales - totalCommission;
 

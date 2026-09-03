@@ -37,21 +37,26 @@ router.post('/assistant', async (req: Request, res: Response) => {
     let aiMessage = '';
     const provider = await aiFactory.getDefaultProvider();
 
-    if (provider) {
-      try {
-        const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
-        A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
-        Provide a helpful, concise response in Bengali mixed with English.`;
+    if (!provider) {
+      return res.status(503).json({
+        error: 'AI assistant is temporarily unavailable. No AI provider is configured or reachable.'
+      });
+    }
 
-        const response = await provider.generateText(
-          `${context}\n\nUser query: ${prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`}`
-        );
-        aiMessage = response.content;
-      } catch (aiError) {
-        aiMessage = `আপনার ৳${budget} বাজেটে ${dest} ৩ দিনের জন্য বাস ৳${busFare}, হোটেল ৳${hotelCost}, খাবার ৳${foodEstimate}, লোকাল ট্রান্সপোর্ট ৳${localTransport} এবং ৳${emergencyFund} ইমার্জেন্সি ফান্ড বরাদ্দ করা হয়েছে।`;
-      }
-    } else {
-      aiMessage = `আপনার ৳${budget} বাজেটে ${dest} ৩ দিনের জন্য বাস ৳${busFare}, হোটেল ৳${hotelCost}, খাবার ৳${foodEstimate}, লোকাল ট্রান্সপোর্ট ৳${localTransport} এবং ৳${emergencyFund} ইমার্জেন্সি ফান্ড বরাদ্দ করা হয়েছে।`;
+    try {
+      const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
+      A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
+      Provide a helpful, concise response in Bengali mixed with English.`;
+
+      const response = await provider.generateText(
+        `${context}\n\nUser query: ${prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`}`
+      );
+      aiMessage = response.content;
+    } catch (aiError: any) {
+      return res.status(503).json({
+        error: 'AI assistant failed to generate a response.',
+        details: aiError?.message || 'Unknown provider error'
+      });
     }
 
     return res.json({

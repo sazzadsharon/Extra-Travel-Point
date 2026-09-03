@@ -2,13 +2,29 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import api from '../../lib/apiClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { API_CONFIG } from '../../config/api';
 import {
   Store, Package, CheckCircle, Clock, XCircle, Users, Wallet,
-  Plus, List, Ticket, AlertCircle, Loader2
+  Plus, List, Ticket, AlertCircle, Loader2, Shield, TrendingUp, Banknote
 } from 'lucide-react';
 import type { VendorDashboard, Vendor, VendorStatus } from '../../types/vendor';
+
+interface VendorEarnings {
+  providerId: number;
+  balance: {
+    currency: string;
+    grossSales: number;
+    commissionTotal: number;
+    netEarnings: number;
+    pendingBalance: number;
+    paidOut: number;
+    availableBalance: number;
+    payoutRequested: number;
+  };
+  settlementCount: number;
+  commissionRate: number;
+}
 
 const STATUS_STYLES: Record<VendorStatus, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -21,6 +37,7 @@ export default function VendorDashboardPage() {
   const { user } = useAuth();
   const [dashboard, setDashboard] = useState<VendorDashboard | null>(null);
   const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [earnings, setEarnings] = useState<VendorEarnings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,13 +45,14 @@ export default function VendorDashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { default: axios } = await import('axios');
-      const [dRes, mRes] = await Promise.all([
-        axios.get<VendorDashboard>(`${API_CONFIG.API_BASE_URL}/vendors/dashboard`),
-        axios.get<Vendor>(`${API_CONFIG.API_BASE_URL}/vendors/me`).catch(() => null)
+      const [dRes, mRes, eRes] = await Promise.all([
+        api.get<VendorDashboard>(`/vendors/dashboard`),
+        api.get<Vendor>(`/vendors/me`).catch(() => null),
+        api.get<VendorEarnings>(`/vendors/me/earnings`).catch(() => null)
       ]);
       setDashboard(dRes.data);
       setVendor(mRes?.data ?? null);
+      setEarnings(eRes?.data ?? null);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load dashboard');
     } finally {
@@ -89,8 +107,20 @@ export default function VendorDashboardPage() {
             {status === 'PENDING'
               ? 'Your account is pending verification. You can prepare your profile but cannot publish services until approved.'
               : status === 'REJECTED'
-              ? `Your application was rejected.${vendor?.rejectionReason ? ` Reason: ${vendor.rejectionReason}` : ''}`
+              ? `Your application was rejected.${vendor?.rejectionReason ? ` Reason: ${vendor?.rejectionReason}` : ''}`
               : 'Your account is currently suspended. Please contact support.'}
+          </div>
+        )}
+
+        {dashboard?.provider?.kycStatus && dashboard.provider.kycStatus !== 'NOT_SUBMITTED' && (
+          <div className={`mb-6 px-4 py-3 rounded-lg flex items-center gap-2 ${
+            dashboard.provider.kycStatus === 'APPROVED' ? 'bg-green-50 border border-green-200 text-green-800' :
+            dashboard.provider.kycStatus === 'REJECTED' ? 'bg-red-50 border border-red-200 text-red-800' :
+            'bg-yellow-50 border border-yellow-200 text-yellow-800'
+          }`}>
+            <Shield className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium">KYC: {dashboard.provider.kycStatus.replace('_', ' ')}</span>
+            {dashboard.provider.kycRejectionReason && <span className="text-sm ml-2">({dashboard.provider.kycRejectionReason})</span>}
           </div>
         )}
 
@@ -111,12 +141,38 @@ export default function VendorDashboardPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <ActionCard href="/vendor/profile" icon={<Store className="w-5 h-5" />} title="Business Profile" />
+          <ActionCard href="/vendor/kyc" icon={<Shield className="w-5 h-5" />} title="KYC Verification" />
           <ActionCard href="/vendor/services/new" icon={<Plus className="w-5 h-5" />} title="Add Service" disabled={status !== 'APPROVED'} />
           <ActionCard href="/vendor/services" icon={<List className="w-5 h-5" />} title="Manage Services" />
           <ActionCard href="/vendor/bookings" icon={<Ticket className="w-5 h-5" />} title="Bookings" />
+          <ActionCard href="/vendor/payouts" icon={<Banknote className="w-5 h-5" />} title="Earnings & Payouts" />
         </div>
 
-        {status === 'APPROVED' && dashboard && (
+        {status === 'APPROVED' && earnings && (
+          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" /> Earnings
+              </h2>
+              <Link href="/vendor/payouts" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                View Settlements →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-4">
+              <MoneyCell label="Gross Sales" value={earnings.balance.grossSales} />
+              <MoneyCell label="ETP Commission" value={earnings.balance.commissionTotal} tone="negative" />
+              <MoneyCell label="Net Earnings" value={earnings.balance.netEarnings} tone="positive" />
+              <MoneyCell label="Available Balance" value={earnings.balance.availableBalance} tone="positive" highlight />
+              <MoneyCell label="Pending" value={earnings.balance.pendingBalance} />
+              <MoneyCell label="Paid Out" value={earnings.balance.paidOut} />
+            </div>
+            <p className="text-xs text-gray-400">
+              Settlement ledger is authoritative. Balance is calculated server-side.
+            </p>
+          </div>
+        )}
+
+        {status === 'APPROVED' && dashboard && !earnings && (
           <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Commission Summary</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -171,5 +227,30 @@ function ActionCard({ href, icon, title, disabled }: { href: string; icon: React
       <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">{icon}</div>
       <span className="font-medium text-gray-900">{title}</span>
     </Link>
+  );
+}
+
+function MoneyCell({
+  label,
+  value,
+  tone,
+  highlight
+}: {
+  label: string;
+  value: number;
+  tone?: 'positive' | 'negative';
+  highlight?: boolean;
+}) {
+  const valueClass =
+    tone === 'positive'
+      ? 'text-green-700'
+      : tone === 'negative'
+      ? 'text-red-600'
+      : 'text-gray-900';
+  return (
+    <div className={`rounded-lg p-3 ${highlight ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'}`}>
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className={`font-bold ${valueClass}`}>BDT {Number(value || 0).toFixed(2)}</p>
+    </div>
   );
 }

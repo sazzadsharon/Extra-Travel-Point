@@ -4,12 +4,13 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../prisma';
 import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
+import { resolveCommissionRate } from '../utils/commission';
 import { notifyUser } from '../utils/notifications';
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-refresh-secret-change-me' : '');
+const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || '';
 
 // Fields a vendor is allowed to edit on their own profile
 const EDITABLE_PROVIDER_FIELDS = [
@@ -598,7 +599,7 @@ router.get('/dashboard', authenticateJWT, requireRole(['vendor']), async (req: A
 
     const paidBookings = bookings.filter(b => b.paymentStatus === 'paid');
     const grossRevenue = paidBookings.reduce((sum, b) => sum + b.finalAmount, 0);
-    const commissionRate = provider?.commissionRate || 10.0;
+    const commissionRate = await resolveCommissionRate({ providerRate: provider?.commissionRate });
     const totalCommission = (grossRevenue * commissionRate) / 100;
     const vendorPayable = grossRevenue - totalCommission;
 
@@ -609,7 +610,11 @@ router.get('/dashboard', authenticateJWT, requireRole(['vendor']), async (req: A
             businessName: provider.businessName,
             status: provider.status,
             isVerified: provider.isVerified,
-            category: provider.category
+            category: provider.category,
+            kycStatus: provider.kycStatus,
+            kycSubmittedAt: provider.kycSubmittedAt,
+            kycReviewedAt: provider.kycReviewedAt,
+            kycRejectionReason: provider.kycRejectionReason
           }
         : null,
       totalServices: services.length,
@@ -630,6 +635,259 @@ router.get('/dashboard', authenticateJWT, requireRole(['vendor']), async (req: A
         currency: 'BDT'
       }
     });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// KYC WORKFLOW
+// ---------------------------------------------------------------------------
+const kycSubmitSchema = z.object({
+  businessLegalName: z.string().min(2),
+  businessType: z.string().min(2),
+  ownerName: z.string().min(2),
+  nidNumber: z.string().min(3).max(30),
+  tradeLicense: z.string().optional(),
+  address: z.string().min(3),
+  city: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional(),
+  documentUrl: z.string().url().optional()
+});
+
+const kycUpdateSchema = z.object({
+  businessLegalName: z.string().min(2).optional(),
+  businessType: z.string().min(2).optional(),
+  ownerName: z.string().min(2).optional(),
+  nidNumber: z.string().min(3).max(30).optional(),
+  tradeLicense: z.string().optional(),
+  address: z.string().min(3).optional(),
+  city: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional(),
+  documentUrl: z.string().url().optional()
+});
+
+// POST /api/v1/vendors/me/kyc
+router.post('/me/kyc', authenticateJWT, requireRole(['vendor']), async (req: AuthRequest, res) => {
+  try {
+    const provider = await prisma.serviceProvider.findFirst({
+      where: { userId: req.user!.id }
+    });
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor profile not found' });
+    }
+
+    const parse = kycSubmitSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+
+    if (provider.kycStatus === 'APPROVED') {
+      return res.status(400).json({ error: 'KYC is already approved' });
+    }
+
+    const kycData = JSON.stringify(parse.data);
+
+    const updated = await prisma.serviceProvider.update({
+      where: { id: provider.id },
+      data: {
+        kycStatus: 'PENDING',
+        kycSubmittedAt: new Date(),
+        kycData,
+        kycRejectionReason: null,
+        kycReviewedAt: null
+      }
+    });
+
+    return res.json({ message: 'KYC submitted successfully', kycStatus: updated.kycStatus, submittedAt: updated.kycSubmittedAt });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/v1/vendors/me/kyc
+router.get('/me/kyc', authenticateJWT, requireRole(['vendor']), async (req: AuthRequest, res) => {
+  try {
+    const provider = await prisma.serviceProvider.findFirst({
+      where: { userId: req.user!.id },
+      select: {
+        id: true,
+        kycStatus: true,
+        kycSubmittedAt: true,
+        kycReviewedAt: true,
+        kycRejectionReason: true,
+        kycData: true,
+        businessName: true,
+        category: true
+      }
+    });
+
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor profile not found' });
+    }
+
+    let kycData = null;
+    if (provider.kycData) {
+      try {
+        kycData = JSON.parse(provider.kycData);
+      } catch {
+        kycData = null;
+      }
+    }
+
+    return res.json({
+      ...provider,
+      kycData,
+      kycDocumentUrl: kycData?.documentUrl || null
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/vendors/me/kyc
+router.patch('/me/kyc', authenticateJWT, requireRole(['vendor']), async (req: AuthRequest, res) => {
+  try {
+    const provider = await prisma.serviceProvider.findFirst({
+      where: { userId: req.user!.id }
+    });
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor profile not found' });
+    }
+
+    if (provider.kycStatus === 'APPROVED') {
+      return res.status(400).json({ error: 'KYC is already approved and cannot be modified' });
+    }
+
+    const parse = kycUpdateSchema.safeParse(req.body);
+    if (!parse.success) {
+      return res.status(400).json({ error: parse.error.issues });
+    }
+
+    let currentKycData: any = {};
+    if (provider.kycData) {
+      try { currentKycData = JSON.parse(provider.kycData); } catch { /* ignore */ }
+    }
+
+    const mergedData = { ...currentKycData, ...parse.data };
+    const kycDataString = JSON.stringify(mergedData);
+
+    const updated = await prisma.serviceProvider.update({
+      where: { id: provider.id },
+      data: {
+        kycData: kycDataString,
+        kycStatus: provider.kycStatus === 'NOT_SUBMITTED' ? 'PENDING' : provider.kycStatus,
+        kycSubmittedAt: provider.kycSubmittedAt || new Date(),
+        kycRejectionReason: null
+      }
+    });
+
+    return res.json({ message: 'KYC updated successfully', kycStatus: updated.kycStatus });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// ADMIN KYC REVIEW
+// ---------------------------------------------------------------------------
+// GET /api/v1/admin/vendors/:id/kyc
+router.get('/vendors/:id/kyc', authenticateJWT, requireRole(['admin']), async (req: AuthRequest, res) => {
+  try {
+    const providerId = parseInt(req.params.id);
+    const provider = await prisma.serviceProvider.findUnique({
+      where: { id: providerId },
+      include: {
+        user: { select: { id: true, fullName: true, email: true, phone: true, createdAt: true } }
+      }
+    });
+
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    let kycData = null;
+    if (provider.kycData) {
+      try { kycData = JSON.parse(provider.kycData); } catch { kycData = null; }
+    }
+
+    return res.json({
+      id: provider.id,
+      businessName: provider.businessName,
+      category: provider.category,
+      status: provider.status,
+      kycStatus: provider.kycStatus,
+      kycSubmittedAt: provider.kycSubmittedAt,
+      kycReviewedAt: provider.kycReviewedAt,
+      kycRejectionReason: provider.kycRejectionReason,
+      kycData,
+      user: provider.user
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/admin/vendors/:id/kyc/approve
+router.patch('/vendors/:id/kyc/approve', authenticateJWT, requireRole(['admin']), async (req: AuthRequest, res) => {
+  try {
+    const providerId = parseInt(req.params.id);
+    const provider = await prisma.serviceProvider.findUnique({ where: { id: providerId } });
+
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    if (provider.kycStatus === 'APPROVED') {
+      return res.status(400).json({ error: 'KYC is already approved' });
+    }
+
+    const updated = await prisma.serviceProvider.update({
+      where: { id: providerId },
+      data: {
+        kycStatus: 'APPROVED',
+        kycReviewedAt: new Date(),
+        kycRejectionReason: null
+      }
+    });
+
+    return res.json({ message: 'KYC approved successfully', kycStatus: updated.kycStatus, reviewedAt: updated.kycReviewedAt });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH /api/v1/admin/vendors/:id/kyc/reject
+router.patch('/vendors/:id/kyc/reject', authenticateJWT, requireRole(['admin']), async (req: AuthRequest, res) => {
+  try {
+    const providerId = parseInt(req.params.id);
+    const { reason } = req.body as { reason?: string };
+
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ error: 'Rejection reason is required' });
+    }
+
+    const provider = await prisma.serviceProvider.findUnique({ where: { id: providerId } });
+    if (!provider) {
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    if (provider.kycStatus === 'APPROVED') {
+      return res.status(400).json({ error: 'Cannot reject an already approved KYC' });
+    }
+
+    const updated = await prisma.serviceProvider.update({
+      where: { id: providerId },
+      data: {
+        kycStatus: 'REJECTED',
+        kycReviewedAt: new Date(),
+        kycRejectionReason: reason.trim()
+      }
+    });
+
+    return res.json({ message: 'KYC rejected successfully', kycStatus: updated.kycStatus, reason: updated.kycRejectionReason });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }

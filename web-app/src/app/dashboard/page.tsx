@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import api from '../../lib/apiClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { API_CONFIG } from '../../config/api';
 import {
   Bus,
+  Plane,
+  Hotel,
   Calendar,
   Clock,
   MapPin,
@@ -20,7 +22,11 @@ import {
   QrCode,
   Download,
   Share2,
-  Loader2
+  Loader2,
+  Search,
+  Ticket,
+  Wallet,
+  Package
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -39,6 +45,12 @@ interface Booking {
   status: string;
   paymentStatus: string;
   qrCode?: string;
+  serviceId?: number | null;
+  service?: {
+    id: number;
+    name: string;
+    serviceType?: string;
+  } | null;
   createdAt: string;
   provider?: {
     businessName: string;
@@ -60,15 +72,50 @@ interface Booking {
   }>;
 }
 
+interface DashboardStats {
+  total: number;
+  upcoming: number;
+  completed: number;
+  cancelled: number;
+  paid: number;
+  totalSpent: number;
+  byCategory: {
+    bus: number;
+    flight: number;
+    hotel: number;
+    food: number;
+    tour: number;
+    service?: number;
+  };
+  nextTrip: {
+    id: number;
+    bookingCode: string;
+    category: string;
+    travelDate: string;
+    status: string;
+  } | null;
+}
+
 type TabFilter = 'all' | 'upcoming' | 'completed' | 'cancelled';
+type CategoryFilter = 'all' | 'bus' | 'flight' | 'hotel' | 'food' | 'tour' | 'service';
+
+const categoryIcons: Record<string, React.ReactNode> = {
+  bus: <Bus className="w-4 h-4" />,
+  flight: <Plane className="w-4 h-4" />,
+  hotel: <Hotel className="w-4 h-4" />,
+  service: <Package className="w-4 h-4" />
+};
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuth();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabFilter>('upcoming');
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
@@ -77,13 +124,42 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { default: axios } = await import('axios');
-      const response = await axios.get<Booking[]>(`${API_CONFIG.API_BASE_URL}/bookings`);
-      setBookings(response.data);
+      const params = new URLSearchParams();
+      // Backend category filter covers bus/flight/hotel/food/tour. For "service",
+      // we fetch all and filter client-side by serviceId (service bookings can
+      // share categories like 'tour' or 'hotel' depending on their serviceType).
+      if (activeCategory !== 'all' && activeCategory !== 'service') {
+        params.append('category', activeCategory);
+      }
+      if (activeTab === 'upcoming') params.append('status', 'pending');
+      else if (activeTab === 'completed') params.append('status', 'confirmed');
+      else if (activeTab === 'cancelled') params.append('status', 'cancelled');
+      if (searchQuery.trim()) params.append('search', searchQuery.trim());
+
+      const response = await api.get<Booking[]>(
+        `/bookings?${params.toString()}`
+      );
+      let list = response.data;
+      if (activeCategory === 'service') {
+        list = list.filter((b) => b.serviceId != null);
+      }
+      setBookings(list);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load bookings');
     } finally {
       setIsLoading(false);
+    }
+  }, [user, activeCategory, activeTab, searchQuery]);
+
+  const fetchStats = useCallback(async () => {
+    if (!user) return;
+    try {
+      const response = await api.get<DashboardStats>(
+        `/bookings/stats/summary`
+      );
+      setStats(response.data);
+    } catch {
+      /* Stats are optional */
     }
   }, [user]);
 
@@ -92,6 +168,12 @@ export default function DashboardPage() {
       fetchBookings();
     }
   }, [user, fetchBookings]);
+
+  useEffect(() => {
+    if (user) {
+      fetchStats();
+    }
+  }, [user, fetchStats]);
 
   const filteredBookings = bookings.filter(b => {
     if (activeTab === 'upcoming') {
@@ -109,9 +191,9 @@ export default function DashboardPage() {
   const cancelBooking = async (id: number) => {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
     try {
-      const { default: axios } = await import('axios');
-      await axios.patch(`${API_CONFIG.API_BASE_URL}/bookings/${id}/cancel`);
+      await api.patch(`/bookings/${id}/cancel`);
       fetchBookings();
+      fetchStats();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to cancel booking');
     }
@@ -171,14 +253,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Calendar className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{upcomingCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.upcoming ?? upcomingCount}</p>
                 <p className="text-sm text-gray-500">Upcoming</p>
               </div>
             </div>
@@ -189,7 +271,7 @@ export default function DashboardPage() {
                 <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{completedCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.completed ?? completedCount}</p>
                 <p className="text-sm text-gray-500">Completed</p>
               </div>
             </div>
@@ -200,7 +282,7 @@ export default function DashboardPage() {
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{cancelledCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.cancelled ?? cancelledCount}</p>
                 <p className="text-sm text-gray-500">Cancelled</p>
               </div>
             </div>
@@ -208,17 +290,41 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-purple-600" />
+                <Wallet className="w-6 h-6 text-purple-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {bookings.filter(b => b.paymentStatus === 'paid').length}
+                  BDT {stats?.totalSpent?.toFixed(0) ?? 0}
                 </p>
-                <p className="text-sm text-gray-500">Paid</p>
+                <p className="text-sm text-gray-500">Total Spent</p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Next Trip Banner */}
+        {stats?.nextTrip && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 mb-8 text-white"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-200 text-sm">Next Trip</p>
+                <p className="text-xl font-bold capitalize">{stats.nextTrip.category} Booking</p>
+                <p className="text-blue-200 text-sm">{formatDate(stats.nextTrip.travelDate)}</p>
+              </div>
+              <Link
+                href={`/ticket/${stats.nextTrip.id}`}
+                className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Ticket className="w-4 h-4" />
+                View Pass
+              </Link>
+            </div>
+          </motion.div>
+        )}
 
         {/* Error */}
         {error && (
@@ -227,7 +333,52 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search by booking code..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            { key: 'all', label: 'All', icon: null },
+            { key: 'bus', label: 'Bus', icon: <Bus className="w-4 h-4" /> },
+            { key: 'flight', label: 'Flight', icon: <Plane className="w-4 h-4" /> },
+            { key: 'hotel', label: 'Hotel', icon: <Hotel className="w-4 h-4" /> },
+            { key: 'service', label: 'Vendor Services', icon: <Package className="w-4 h-4" /> }
+          ].map(cat => (
+            <button
+              key={cat.key}
+              onClick={() => setActiveCategory(cat.key as CategoryFilter)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                activeCategory === cat.key
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+              }`}
+            >
+              {cat.icon}
+              {cat.label}
+              {stats && cat.key !== 'all' && (stats.byCategory as any)[cat.key] != null ? (
+                <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                  activeCategory === cat.key ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {(stats.byCategory as any)[cat.key]}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+
+        {/* Status Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           {[
             { key: 'upcoming', label: 'Upcoming' },
@@ -240,11 +391,11 @@ export default function DashboardPage() {
               onClick={() => setActiveTab(tab.key as TabFilter)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-gray-800 text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
               }`}
             >
-              {tab.label} ({tab.key === 'upcoming' ? upcomingCount : tab.key === 'completed' ? completedCount : tab.key === 'cancelled' ? cancelledCount : bookings.length})
+              {tab.label}
             </button>
           ))}
         </div>
@@ -266,8 +417,8 @@ export default function DashboardPage() {
             <Bus className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
             <p className="text-gray-600 mb-6">
-              {activeTab !== 'all'
-                ? `You have no ${activeTab} bookings`
+              {activeTab !== 'all' || activeCategory !== 'all' || searchQuery
+                ? 'No bookings match your filters'
                 : 'Start your journey by searching for transport'}
             </p>
             <Link
@@ -293,7 +444,12 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-blue-200">Booking #{booking.bookingCode}</p>
-                      <p className="font-semibold capitalize">{booking.category}</p>
+                      <p className="font-semibold capitalize flex items-center gap-2">
+                        {categoryIcons[booking.category] ?? <Package className="w-4 h-4" />}
+                        {booking.serviceId && booking.service
+                          ? `Service · ${booking.service.name}`
+                          : booking.category}
+                      </p>
                     </div>
                     {getStatusBadge(booking.status, booking.paymentStatus)}
                   </div>
@@ -331,26 +487,26 @@ export default function DashboardPage() {
                        View Details
                        <ArrowRight className="w-3 h-3" />
                      </Link>
-                     <div className="flex gap-2">
-                       {booking.qrCode && (
-                         <Link
-                           href={`/ticket/${booking.id}`}
-                           className="flex-1 text-center bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                         >
-                           <QrCode className="w-3 h-3" />
-                           Ticket
-                         </Link>
-                       )}
-                      {(booking.status === 'confirmed' || booking.status === 'pending') && (
-                        <button
-                          onClick={() => cancelBooking(booking.id)}
-                          className="flex-1 text-center bg-white hover:bg-red-50 text-red-600 border border-red-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                        >
-                          <XCircle className="w-3 h-3" />
-                          Cancel
-                        </button>
-                      )}
-                    </div>
+                    <div className="flex gap-2">
+                        {booking.qrCode && (
+                          <Link
+                            href={`/ticket/${booking.id}`}
+                            className="flex-1 text-center bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            Travel Pass
+                          </Link>
+                        )}
+                        {(booking.status === 'confirmed' || booking.status === 'pending') && (
+                          <button
+                            onClick={() => cancelBooking(booking.id)}
+                            className="flex-1 text-center bg-white hover:bg-red-50 text-red-600 border border-red-200 py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                   </div>
                 </div>
               </motion.div>

@@ -2,14 +2,8 @@
  * Hook for booking operations
  */
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-import { API_CONFIG } from '../config/api';
+import api from '../lib/apiClient';
 import type { Booking, BookingResponse, CreateBookingRequest } from '../types/booking';
-
-const api = axios.create({
-  baseURL: API_CONFIG.API_BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-});
 
 export function useBookings() {
   const [bookings, setBookings] = useState<Booking[]>([]);

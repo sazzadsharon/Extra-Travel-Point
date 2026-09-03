@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { Store, CheckCircle, XCircle, Clock, AlertCircle, Loader2, ArrowLeft, Save } from 'lucide-react';
 import type { Vendor, VendorStatus } from '../../../types/vendor';
 
@@ -35,8 +35,7 @@ export default function VendorProfilePage() {
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { default: axios } = await import('axios');
-      const res = await axios.get<Vendor>(`${API_CONFIG.API_BASE_URL}/vendors/me`);
+      const res = await api.get<Vendor>(`/vendors/me`);
       setVendor(res.data);
       setForm({
         businessName: res.data.businessName,
@@ -65,8 +64,7 @@ export default function VendorProfilePage() {
     setIsSaving(true);
     setError(null);
     try {
-      const { default: axios } = await import('axios');
-      const res = await axios.patch(`${API_CONFIG.API_BASE_URL}/vendors/me`, form);
+      const res = await api.patch(`/vendors/me`, form);
       setVendor(res.data.provider);
       setSaved(true);
     } catch (err: any) {

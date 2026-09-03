@@ -380,15 +380,76 @@ router.get('/seats/map', async (req, res) => {
   }
 });
 
-// GET /api/v1/bookings (Get user bookings)
+// GET /api/v1/bookings (Get user bookings with optional filters)
+// Query params: category (bus|flight|hotel|food|tour), status, search (bookingCode)
 router.get('/', authenticateJWT, async (req: AuthRequest, res) => {
   try {
+    const { category, status, search } = req.query;
+    const where: any = { userId: req.user!.id };
+
+    if (typeof category === 'string' && category.length > 0) {
+      where.category = category;
+    }
+    if (typeof status === 'string' && status.length > 0) {
+      where.status = status;
+    }
+    if (typeof search === 'string' && search.length > 0) {
+      where.bookingCode = { contains: search };
+    }
+
     const bookings = await prisma.booking.findMany({
-      where: { userId: req.user!.id },
-      include: { provider: true },
+      where,
+      include: { provider: true, service: true },
       orderBy: { createdAt: 'desc' }
     });
     return res.json(bookings);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/v1/bookings/stats/summary (Dashboard stats for current user)
+router.get('/stats/summary', authenticateJWT, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user!.id;
+
+    const allBookings = await prisma.booking.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        category: true,
+        status: true,
+        paymentStatus: true,
+        finalAmount: true,
+        travelDate: true,
+        serviceId: true
+      }
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const stats = {
+      total: allBookings.length,
+      upcoming: allBookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed' && b.status !== 'refunded').length,
+      completed: allBookings.filter(b => b.status === 'confirmed' || b.status === 'completed').length,
+      cancelled: allBookings.filter(b => b.status === 'cancelled').length,
+      paid: allBookings.filter(b => b.paymentStatus === 'paid').length,
+      totalSpent: allBookings.filter(b => b.paymentStatus === 'paid').reduce((sum, b) => sum + b.finalAmount, 0),
+      byCategory: {
+        bus: allBookings.filter(b => b.category === 'bus').length,
+        flight: allBookings.filter(b => b.category === 'flight').length,
+        hotel: allBookings.filter(b => b.category === 'hotel').length,
+        food: allBookings.filter(b => b.category === 'food').length,
+        tour: allBookings.filter(b => b.category === 'tour').length,
+        service: allBookings.filter(b => b.serviceId != null).length
+      },
+      nextTrip: allBookings
+        .filter(b => b.status !== 'cancelled' && new Date(b.travelDate) >= today)
+        .sort((a, b) => new Date(a.travelDate).getTime() - new Date(b.travelDate).getTime())[0] || null
+    };
+
+    return res.json(stats);
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -576,7 +637,7 @@ router.get('/:id', authenticateJWT, async (req: AuthRequest, res) => {
   try {
     const booking = await prisma.booking.findUnique({
       where: { id: parseInt(req.params.id) },
-      include: { provider: true, user: true, payments: true }
+      include: { provider: true, user: true, payments: true, service: true }
     });
 
     if (!booking) return res.status(404).json({ error: 'Booking not found' });

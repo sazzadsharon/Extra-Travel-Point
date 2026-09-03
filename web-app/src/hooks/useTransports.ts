@@ -2,14 +2,8 @@
  * Hook for fetching transport/vehicle data from the backend API
  */
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-import { API_CONFIG } from '../config/api';
+import api from '../lib/apiClient';
 import type { Vehicle, CalculateFareRequest, CalculateFareResponse } from '../types/transport';
-
-const api = axios.create({
-  baseURL: API_CONFIG.API_BASE_URL,
-  timeout: API_CONFIG.TIMEOUT,
-});
 
 export function useTransports() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);

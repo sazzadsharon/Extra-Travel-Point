@@ -5,8 +5,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, MapPin, Users, Shield, Star, CreditCard, Bus as BusIcon, Car, Plane, Train } from 'lucide-react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
-import { API_CONFIG } from '../../../config/api';
+import api from '../../../lib/apiClient';
 import type { Vehicle } from '../../../types/transport';
 
 interface Provider {
@@ -49,7 +48,7 @@ export default function TransportDetailPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const vehiclesRes = await axios.get<Vehicle[]>(`${API_CONFIG.API_BASE_URL}/transport/vehicles`);
+        const vehiclesRes = await api.get<Vehicle[]>(`/transport/vehicles`);
         const foundVehicle = vehiclesRes.data.find(v => v.id === vehicleId);
 
         if (!foundVehicle) {
@@ -60,7 +59,7 @@ export default function TransportDetailPage() {
 
         setVehicle(foundVehicle);
 
-        const providerRes = await axios.get<Provider>(`${API_CONFIG.API_BASE_URL}/providers/2`);
+        const providerRes = await api.get<Provider>(`/providers/2`);
         setProvider(providerRes.data);
       } catch (err: any) {
         setError(err.response?.data?.error || err.message || 'Failed to load vehicle details');

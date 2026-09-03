@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Save, RefreshCw, Globe, Phone, Mail, Database, Settings as Cog, Bell, Shield, CheckCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Save, RefreshCw, Globe, Phone, Mail, Database, Settings as Cog, Bell, Shield, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { api, ApiError } from '../../../lib/api';
 
 interface Setting {
   id: string;
@@ -27,15 +28,51 @@ const DEFAULTS: Setting[] = [
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Setting[]>(DEFAULTS);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const data = await api<{ defaultRate: number }>('/api/v1/admin/settings/commission');
+        if (!cancelled) {
+          setSettings(prev => prev.map(s => s.id === 'commission_rate' ? { ...s, value: data.defaultRate } : s));
+        }
+      } catch {
+        // keep default 10 if fetch fails
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const update = (id: string, value: string | number | boolean) => {
     setSettings(prev => prev.map(s => s.id === id ? { ...s, value } : s));
     setSaved(false);
+    setError(null);
   };
 
-  const save = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const save = async () => {
+    setError(null);
+    setSaving(true);
+    try {
+      const commissionSetting = settings.find(s => s.id === 'commission_rate');
+      const rate = typeof commissionSetting?.value === 'number' ? commissionSetting.value : 10;
+      await api('/api/v1/admin/settings/commission', {
+        method: 'PATCH',
+        body: JSON.stringify({ defaultRate: rate })
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -47,49 +84,61 @@ export default function SettingsPage() {
 
       {saved && (
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
-          <CheckCircle className="w-4 h-4" /> Settings saved (local preview — backend persistence TBD)
+          <CheckCircle className="w-4 h-4" /> Commission setting saved successfully
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 text-sm">
+          <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-        {settings.map(s => (
-          <div key={s.id} className="p-5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center flex-shrink-0">{s.icon}</div>
-              <div className="min-w-0">
-                <p className="font-medium text-slate-900">{s.label}</p>
-                <p className="text-sm text-slate-500 truncate">{s.description}</p>
+        {loading ? (
+          <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading settings…
+          </div>
+        ) : (
+          settings.map(s => (
+            <div key={s.id} className="p-5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center flex-shrink-0">{s.icon}</div>
+                <div className="min-w-0">
+                  <p className="font-medium text-slate-900">{s.label}</p>
+                  <p className="text-sm text-slate-500 truncate">{s.description}</p>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                {s.type === 'text' && (
+                  <input type="text" value={s.value as string} onChange={e => update(s.id, e.target.value)}
+                    className="w-56 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500" />
+                )}
+                {s.type === 'number' && (
+                  <input type="number" value={s.value as number} onChange={e => update(s.id, parseFloat(e.target.value) || 0)}
+                    className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500" />
+                )}
+                {s.type === 'select' && (
+                  <select value={s.value as string} onChange={e => update(s.id, e.target.value)}
+                    className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                    {s.options?.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                )}
+                {s.type === 'toggle' && (
+                  <button onClick={() => update(s.id, !s.value)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${s.value ? 'bg-sky-600' : 'bg-slate-300'}`}>
+                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${s.value ? 'left-7' : 'left-1'}`} />
+                  </button>
+                )}
               </div>
             </div>
-            <div className="flex-shrink-0">
-              {s.type === 'text' && (
-                <input type="text" value={s.value as string} onChange={e => update(s.id, e.target.value)}
-                  className="w-56 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500" />
-              )}
-              {s.type === 'number' && (
-                <input type="number" value={s.value as number} onChange={e => update(s.id, parseFloat(e.target.value) || 0)}
-                  className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500" />
-              )}
-              {s.type === 'select' && (
-                <select value={s.value as string} onChange={e => update(s.id, e.target.value)}
-                  className="w-32 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
-                  {s.options?.map(o => <option key={o}>{o}</option>)}
-                </select>
-              )}
-              {s.type === 'toggle' && (
-                <button onClick={() => update(s.id, !s.value)}
-                  className={`relative w-12 h-6 rounded-full transition-colors ${s.value ? 'bg-sky-600' : 'bg-slate-300'}`}>
-                  <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${s.value ? 'left-7' : 'left-1'}`} />
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <div className="flex justify-end">
-        <button onClick={save} className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-sky-700">
-          <Save className="w-4 h-4" /> Save Changes
+        <button onClick={save} disabled={saving || loading} className="px-5 py-2 bg-sky-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-sky-700 disabled:bg-slate-400">
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
 

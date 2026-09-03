@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Bus, MapPin, Calendar, Users, CreditCard, Download, Share2, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface BookingDetail {
@@ -44,10 +44,50 @@ interface BookingDetail {
   };
 }
 
-interface QrResponse {
-  bookingId: number;
-  qrObject: Record<string, unknown>;
-  qrDataUrl: string;
+interface TicketQrObject {
+  payload: Record<string, unknown>;
+  signature: string;
+}
+
+interface Ticket {
+  ticketId: string;
+  bookingCode: string;
+  bookingStatus: string;
+  paymentStatus: string;
+  category: string;
+  route: string | null;
+  travelDate: string;
+  bookingDate: string;
+  seats: string[];
+  passengers: Array<{
+    name: string;
+    email: string;
+    phone: string;
+    age?: number;
+    gender?: 'male' | 'female' | 'other';
+    seatNumber?: string;
+  }> | null;
+  fare: {
+    total: number;
+    discount: number;
+    final: number;
+    currency: string;
+  };
+  provider: {
+    id: number;
+    businessName: string;
+    category: string;
+    city: string | null;
+    phone: string | null;
+  };
+  customer: { id: number; fullName: string | null; phone: string };
+  service: { id: number; name: string; route: string | null } | null;
+  qr: {
+    object: TicketQrObject;
+    dataUrl: string | null;
+    validFrom: string;
+    validUntil: string;
+  } | null;
 }
 
 export default function SuccessView() {
@@ -56,10 +96,11 @@ export default function SuccessView() {
   const { user } = useAuth();
 
   const bookingId = searchParams.get('bookingId') || '';
-  const paymentStatus = searchParams.get('payment') || 'success';
+  const paymentStatusParam = searchParams.get('payment') || 'success';
 
   const [booking, setBooking] = useState<BookingDetail | null>(null);
-  const [qrData, setQrData] = useState<QrResponse | null>(null);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [paymentPending, setPaymentPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,21 +112,30 @@ export default function SuccessView() {
 
     setIsLoading(true);
     setError(null);
+    setTicket(null);
+    setPaymentPending(false);
 
     try {
-      const { default: axios } = await import('axios');
-
       // Fetch booking details
-      const bookingRes = await axios.get<BookingDetail>(
-        `${API_CONFIG.API_BASE_URL}/bookings/${bookingId}`
+      const bookingRes = await api.get<BookingDetail>(
+        `/bookings/${bookingId}`
       );
       setBooking(bookingRes.data);
 
-      // Generate QR code
-      const qrRes = await axios.get<QrResponse>(
-        `${API_CONFIG.API_BASE_URL}/qr/generate/${bookingId}`
-      );
-      setQrData(qrRes.data);
+      // Fetch the secure, payment-gated e-ticket (contains the QR). The backend
+      // returns 402 until payment is verified, which prevents a QR from being
+      // shown for an unpaid booking.
+      try {
+        const ticketRes = await api.get<Ticket>(
+          `/bookings/${bookingId}/ticket`
+        );
+        setTicket(ticketRes.data);
+      } catch (ticketErr: any) {
+        if (ticketErr?.response?.status === 402) {
+          setPaymentPending(true);
+        }
+        // Otherwise QR stays unavailable — booking details remain visible.
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load booking details');
     } finally {
@@ -106,9 +156,9 @@ export default function SuccessView() {
   };
 
   const downloadQrCode = () => {
-    if (!qrData) return;
+    if (!ticket?.qr?.dataUrl) return;
     const link = document.createElement('a');
-    link.href = qrData.qrDataUrl;
+    link.href = ticket.qr.dataUrl;
     link.download = `etp-qr-${bookingId}.png`;
     link.click();
   };
@@ -200,13 +250,28 @@ export default function SuccessView() {
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {paymentStatus === 'success' ? 'Booking Confirmed!' : 'Booking Received'}
+            {paymentPending
+              ? 'Payment Pending'
+              : paymentStatusParam === 'success'
+              ? 'Booking Confirmed!'
+              : 'Booking Received'}
           </h1>
           <p className="text-gray-600">
-            {paymentStatus === 'success'
+            {paymentPending
+              ? 'Complete payment to generate your e-ticket.'
+              : paymentStatusParam === 'success'
               ? 'Your payment has been processed successfully'
               : 'Your booking is being processed'}
           </p>
+          {paymentPending && (
+            <Link
+              href={`/booking/payment?bookingId=${bookingId}&totalAmount=${finalAmount}`}
+              className="mt-3 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors"
+            >
+              <CreditCard className="w-4 h-4" />
+              Complete Payment
+            </Link>
+          )}
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -219,31 +284,35 @@ export default function SuccessView() {
             >
               <h2 className="text-lg font-semibold text-gray-900 mb-4">E-Ticket (QR)</h2>
 
-              {qrData && qrData.qrDataUrl ? (
-                <div
-                  className="w-40 h-40 mx-auto rounded-lg border border-gray-200 mb-4 flex items-center justify-center overflow-hidden"
-                  role="img"
-                  aria-label="Booking QR Code"
-                  style={{
-                    backgroundImage: `url(${qrData.qrDataUrl})`,
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center'
-                  }}
-                />
-              ) : qrData?.qrObject ? (
-                <div className="w-40 h-40 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
-                  <QRCodeSVG
-                    value={JSON.stringify(qrData.qrObject)}
-                    size={160}
-                    level="H"
-                  />
-                </div>
-              ) : (
-                <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">
-                  <span className="text-gray-400 text-sm">No QR available</span>
-                </div>
-              )}
+               {paymentPending ? (
+                 <div className="w-40 h-40 mx-auto bg-gray-50 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">
+                   <span className="text-gray-400 text-sm">Payment required</span>
+                 </div>
+               ) : ticket?.qr?.dataUrl ? (
+                 <div
+                   className="w-40 h-40 mx-auto rounded-lg border border-gray-200 mb-4 flex items-center justify-center overflow-hidden"
+                   role="img"
+                   aria-label="Booking QR Code"
+                   style={{
+                     backgroundImage: `url(${ticket.qr.dataUrl})`,
+                     backgroundSize: 'contain',
+                     backgroundRepeat: 'no-repeat',
+                     backgroundPosition: 'center'
+                   }}
+                 />
+               ) : ticket?.qr?.object ? (
+                 <div className="w-40 h-40 mx-auto mb-4 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200">
+                   <QRCodeSVG
+                     value={JSON.stringify(ticket.qr.object)}
+                     size={160}
+                     level="H"
+                   />
+                 </div>
+               ) : (
+                 <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg border border-gray-200 mb-4 flex items-center justify-center">
+                   <span className="text-gray-400 text-sm">No QR available</span>
+                 </div>
+               )}
 
               <p className="text-xs text-gray-500 mb-3">
                 Show this QR at the boarding counter

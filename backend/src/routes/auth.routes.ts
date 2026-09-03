@@ -5,15 +5,14 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-refresh-secret-change-me' : '');
+const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || '';
 
 const registerSchema = z.object({
   phone: z.string().min(10).max(15),
   email: z.string().email().optional(),
   fullName: z.string().optional(),
-  password: z.string().min(6),
-  role: z.enum(['customer', 'vendor', 'admin']).optional().default('customer')
+  password: z.string().min(6)
 });
 
 const loginSchema = z.object({
@@ -29,7 +28,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: parse.error.issues });
     }
 
-    const { phone, email, fullName, password, role } = parse.data;
+    const { phone, email, fullName, password } = parse.data;
 
     const existingUser = await prisma.user.findUnique({ where: { phone } });
     if (existingUser) {
@@ -43,7 +42,7 @@ router.post('/register', async (req, res) => {
         email,
         fullName,
         passwordHash,
-        role
+        role: 'customer'
       }
     });
 
@@ -182,10 +181,10 @@ router.post('/logout', async (req, res) => {
 // POST /api/v1/auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
   const { phone, otp } = req.body;
-  if (otp === '1234' || otp === '123456') { // Mock OTP verification
-    return res.json({ message: 'OTP verified successfully', phone });
+  if (!phone || !otp) {
+    return res.status(400).json({ error: 'phone and otp are required' });
   }
-  return res.status(400).json({ error: 'Invalid OTP' });
+  return res.status(501).json({ error: 'OTP verification is not configured. Connect an SMS provider to enable this endpoint.' });
 });
 
 export default router;

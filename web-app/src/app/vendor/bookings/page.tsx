@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { Loader2, ArrowLeft, Ticket, CheckCircle, XCircle, Check, Filter } from 'lucide-react';
 import type { Booking } from '../../../types/booking';
 
@@ -41,10 +41,9 @@ export default function VendorBookingsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { default: axios } = await import('axios');
       const params: Record<string, string> = {};
       if (f !== 'all') params.status = f;
-      const res = await axios.get<Booking[]>(`${API_CONFIG.API_BASE_URL}/vendors/bookings`, { params });
+      const res = await api.get<Booking[]>(`/vendors/bookings`, { params });
       setBookings(res.data);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load bookings');
@@ -58,8 +57,7 @@ export default function VendorBookingsPage() {
   const manage = async (id: number, status: string) => {
     setActionId(id);
     try {
-      const { default: axios } = await import('axios');
-      await axios.patch(`${API_CONFIG.API_BASE_URL}/vendors/bookings/${id}`, { status });
+      await api.patch(`/vendors/bookings/${id}`, { status });
       load(filter);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Action failed');

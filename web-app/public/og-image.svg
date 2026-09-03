@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="ogG" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f2f2c"/>
+      <stop offset="1" stop-color="#1f8378"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#ogG)"/>
+  <circle cx="1000" cy="80" r="220" fill="#ffffff" opacity="0.05"/>
+  <circle cx="200" cy="600" r="260" fill="#fbbf24" opacity="0.08"/>
+  <g transform="translate(110 190)">
+    <rect width="120" height="120" rx="28" fill="#fbbf24"/>
+    <path d="M95 22 22 60l28 12 8 30 16-17 26 13z" fill="#0f2f2c" opacity="0.9"/>
+  </g>
+  <text x="270" y="250" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="bold" fill="#ffffff">Extra Travel Point</text>
+  <text x="273" y="318" font-family="Arial, Helvetica, sans-serif" font-size="30" fill="#d6f5ee">Book buses · Hotels · Tours — Earn ETP Points on every journey</text>
+  <text x="273" y="372" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#fbbf24" letter-spacing="6">TRAVEL MORE. PAY LESS.</text>
+</svg>

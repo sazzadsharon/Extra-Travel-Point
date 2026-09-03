@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { Bus, Store, Loader2, CheckCircle } from 'lucide-react';
 
 const CATEGORIES = [
@@ -62,10 +62,9 @@ export default function VendorRegisterPage() {
 
     setIsSubmitting(true);
     try {
-      const { default: axios } = await import('axios');
-      const res = await axios.post(`${API_CONFIG.API_BASE_URL}/vendors/register`, form);
+      const res = await api.post(`/vendors/register`, form);
       const { user, tokens } = res.data;
-      setSession(user, tokens.accessToken);
+      setSession(user, tokens.accessToken, tokens.refreshToken);
       setSuccess(true);
       setTimeout(() => router.push('/vendor'), 800);
     } catch (err: any) {

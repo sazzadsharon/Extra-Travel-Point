@@ -8,6 +8,7 @@ const router = Router();
 
 // Zod validation schemas
 const flightCreateSchema = z.object({
+  providerId: z.number().int().positive(),
   flightNumber: z.string().min(2).max(20),
   origin: z.string().min(2).max(100),
   destination: z.string().min(2).max(100),
@@ -88,8 +89,8 @@ router.get('/search', async (req, res) => {
 
     const where: any = { isActive: true };
 
-    if (origin) where.origin = { contains: origin, mode: 'insensitive' };
-    if (destination) where.destination = { contains: destination, mode: 'insensitive' };
+    if (origin) where.origin = { contains: origin };
+    if (destination) where.destination = { contains: destination };
     if (providerId) where.providerId = providerId;
     if (status) where.status = status;
 
@@ -430,6 +431,16 @@ router.patch('/bookings/:id/cancel', authenticateJWT, async (req: AuthRequest, r
       include: { provider: true, user: true, flight: true }
     });
 
+    // Notify vendor about cancellation
+    if (booking.provider && booking.provider.userId && booking.provider.userId !== req.user!.id) {
+      await notifyUser(
+        booking.provider.userId,
+        'BOOKING_CANCELLED',
+        'Flight Booking Cancelled',
+        `Booking ${updated.bookingCode} for flight ${booking.flight?.flightNumber ?? ''} has been cancelled by the customer.`
+      );
+    }
+
     return res.json({
       message: 'Flight booking cancelled successfully',
       booking: {
@@ -456,7 +467,7 @@ router.post('/', authenticateJWT, requireRole(['vendor', 'admin']), async (req: 
       return res.status(400).json({ error: parse.error.issues });
     }
 
-    const { flightNumber, origin, destination, departureTime, arrivalTime, duration, aircraftType, capacity, price, currency } = parse.data;
+    const { providerId, flightNumber, origin, destination, departureTime, arrivalTime, duration, aircraftType, capacity, price, currency } = parse.data;
 
     // Validate dates
     const depTime = new Date(departureTime);
@@ -472,13 +483,6 @@ router.post('/', authenticateJWT, requireRole(['vendor', 'admin']), async (req: 
 
     // Check provider ownership
     const vendorProviderIds = await getVendorProviderIds(req.user!.id);
-
-    // For now, let vendor choose their provider
-    // In a real app, they might only have one provider
-    const providerId = req.body.providerId;
-    if (!providerId) {
-      return res.status(400).json({ error: 'Provider ID is required' });
-    }
 
     if (!vendorProviderIds.includes(providerId)) {
       return res.status(403).json({ error: 'You can only create flights for your own airline' });
@@ -554,14 +558,19 @@ router.patch('/:id', authenticateJWT, requireRole(['vendor', 'admin']), async (r
       return res.status(400).json({ error: 'Departure time must be before arrival time' });
     }
 
-    // Validate origin/destination if both provided
+    // Validate origin/destination if either field is being updated
     const existing = await prisma.flight.findUnique({ where: { id: flightId } });
-    if (data.origin && data.destination && data.origin.toLowerCase() === data.destination.toLowerCase()) {
+    if (!existing) {
+      return res.status(404).json({ error: 'Flight not found' });
+    }
+    const finalOrigin = (data.origin ?? existing.origin) as string;
+    const finalDestination = (data.destination ?? existing.destination) as string;
+    if (finalOrigin.toLowerCase() === finalDestination.toLowerCase()) {
       return res.status(400).json({ error: 'Origin and destination cannot be the same' });
     }
 
     // If capacity changes, update availableSeats proportionally
-    if (data.capacity && existing) {
+    if (data.capacity) {
       const booked = existing.capacity - existing.availableSeats;
       if (data.capacity < booked) {
         return res.status(400).json({ error: 'New capacity cannot be less than booked seats' });

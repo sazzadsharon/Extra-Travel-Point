@@ -106,3 +106,46 @@ export interface CreateBookingRequest {
   route?: string;
   totalAmount?: number;
 }
+
+export interface CreateServiceBookingRequest {
+  bookingDate: string;
+  quantity?: number;
+  passengers?: PassengerInfo[];
+  specialRequest?: string;
+}
+
+export interface ServiceBookingResponse {
+  message: string;
+  booking: Booking;
+}
+
+export interface PublicServiceDetail {
+  id: number;
+  providerId: number;
+  name: string;
+  serviceType?: string;
+  category: string;
+  description?: string | null;
+  route?: string | null;
+  price: number;
+  currency?: string;
+  capacity?: number | null;
+  locationCity?: string | null;
+  locationAddress?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  images: string[];
+  availableDays: number[] | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  provider: {
+    id: number;
+    businessName: string;
+    category: string;
+    city?: string | null;
+    logo?: string | null;
+    rating?: number;
+    totalReviews?: number;
+    isVerified?: boolean;
+  };
+}

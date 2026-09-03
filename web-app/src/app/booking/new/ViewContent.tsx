@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Bus, MapPin, Users, CreditCard } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
+import api from '../../../lib/apiClient';
 import BookingForm, { PassengerFormData } from '../../../components/forms/booking-form';
-import { API_CONFIG } from '../../../config/api';
 
 export default function BookingNewView() {
   const router = useRouter();
@@ -37,8 +37,6 @@ export default function BookingNewView() {
     setError(null);
 
     try {
-      const { default: axios } = await import('axios');
-
       const route = fromCity && toCity ? `${fromCity} → ${toCity}` : undefined;
 
       const bookingPayload = {
@@ -53,8 +51,8 @@ export default function BookingNewView() {
         totalAmount: totalPrice
       };
 
-      const response = await axios.post(
-        `${API_CONFIG.API_BASE_URL}/bookings`,
+      const response = await api.post(
+        `/bookings`,
         bookingPayload
       );
 

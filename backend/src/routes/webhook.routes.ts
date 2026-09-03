@@ -3,7 +3,7 @@ import { prisma } from '../prisma';
 import crypto from 'crypto';
 
 const router = Router();
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'extratravel_webhook_secret_key_2026';
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
 
 const verifyWebhookSignature = (req: any): boolean => {
   const signature = req.headers['x-webhook-signature'];

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, RefreshCw, Check, X, Ban, RotateCcw, MapPin } from 'lucide-react';
+import { Search, RefreshCw, Check, X, Ban, RotateCcw, MapPin, Shield } from 'lucide-react';
 import { api, ApiError } from '../../../lib/api';
 import { Vendor, VendorCounts } from '../../../lib/types';
 
@@ -169,6 +169,39 @@ export default function VendorsPage() {
                       {(v.status === 'SUSPENDED' || v.status === 'REJECTED') && (
                         <button onClick={() => action(v.id, 'restore')} disabled={actionId === v.id} className="p-1.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50" title="Restore">
                           <RotateCcw className="w-4 h-4" />
+                        </button>
+                      )}
+                      {(v.kycStatus === 'PENDING' || v.kycStatus === 'REJECTED') && (
+                        <button
+                          onClick={async () => {
+                            const data = await api(`/api/v1/admin/vendors/${v.id}/kyc`);
+                            const kycData = data.kycData || {};
+                            const details = [
+                              `Legal: ${kycData.businessLegalName || 'N/A'}`,
+                              `Type: ${kycData.businessType || 'N/A'}`,
+                              `Owner: ${kycData.ownerName || 'N/A'}`,
+                              `NID: ${kycData.nidNumber ? kycData.nidNumber.slice(0, 4) + '****' : 'N/A'}`,
+                              `Email: ${kycData.email || 'N/A'}`
+                            ].join('\n');
+                            const approve = confirm(`KYC Review for ${v.businessName}:\n\n${details}\n\nApprove KYC?`);
+                            if (approve) {
+                              setActionId(v.id);
+                              try {
+                                await api(`/api/v1/admin/vendors/${v.id}/kyc/approve`, { method: 'PATCH' });
+                                showToast('ok', 'KYC approved');
+                                await load();
+                              } catch (e) {
+                                showToast('err', e instanceof ApiError ? e.message : 'Action failed');
+                              } finally {
+                                setActionId(null);
+                              }
+                            }
+                          }}
+                          disabled={actionId === v.id}
+                          className="p-1.5 rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                          title="Review KYC"
+                        >
+                          <Shield className="w-4 h-4" />
                         </button>
                       )}
                     </div>

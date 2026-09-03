@@ -40,6 +40,11 @@ export const apiEndpoints = {
     verify: `${API_BASE_URL}/qr/verify`,
     history: `${API_BASE_URL}/qr/history`,
   },
+  travelPasses: {
+    issue: `${API_BASE_URL}/travel-passes`,
+    byCode: (code: string) => `${API_BASE_URL}/travel-passes/${code}`,
+    verify: `${API_BASE_URL}/travel-passes/verify`,
+  },
   hotels: {
     search: `${API_BASE_URL}/hotels/search`,
     rooms: (id: number) => `${API_BASE_URL}/hotels/${id}/rooms`,

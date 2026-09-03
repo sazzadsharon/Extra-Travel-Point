@@ -132,7 +132,7 @@ router.get('/buses', async (req, res) => {
 
     const services = await prisma.service.findMany({
       where: {
-        category: 'bus',
+        category: { in: ['bus', 'bus_ac', 'bus_non_ac'] },
         status: 'ACTIVE',
         isActive: true,
         provider: { status: 'APPROVED', isActive: true }
@@ -210,7 +210,7 @@ router.get('/buses/:id', async (req, res) => {
     const bus = await prisma.service.findFirst({
       where: {
         id: busId,
-        category: 'bus',
+        category: { in: ['bus', 'bus_ac', 'bus_non_ac'] },
         isActive: true,
         provider: { status: 'APPROVED', isActive: true }
       },
@@ -277,7 +277,7 @@ router.get('/buses/:id/seats', async (req, res) => {
     const bus = await prisma.service.findFirst({
       where: {
         id: busId,
-        category: 'bus',
+        category: { in: ['bus', 'bus_ac', 'bus_non_ac'] },
         isActive: true,
         provider: { status: 'APPROVED', isActive: true }
       }

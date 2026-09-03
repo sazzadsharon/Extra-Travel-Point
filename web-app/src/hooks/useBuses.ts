@@ -1,18 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import axios from 'axios';
-import { API_CONFIG } from '../config/api';
+import api from '../lib/apiClient';
 import type {
   Bus,
   BusListResponse,
   BusSeatMapResponse
 } from '../types/transport';
-
-const api = axios.create({
-  baseURL: API_CONFIG.API_BASE_URL,
-  timeout: API_CONFIG.TIMEOUT
-});
 
 export interface BusSearchParams {
   fromCity?: string;

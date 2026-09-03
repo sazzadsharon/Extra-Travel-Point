@@ -40,6 +40,12 @@ describe('P1.4 Focused: ServiceAvailability', () => {
   });
 
   beforeEach(async () => {
+    await prisma.payment.deleteMany();
+    await prisma.review.deleteMany();
+    await prisma.qrLog.deleteMany();
+    await prisma.seatLock.deleteMany();
+        await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
     await prisma.serviceAvailability.deleteMany();
     await prisma.service.deleteMany();

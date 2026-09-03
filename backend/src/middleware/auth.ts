@@ -17,7 +17,7 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
   }
 
   const token = authHeader.split(' ')[1];
-  const secret = process.env.JWT_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : '');
+  const secret = process.env.JWT_SECRET;
 
   if (!secret) {
     return res.status(500).json({ error: 'Server configuration error' });
@@ -40,3 +40,23 @@ export const requireRole = (roles: string[]) => {
     next();
   };
 };
+
+const MASTER_ADMIN_PHONE = process.env.MASTER_ADMIN_PHONE || '';
+const MASTER_ADMIN_EMAIL = (process.env.MASTER_ADMIN_EMAIL || '').toLowerCase();
+
+export interface AuthedUser {
+  id: number;
+  phone: string;
+  role: string;
+}
+
+export function isMasterAdmin(user: AuthedUser | undefined): boolean {
+  if (!user) return false;
+  if (user.role === 'master_admin') return true;
+  if (MASTER_ADMIN_PHONE && user.phone === MASTER_ADMIN_PHONE) return true;
+  return false;
+}
+
+export function isPrivilegedRole(role: string): boolean {
+  return role === 'admin' || role === 'master_admin';
+}

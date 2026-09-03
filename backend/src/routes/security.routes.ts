@@ -16,10 +16,10 @@ router.post('/2fa/setup', authenticateJWT, async (req: AuthRequest, res) => {
 
 router.post('/2fa/verify', authenticateJWT, async (req: AuthRequest, res) => {
   const { code } = req.body;
-  if (code === '123456' || code?.length === 6) {
-    return res.json({ success: true, message: '2FA verified successfully' });
+  if (!code || typeof code !== 'string' || code.length !== 6) {
+    return res.status(400).json({ error: 'A valid 6-digit code is required' });
   }
-  return res.status(400).json({ error: 'Invalid 2FA code' });
+  return res.status(501).json({ error: '2FA verification is not configured. Connect an authenticator/SMS provider to enable this endpoint.' });
 });
 
 // 2. Active Session & Device Management

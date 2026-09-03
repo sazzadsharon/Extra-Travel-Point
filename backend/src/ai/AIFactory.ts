@@ -1,4 +1,5 @@
 import { AIProvider } from './types';
+import { OmniRouteProvider } from './providers/OmniRouteProvider';
 import { OllamaProvider } from './providers/OllamaProvider';
 import { BaseAIProvider } from './BaseAIProvider';
 
@@ -7,7 +8,7 @@ export class AIFactory {
   private providers: Map<string, AIProvider> = new Map();
 
   private constructor() {
-    // Initialize with default providers
+    this.registerProvider('omniroute', () => new OmniRouteProvider());
     this.registerProvider('ollama', () => new OllamaProvider());
   }
 
@@ -34,20 +35,24 @@ export class AIFactory {
   }
 
   public async getDefaultProvider(): Promise<AIProvider | null> {
-    // Try to get Ollama as default (free/local first)
-    const ollamaProvider = this.getProvider('ollama');
-    if (ollamaProvider) {
-      const isAvailable = await ollamaProvider.isAvailable();
-      if (isAvailable) {
-        return ollamaProvider;
+    const preferredOrder = ['omniroute', 'ollama'];
+
+    for (const name of preferredOrder) {
+      const provider = this.getProvider(name);
+      if (provider) {
+        const isAvailable = await provider.isAvailable();
+        if (isAvailable) {
+          return provider;
+        }
       }
     }
 
-    // Return first available provider as fallback
     for (const [name, provider] of this.providers) {
-      const isAvailable = await provider.isAvailable();
-      if (isAvailable) {
-        return provider;
+      if (!preferredOrder.includes(name)) {
+        const isAvailable = await provider.isAvailable();
+        if (isAvailable) {
+          return provider;
+        }
       }
     }
 
@@ -55,5 +60,4 @@ export class AIFactory {
   }
 }
 
-// Global instance for easy access
 export const aiFactory = AIFactory.getInstance();

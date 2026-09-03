@@ -3,6 +3,7 @@ import { prisma } from '../prisma';
 import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { ensureSettlementForPaidBooking, resolveCommissionRate, DEFAULT_COMMISSION_RATE, round2 } from '../utils/commission';
 
 const router = Router();
 
@@ -48,12 +49,20 @@ router.post('/initiate', authenticateJWT, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Booking already paid' });
     }
 
+    // Server-authoritative amount: ignore client-supplied amount and use
+    // the booking's stored finalAmount. This prevents tampering with the
+    // payable total during checkout.
+    const serverAmount = Number(booking.finalAmount);
+    if (!Number.isFinite(serverAmount) || serverAmount <= 0) {
+      return res.status(400).json({ error: 'Booking has no payable amount' });
+    }
+
     const transactionId = `TXN-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
 
     const payment = await prisma.payment.create({
       data: {
         bookingId,
-        amount,
+        amount: serverAmount,
         method,
         transactionId,
         status: 'init',
@@ -125,6 +134,15 @@ router.post('/verify', authenticateJWT, async (req: AuthRequest, res) => {
         paymentStatus: 'paid'
       }
     });
+
+    // Financial ledger: idempotently create a Settlement row for any
+    // vendor-service booking that just became paid. Bus Bookings (no
+    // serviceId) are skipped so existing flows are not affected.
+    try {
+      await ensureSettlementForPaidBooking(payment.bookingId);
+    } catch (settlementErr) {
+      console.error('Settlement creation failed (non-fatal):', settlementErr);
+    }
 
     return res.json({
       message: 'Payment verified successfully',
@@ -229,9 +247,24 @@ router.post('/settlement', authenticateJWT, requireRole(['admin']), async (req: 
       return res.status(400).json({ error: 'providerId and amount are required' });
     }
 
-    const rate = commissionRate || 10.0;
-    const commission = (amount * rate) / 100;
-    const netPayout = amount - commission;
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({ error: 'amount must be a positive finite number' });
+    }
+
+    let rate: number;
+    if (commissionRate != null && Number.isFinite(Number(commissionRate))) {
+      rate = Math.max(0, Math.min(100, Number(commissionRate)));
+    } else {
+      const provider = await prisma.serviceProvider.findUnique({
+        where: { id: Number(providerId) },
+        select: { commissionRate: true }
+      });
+      rate = await resolveCommissionRate({ providerRate: provider?.commissionRate });
+    }
+
+    const commission = round2((numericAmount * rate) / 100);
+    const netPayout = round2(numericAmount - commission);
 
     const settlementId = `STL-${Date.now()}`;
 
@@ -239,7 +272,7 @@ router.post('/settlement', authenticateJWT, requireRole(['admin']), async (req: 
       success: true,
       settlementId,
       providerId: Number(providerId),
-      grossAmount: amount,
+      grossAmount: numericAmount,
       commissionRate: rate,
       commissionAmount: commission,
       netPayoutAmount: netPayout,

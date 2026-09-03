@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Clock, MapPin, Users, Shield, Star, CreditCard, Bus as BusIcon, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
-import { API_CONFIG } from '../../../config/api';
+import api from '../../../lib/apiClient';
 import SeatMap, { Seat } from '../../../components/booking/seat-map';
 import type { Vehicle } from '../../../types/transport';
 
@@ -44,8 +43,8 @@ export default function SeatingView() {
       setError(null);
       try {
         const [vehiclesRes, seatsRes] = await Promise.all([
-          axios.get<Vehicle[]>(`${API_CONFIG.API_BASE_URL}/transport/vehicles`),
-          axios.get<SeatMapResponse>(`${API_CONFIG.API_BASE_URL}/bookings/seats/map`, {
+          api.get<Vehicle[]>(`/transport/vehicles`),
+          api.get<SeatMapResponse>(`/bookings/seats/map`, {
             params: { category: vehicleType, providerId, date: travelDate }
           })
         ]);
@@ -79,7 +78,7 @@ export default function SeatingView() {
     if (seats.length === 0) return;
     setIsLocking(true);
     try {
-      const response = await axios.post(`${API_CONFIG.API_BASE_URL}/bookings/seats/lock`, {
+      const response = await api.post(`/bookings/seats/lock`, {
         seatNumbers: seats.map(s => s.seatNumber),
         providerId: parseInt(providerId),
         travelDate

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../prisma';
-import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
+import { authenticateJWT, AuthRequest, requireRole, isMasterAdmin } from '../middleware/auth';
+import { getVendorBalance, resolveCommissionRate } from '../utils/commission';
 
 const router = Router();
 
@@ -73,7 +74,9 @@ router.patch('/users/:id/toggle', async (req: AuthRequest, res) => {
     const userId = parseInt(req.params.id);
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    if (user.role === 'admin') return res.status(403).json({ error: 'Cannot deactivate admin' });
+    if (user.role === 'admin' || isMasterAdmin({ id: user.id, phone: user.phone, role: user.role })) {
+      return res.status(403).json({ error: 'Cannot deactivate an administrator account' });
+    }
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { isActive: !user.isActive },
@@ -101,11 +104,17 @@ router.get('/analytics/fraud-detection', async (req: AuthRequest, res) => {
 // GET /api/v1/admin/audit-logs
 router.get('/audit-logs', async (req: AuthRequest, res) => {
   try {
-    const logs = [
-      { id: 'LOG-501', action: 'VENDOR_APPROVAL', adminId: req.user!.id, details: 'Approved Provider #3', timestamp: new Date().toISOString() },
-      { id: 'LOG-502', action: 'REFUND_PROCESSED', adminId: req.user!.id, details: 'Refunded TXN-99831', timestamp: new Date().toISOString() }
-    ];
-    return res.json(logs);
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100
+    });
+    return res.json(logs.map(l => ({
+      id: l.id,
+      action: l.action,
+      adminId: l.actorId,
+      details: l.details,
+      timestamp: l.createdAt.toISOString()
+    })));
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -208,6 +217,28 @@ router.get('/vendors/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/v1/admin/vendors/:id/balance
+// Reuses the authoritative settlement-ledger balance. Never trusted
+// from the client — purely server-derived.
+router.get('/vendors/:id/balance', async (req: AuthRequest, res) => {
+  try {
+    const providerId = parseInt(req.params.id, 10);
+    if (!Number.isFinite(providerId) || providerId <= 0) {
+      return res.status(400).json({ error: 'Invalid vendor id' });
+    }
+    const provider = await prisma.serviceProvider.findUnique({
+      where: { id: providerId },
+      select: { id: true, status: true, isActive: true, kycStatus: true, commissionRate: true }
+    });
+    if (!provider) return res.status(404).json({ error: 'Vendor not found' });
+
+    const balance = await getVendorBalance(providerId);
+    const effectiveRate = await resolveCommissionRate({ providerRate: provider.commissionRate });
+    return res.json({ provider, balance, commissionRate: effectiveRate });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 async function setVendorStatus(res: any, providerId: number, adminId: number, status: string, extra: Record<string, any> = {}) {
   try {
     const provider = await prisma.serviceProvider.update({

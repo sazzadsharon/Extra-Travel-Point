@@ -1,12 +1,13 @@
 const ENV: Record<string, { API_URL: string }> = {
   development: { API_URL: 'http://localhost:5000' },
-  production: { API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000' },
+  production: { API_URL: 'https://etp-backend.onrender.com' },
 };
 
+const runtimeApiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
 const currentEnv = (process.env.NODE_ENV as keyof typeof ENV) || 'development';
 
 export const API_CONFIG = {
-  API_URL: ENV[currentEnv]?.API_URL || 'http://localhost:5000',
+  API_URL: runtimeApiUrl || ENV[currentEnv]?.API_URL || 'http://localhost:5000',
   TIMEOUT: 30000,
 };
 

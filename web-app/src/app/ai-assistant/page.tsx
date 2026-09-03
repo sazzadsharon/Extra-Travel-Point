@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { MapPin, Calendar, Users, DollarSign, MessageSquare, Loader2, AlertCircle, Sparkles, Bus, Hotel, Utensils, Plane, Shield, Sun } from 'lucide-react';
-import { API_CONFIG } from '../../config/api';
+import api from '../../lib/apiClient';
 import Navbar from '../../components/layout/navbar';
 import Footer from '../../components/layout/footer';
 
@@ -84,29 +84,17 @@ export default function AIAssistantPage() {
     setResponse(null);
 
     try {
-      const res = await fetch(`${API_CONFIG.API_BASE_URL}/ai/assistant`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          destination: destination || undefined,
-          origin: origin || undefined,
-          maxBudget: budget ? Number(budget) : undefined,
-          durationDays: days ? Number(days) : undefined,
-          prompt: notes || undefined,
-        }),
+      const response = await api.post<AIResponse>('/ai/assistant', {
+        destination: destination || undefined,
+        origin: origin || undefined,
+        maxBudget: budget ? Number(budget) : undefined,
+        durationDays: days ? Number(days) : undefined,
+        prompt: notes || undefined,
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed with status ${res.status}`);
-      }
-
-      const data: AIResponse = await res.json();
-      setResponse(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
+      setResponse(response.data);
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

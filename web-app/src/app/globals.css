@@ -2,9 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  background: #ffffff;
+  color: #16171d;
+  font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(107, 70, 232, 0.22);
+  color: #251a52;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+  }
+
+  .etp-grain {
+    background-image:
+      radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.06) 0, transparent 40%),
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.04) 0, transparent 40%);
+  }
+
+  .etp-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(22, 23, 29, 0.12), transparent);
+  }
+
+  .etp-glass {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+  }
+
+  .etp-glass-dark {
+    background: rgba(15, 14, 35, 0.55);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+  }
+
+  .etp-text-muted {
+    color: #484a55;
+  }
+
+  .etp-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

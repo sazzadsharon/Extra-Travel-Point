@@ -61,7 +61,12 @@ function request(app: express.Express, method: string, path: string, opts: { tok
 }
 
 async function setupBusWorld() {
-  await prisma.booking.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.qrLog.deleteMany();
+      await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
+    await prisma.booking.deleteMany();
   await prisma.seatLock.deleteMany();
   await prisma.serviceAvailability.deleteMany();
   await prisma.service.deleteMany();
@@ -126,6 +131,11 @@ describe('Bus MVP', () => {
     await prisma.$disconnect();
   });
   beforeEach(async () => {
+    await prisma.payment.deleteMany();
+    await prisma.review.deleteMany();
+    await prisma.qrLog.deleteMany();
+        await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
     await prisma.seatLock.deleteMany();
     await prisma.serviceAvailability.deleteMany();

@@ -24,13 +24,33 @@ import reviewRoutes from './routes/review.routes';
 import hotelRoutes from './routes/hotel.routes';
 import transportRoutes from './routes/transport.routes';
 import vendorRoutes from './routes/vendor.routes';
+import vendorServiceRoutes from './routes/vendor-service.routes';
 import securityRoutes from './routes/security.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import discoveryRoutes from './routes/discovery.routes';
 import packagesRoutes from './routes/packages.routes';
 import flightRoutes from './routes/flight.routes';
+import serviceBookingRoutes from './routes/service-booking.routes';
+import vendorFinanceRoutes from './routes/vendor-finance.routes';
+import adminSettingsRoutes from './routes/admin-settings.routes';
+import adminPayoutRoutes from './routes/admin-payouts.routes';
 
 dotenv.config();
+
+// Fail-fast on missing required secrets. Never fall back to hardcoded values.
+function requireSecret(name: string): string {
+  const value = process.env[name];
+  if (!value || value.trim() === '') {
+    console.error(`FATAL: Missing required environment variable ${name}. Server will not start.`);
+    process.exit(1);
+  }
+  return value;
+}
+
+export const JWT_SECRET = requireSecret('JWT_SECRET');
+export const JWT_REFRESH_SECRET = requireSecret('JWT_REFRESH_SECRET');
+export const QR_SECRET_KEY = requireSecret('QR_SECRET_KEY');
+export const WEBHOOK_SECRET = requireSecret('WEBHOOK_SECRET');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -170,6 +190,7 @@ app.use('/api/v1/providers', providerRoutes);
 app.use('/api/v1/qr', qrRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/admin/settings', adminSettingsRoutes);
 app.use('/api/v1/webhooks', webhookRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
@@ -180,8 +201,14 @@ app.use('/api/v1/emergency', emergencyRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
 app.use('/api/v1/flights', flightRoutes);
+app.use('/api/v1/services', serviceBookingRoutes);
+app.use('/api/v1/vendors', vendorFinanceRoutes);
+app.use('/api/v1/admin', adminPayoutRoutes);
+// Shared Travel Pass API consumed by Web + Mobile (same router as /api/v1/qr)
+app.use('/api/v1/travel-passes', qrRoutes);
 app.use('/api/v1/transport', transportRoutes);
 app.use('/api/v1/vendors', vendorRoutes);
+app.use('/api/v1', vendorServiceRoutes);
 app.use('/api/v1/security', securityRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/discovery', discoveryRoutes);

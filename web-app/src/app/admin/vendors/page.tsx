@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 import { Loader2, CheckCircle, XCircle, AlertCircle, Store, ShieldX, RotateCcw, ChevronDown } from 'lucide-react';
 import type { Vendor, VendorStatus } from '../../../types/vendor';
 
@@ -36,11 +36,10 @@ export default function AdminVendorsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const { default: axios } = await import('axios');
       const params: Record<string, string> = {};
       if (tab !== 'ALL') params.status = tab;
-      const res = await axios.get<{ providers: Vendor[]; counts: { status: string; _count: { id: number } }[] }>(
-        `${API_CONFIG.API_BASE_URL}/admin/vendors`, { params }
+      const res = await api.get<{ providers: Vendor[]; counts: { status: string; _count: { id: number } }[] }>(
+        `/admin/vendors`, { params }
       );
       setVendors(res.data.providers);
       const c: Record<string, number> = {};
@@ -58,8 +57,7 @@ export default function AdminVendorsPage() {
   const act = async (id: number, action: 'approve' | 'reject' | 'suspend' | 'restore', reason?: string) => {
     setActionId(id);
     try {
-      const { default: axios } = await import('axios');
-      await axios.patch(`${API_CONFIG.API_BASE_URL}/admin/vendors/${id}/${action}`, action === 'reject' ? { reason } : {});
+      await api.patch(`/admin/vendors/${id}/${action}`, action === 'reject' ? { reason } : {});
       setDetail(null);
       load();
     } catch (err: any) {
@@ -71,8 +69,7 @@ export default function AdminVendorsPage() {
 
   const openDetail = async (id: number) => {
     try {
-      const { default: axios } = await import('axios');
-      const res = await axios.get<Vendor>(`${API_CONFIG.API_BASE_URL}/admin/vendors/${id}`);
+      const res = await api.get<Vendor>(`/admin/vendors/${id}`);
       setDetail(res.data);
       setRejectReason('');
     } catch {

@@ -12,10 +12,10 @@ import {
   Shield,
   Star,
   CreditCard,
-  Calendar
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
-import axios from 'axios';
-import { API_CONFIG } from '../../../../config/api';
+import api from '../../../../lib/apiClient';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useBuses } from '../../../../hooks/useBuses';
 import SeatMap, { Seat } from '../../../../components/booking/seat-map';
@@ -37,6 +37,7 @@ export default function BusDetailPage() {
   const [bus, setBus] = useState<Bus | null>(null);
   const [seatMap, setSeatMap] = useState<BusSeatMapResponse | null>(null);
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
+  const [passengerData, setPassengerData] = useState<PassengerFormData | null>(null);
   const [step, setStep] = useState<Step>('details');
   const [isLoading, setIsLoading] = useState(true);
   const [isLocking, setIsLocking] = useState(false);
@@ -99,16 +100,14 @@ export default function BusDetailPage() {
     setIsLocking(true);
     setErr(null);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('etp_access_token') : null;
-      await axios.post(
-        `${API_CONFIG.API_BASE_URL}/bookings/seats/lock`,
+      await api.post(
+        `/bookings/seats/lock`,
         {
           seatNumbers: selectedSeats.map(s => s.seatNumber),
           providerId: bus.provider.id,
           category: 'bus',
           travelDate
-        },
-        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+        }
       );
       setStep('passengers');
     } catch (err: any) {
@@ -119,17 +118,25 @@ export default function BusDetailPage() {
     }
   }, [bus, selectedSeats, user, travelDate, router, setErr]);
 
+  const handlePassengerSubmit = useCallback((form: PassengerFormData) => {
+    setPassengerData(form);
+    setStep('review');
+  }, []);
+
   const handleBookingSubmit = useCallback(
     async (form: PassengerFormData) => {
       if (!bus || !user) return;
+      if (selectedSeats.length === 0) {
+        setErr('Please select at least one seat');
+        return;
+      }
       setIsSubmitting(true);
       setErr(null);
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('etp_access_token') : null;
         const payload = {
           providerId: bus.provider.id,
           serviceId: bus.id,
-          category: 'bus',
+          category: 'bus' as const,
           bookingDate: new Date().toISOString().split('T')[0],
           travelDate,
           numberOfPeople: selectedSeats.length,
@@ -137,23 +144,34 @@ export default function BusDetailPage() {
           passengers: form.passengers,
           route: bus.route ?? undefined
         };
-        const res = await axios.post(`${API_CONFIG.API_BASE_URL}/bookings`, payload, {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined
-        });
+        const res = await api.post(`/bookings`, payload);
         const booking = res.data?.booking;
         if (booking?.id) {
-          router.push(`/booking/success?bookingId=${booking.id}`);
+          // Server-authoritative final amount (incl. any combo discount) drives payment.
+          const finalAmount =
+            typeof booking.finalAmount === 'number' ? booking.finalAmount : totalPrice;
+          router.push(
+            `/booking/payment?bookingId=${booking.id}&totalAmount=${finalAmount}`
+          );
         } else {
           setErr('Booking succeeded but no booking id was returned');
         }
       } catch (err: any) {
+        const status = err.response?.status;
         const msg = err.response?.data?.error || err.message || 'Failed to create booking';
-        setErr(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        const msgStr = typeof msg === 'string' ? msg : JSON.stringify(msg);
+        if (status === 409) {
+          // Seat inventory changed server-side (already booked / held). Let the
+          // user go back and reselect rather than silently failing.
+          setErr(`${msgStr}`);
+        } else {
+          setErr(msgStr);
+        }
       } finally {
         setIsSubmitting(false);
       }
     },
-    [bus, user, travelDate, selectedSeats, router, setErr]
+    [bus, user, travelDate, selectedSeats, totalPrice, router, setErr]
   );
 
   if (isLoading) {
@@ -389,13 +407,20 @@ export default function BusDetailPage() {
         {step === 'passengers' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Passenger Information</h2>
+              <button
+                type="button"
+                onClick={() => setStep('seats')}
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4 text-sm font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Seats
+              </button>
               <BookingForm
                 selectedSeats={selectedSeats.map(s => ({ seatNumber: s.seatNumber, price: s.price }))}
                 totalPrice={totalPrice}
-                onSubmit={handleBookingSubmit}
+                onSubmit={handlePassengerSubmit}
                 isSubmitting={isSubmitting}
-                submitLabel="Confirm Booking"
+                submitLabel="Review & Continue"
               />
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit">
@@ -434,6 +459,138 @@ export default function BusDetailPage() {
                   </span>
                 </div>
               </dl>
+            </div>
+          </div>
+        )}
+
+        {/* Review step: confirm seats/passengers and proceed to payment */}
+        {step === 'review' && passengerData && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <button
+                type="button"
+                onClick={() => setStep('passengers')}
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-2 text-sm font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Passenger Info
+              </button>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{String(error)}</span>
+                </div>
+              )}
+              {error && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErr(null);
+                    loadSeatMap();
+                    setStep('seats');
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium underline"
+                >
+                  Reselect seats
+                </button>
+              )}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Confirm & Pay</h2>
+                <p className="text-gray-600 mb-4">
+                  Review your journey below, then confirm to lock in your seats and
+                  proceed to secure payment. Final pricing (including any combo
+                  discounts) is finalized on the payment screen.
+                </p>
+                <button
+                  onClick={() => handleBookingSubmit(passengerData)}
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold text-lg flex items-center justify-center gap-2 transition-colors"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Creating booking...
+                    </>
+                  ) : (
+                    <>
+                      Confirm & Pay
+                      <CreditCard className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Journey</h3>
+                <dl className="space-y-3 text-sm">
+                  <div>
+                    <dt className="text-gray-500">Route</dt>
+                    <dd className="font-medium text-gray-900">{bus.route ?? '—'}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-gray-500">Travel Date</dt>
+                    <dd className="font-medium text-gray-900">{travelDate}</dd>
+                  </div>
+                  {nextSlot?.startTime && (
+                    <div>
+                      <dt className="text-gray-500">Departure</dt>
+                      <dd className="font-medium text-gray-900">{nextSlot.startTime}</dd>
+                    </div>
+                  )}
+                  {nextSlot?.endTime && (
+                    <div>
+                      <dt className="text-gray-500">Arrival</dt>
+                      <dd className="font-medium text-gray-900">{nextSlot.endTime}</dd>
+                    </div>
+                  )}\r\n                </dl>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Seats ({selectedSeats.length})</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedSeats.map(s => (
+                    <span
+                      key={s.seatNumber}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium"
+                    >
+                      {s.seatNumber}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Passengers</h3>
+                <ul className="space-y-2 text-sm">
+                  {passengerData.passengers.map((p, i) => (
+                    <li key={i} className="flex justify-between">
+                      <span className="text-gray-700">
+                        {p.name}
+                        {p.seatNumber && <span className="ml-2 text-xs text-gray-500">({p.seatNumber})</span>}
+                      </span>
+                      <span className="text-gray-500">{p.phone}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <dl className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Subtotal</dt>
+                    <dd className="font-medium text-gray-900">BDT {totalPrice.toFixed(2)}</dd>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
+                    <span>Estimated Total</span>
+                    <span className="text-blue-700">BDT {totalPrice.toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 pt-1">
+                    Final total (after any applicable discounts) is shown on the payment screen.
+                  </p>
+                </dl>
+              </div>
             </div>
           </div>
         )}

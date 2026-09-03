@@ -1,1671 +1,2066 @@
-# এক্সট্রা ট্রাভেল পয়েন্ট (ETP)
+EXTRA TRAVEL POINT — ETP
+বাংলাদেশের Travel Super App ও Local Tourism Ecosystem
+FINAL MASTER PLAN
+Business + Product + Technology + Hotel + Operations + Revenue + Investor Strategy
+Planning Version — September 2026
 
-## বাংলাদেশের ট্রাভেল সুপার অ্যাপ ও ট্রাভেল ইকোসিস্টেম
+১. ETP কী?
+Extra Travel Point (ETP) হলো বাংলাদেশের জন্য পরিকল্পিত একটি Travel Super App এবং Local Tourism Ecosystem।
+ETP-এর মূল উদ্দেশ্য হলো একজন মানুষ যখন ভ্রমণে যাবে, তখন তার প্রয়োজনীয় বিভিন্ন সেবা যেন আলাদা আলাদা জায়গায় খুঁজতে না হয়।
+একটি প্ল্যাটফর্ম থেকেই Customer ধাপে ধাপে:
+কোথায় যাবে তা ঠিক করতে পারবে;
+Trip Plan তৈরি করতে পারবে;
+Bus/Transport বুক করতে পারবে;
+Hotel বুক করতে পারবে;
+Local Transport নিতে পারবে;
+Tourist Activity নির্বাচন করতে পারবে;
+Local Experience নিতে পারবে;
+Booking ও Payment পরিচালনা করতে পারবে;
+QR দিয়ে Booking/Service Verification করতে পারবে;
+শেষে Review ও Rating দিতে পারবে।
+ETP-এর লক্ষ্য শুধু একটি Ticket Booking App তৈরি করা নয়।
+দীর্ঘমেয়াদে ETP একটি Customer + Hotel + Transport + Local Business + Tourism Service Provider-কে একই Digital Ecosystem-এর মধ্যে আনার চেষ্টা করবে।
 
-### ফাইনাল মাস্টার প্ল্যান
+২. ETP-এর মূল দর্শন
+ETP-এর সবচেয়ে গুরুত্বপূর্ণ নীতি:
+“আপনার ভ্রমণ — আপনার সিদ্ধান্ত।”
+ETP Customer-এর হয়ে সব সিদ্ধান্ত নিতে চায় না।
+Customer নিজের:
+Hotel
+Transport
+Room
+Budget
+Schedule
+Activity
+Local Service
+Experience
+নিজের পছন্দ অনুযায়ী নির্বাচন করতে পারবে।
+ETP-এর কাজ হবে Customer-কে দেওয়া:
+Verified Options + Transparent Information + Booking + Security + Convenience + Possible Savings
+অর্থাৎ:
+One Platform, Many Choices.
 
-*সংহত ব্যবসায়িক, প্রোডাক্ট, অপারেশনাল ও ইনভেস্টর পরিকল্পনা*
+৩. ETP কোন সমস্যার সমাধান করতে চায়?
+বাংলাদেশে ভ্রমণের সময় Customer-কে অনেক ক্ষেত্রে আলাদা আলাদা জায়গায়:
+Hotel খুঁজতে হয়;
+Transport খুঁজতে হয়;
+Hotel-এর availability জানতে হয়;
+Price জানতে হয়;
+Booking confirm করতে হয়;
+Payment করতে হয়;
+স্থানীয় Transport খুঁজতে হয়;
+Tourist Activity খুঁজতে হয়;
+Booking-এর প্রমাণ রাখতে হয়।
+অন্যদিকে অনেক ছোট ব্যবসার:
+নিজস্ব Website নেই;
+Booking System নেই;
+Hotel Management Software নেই;
+Customer Management System নেই;
+Digital Marketing capability সীমিত;
+Online payment/settlement system নেই;
+Customer acquisition-এর নির্ভরযোগ্য মাধ্যম নেই।
+ETP এই দুই দিককে একই Ecosystem-এ যুক্ত করতে চায়।
 
-*আগস্ট ২০২৬*
+৪. ETP-এর মূল ব্যবহারকারী
+ETP-এর প্রধান তিনটি পক্ষ:
+১. Customer / Traveler
+যে ব্যক্তি ভ্রমণ করবে।
+২. Vendor / Service Provider
+যে ব্যক্তি বা প্রতিষ্ঠান ভ্রমণ-সম্পর্কিত Service দেবে।
+যেমন:
+Hotel
+Guest House
+Resort
+Cottage
+Villa
+Bus Operator
+Local Transport Provider
+Boat Provider
+Activity Provider
+Local Experience Provider
+ভবিষ্যতের অন্যান্য বৈধ Service Provider
+৩. ETP Operations / Admin
+যারা Platform পরিচালনা, Verification, Booking, Settlement, Security, Support এবং Business Operations পরিচালনা করবে।
 
----
+৫. Customer Experience
+Customer ETP-এর মাধ্যমে ধাপে ধাপে:
+Discover
+Destination এবং Service খুঁজবে।
+Plan
+Budget, সময় এবং প্রয়োজন অনুযায়ী Trip Plan তৈরি করবে।
+Compare
+বিভিন্ন Hotel, Transport, Activity এবং অন্যান্য Service তুলনা করবে।
+Book
+নিজের পছন্দের Service বুক করবে।
+Pay
+প্রযোজ্য Payment Method ব্যবহার করবে।
+Verify
+QR/Booking Reference দিয়ে Service Verification করবে।
+Travel
+বাস্তব ভ্রমণ করবে।
+Review
+Service নেওয়ার পর Rating ও Review দেবে।
+Reward
+ভবিষ্যতে Points, Cashback, Discount বা অন্যান্য Reward ব্যবহার করতে পারবে।
 
-# ১. এক্সিকিউটিভ সামারি
+৬. ETP Customer Freedom Model
+ETP-এর Customer একটি নির্দিষ্ট Package-এর মধ্যে বাধ্য থাকবে না।
+Customer চাইলে:
+Budget Hotel নিতে পারবে;
+Premium Hotel নিতে পারবে;
+Resort নিতে পারবে;
+Homestay নিতে পারবে;
+নিজের Transport বেছে নিতে পারবে;
+Activity বাদ দিতে পারবে;
+Schedule পরিবর্তন করতে পারবে;
+এক Hotel থেকে অন্য Hotel নির্বাচন করতে পারবে;
+নিজের Budget অনুযায়ী Trip তৈরি করতে পারবে।
+ETP-এর লক্ষ্য:
+“One Package Fits Everyone” নয়।
+বরং:
+“One Platform, Many Choices.”
 
-এক্সট্রা ট্রাভেল পয়েন্ট (ETP) একটি বাংলাদেশ-কেন্দ্রিক ট্রাভেল সুপার অ্যাপ ও ট্রাভেল ইকোসিস্টেম, যার লক্ষ্য একটি একক, বিশ্বস্ত ও প্রযুক্তিনির্ভর প্ল্যাটফর্মের মাধ্যমে ভ্রমণকারীদের স্থানীয় পরিবহন, আবাসন, খাবার, পর্যটন কার্যক্রম এবং অন্যান্য স্থানীয় সেবা প্রদানকারীদের সঙ্গে সংযুক্ত করা।
+৭. Traditional Group Tour বনাম ETP
+Traditional Group Tour-এর সুবিধা:
+Group pricing
+Fixed Transport
+Fixed Hotel
+Fixed Schedule
+Pre-arranged services
+Group management
+কিন্তু অনেক ক্ষেত্রে Customer-এর স্বাধীনতা সীমিত হতে পারে।
+ETP সেই জায়গায় Independent Travel-এর সুবিধা দিতে চায়।
+Customer চাইলে:
+Option 1
+সম্পূর্ণ নিজের মতো Travel করবে।
+Option 2
+ETP Suggested Trip Plan অনুসরণ করবে।
+Option 3
+ভবিষ্যতে ETP Community/Group Trip-এ অংশ নিতে পারবে।
+অর্থাৎ Customer-এর হাতে Choice থাকবে।
 
-ETP-এর লক্ষ্য হলো বাংলাদেশের অভ্যন্তরীণ ভ্রমণকে আরও সহজ, সাশ্রয়ী, স্বচ্ছ, নিরাপদ এবং স্বাধীন করা। একইসাথে ছোট ও মাঝারি স্থানীয় ব্যবসা—হোটেল, রেস্তোরাঁ, পরিবহন, গাড়ি ভাড়া, স্থানীয় নৌকা, পর্যটন কার্যক্রম এবং অন্যান্য বৈধ পর্যটন-সেবা প্রদানকারীদের—প্রযুক্তির মাধ্যমে নতুন গ্রাহকের কাছে পৌঁছানোর সুযোগ দেওয়া।
+৮. ETP-এর Win-Win-Win-Win Model
+ETP চারটি পক্ষকে উপকার দেওয়ার চেষ্টা করবে।
+Customer
+ভালো Option, Transparent Price এবং সম্ভাব্য Discount পাবে।
+Vendor
+নতুন Customer এবং Digital Platform পাবে।
+Local Community
+স্থানীয় মানুষের earning opportunity তৈরি হবে।
+ETP
+Commission, Subscription এবং অন্যান্য বৈধ Revenue Stream তৈরি করবে।
+এটাই:
+ETP Win-Win-Win-Win Ecosystem
 
-ETP-এর মূল ধারণা তিনটি স্তম্ভের ওপর প্রতিষ্ঠিত:
+৯. ETP Product Ecosystem
+ETP দীর্ঘমেয়াদে কয়েকটি প্রধান অংশ নিয়ে গঠিত হবে:
+Transport
+Hotel / Stay
+Local Transport
+Local Experience
+Tourist Activity
+Trip Planner
+QR Travel Pass
+Rewards
+Payment
+Vendor Platform
+Customer Platform
+Admin Platform
+সব Feature একসাথে Launch করা হবে না।
+ETP ধাপে ধাপে Build → Test → Validate → Grow করবে।
 
-1. বাস, হোটেল এবং ধাপে ধাপে অন্যান্য ভ্রমণ ও পর্যটন সেবা নিয়ে একটি সমন্বিত বুকিং অভিজ্ঞতা;
-2. একটি নিরাপদ QR Travel Pass/QR Verification System, যা বুকিং যাচাই, চেক-ইন ও সেবা গ্রহণের ক্ষেত্রে ব্যবহার করা যাবে;
-3. একটি Trip Planning স্তর, যা শুরুতে নিয়ম-ভিত্তিক সহায়ক হিসেবে কাজ করবে এবং পরবর্তীতে AI-সহায়ক ব্যক্তিগতকরণে উন্নীত হবে।
+১০. Transport Ecosystem
+Transport ধাপে ধাপে সম্প্রসারিত হবে।
+প্রাথমিকভাবে:
+Bus
+পরবর্তীতে:
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Car Rental
+অন্যান্য Local Transport
+আরও পরে:
+Train
+Air
+International Transport
 
-ETP-এর একটি বিশেষ লক্ষ্য হলো *Traditional Group Tour-এর তুলনামূলক সাশ্রয়ী সুবিধা এবং Independent Travel-এর স্বাধীনতাকে একসাথে আনার চেষ্টা করা।*
-
-অর্থাৎ একজন Customer চাইলে নিজের:
-
-* Hotel,
-* Restaurant,
-* Food,
-* Local Transport,
-* Activity,
-* Guide/Local Explorer,
-* Tour Schedule,
-* Budget
-
-নিজেই নির্বাচন করতে পারবেন।
-
-ETP কোনো Customer-কে একটি নির্দিষ্ট Hotel, Restaurant বা Tour Schedule অনুসরণ করতে বাধ্য করার পরিবর্তে বিভিন্ন যাচাইকৃত অপশনের মধ্যে নিজের পছন্দ অনুযায়ী সিদ্ধান্ত নেওয়ার সুযোগ দিতে চায়।
-
----
-
-# ২. প্রোডাক্ট ইকোসিস্টেম
-
-ETP তিনটি প্রধান ব্যবহারকারী গোষ্ঠীর জন্য একটি সংযুক্ত ইকোসিস্টেম হিসেবে গঠিত:
-
-1. ভ্রমণকারী/Customer
-2. Local Vendor/Service Provider
-3. ETP Operations/Admin
-
-## ২.১ Customer Experience
-
-Customer একই প্ল্যাটফর্ম থেকে:
-
-* বাস টিকিট খুঁজে বুক করতে পারবেন;
-* হোটেল খুঁজে বুক করতে পারবেন;
-* Restaurant/Activity বুকিং করতে পারবেন;
-* Car Rental নিতে পারবেন;
-* Tourist Destination-এর Local Transport খুঁজতে পারবেন;
-* CNG/Auto-Rickshaw/Bike/Cycle/Boat ইত্যাদি উপযুক্ত Local Service নির্বাচন করতে পারবেন;
-* Local Student/Local Explorer বা অন্যান্য বৈধ Local Assistance Service নিতে পারবেন;
-* Trip Plan তৈরি করতে পারবেন;
-* ডিজিটাল e-Ticket পেতে পারবেন;
-* QR Travel Pass/QR Verification ব্যবহার করতে পারবেন;
-* Booking History দেখতে পারবেন;
-* Vendor Review ও Rating দিতে পারবেন;
-* সম্ভাব্য Discount, Cashback ও Reward ব্যবহার করতে পারবেন।
-
-## ২.২ Vendor Experience
-
-Vendor:
-
-* ETP-তে আবেদন করতে পারবেন;
-* KYC/Business Verification সম্পন্ন করবেন;
-* Hotel, Restaurant, Transport, Activity বা অন্যান্য সেবা তালিকাভুক্ত করবেন;
-* Price ও Availability দিতে পারবেন;
-* Booking পরিচালনা করবেন;
-* QR Scan/Verification করতে পারবেন;
-* Settlement গ্রহণ করবেন;
-* Customer Review দেখতে পারবেন;
-* ভবিষ্যতে Analytics ও Performance Dashboard ব্যবহার করতে পারবেন।
-
-## ২.৩ Admin/Operations
-
-ETP Admin:
-
-* Vendor Application যাচাই করবেন;
-* KYC/Documentation পরীক্ষা করবেন;
-* Listing অনুমোদন করবেন;
-* Booking পর্যবেক্ষণ করবেন;
-* Refund/Dispute পরিচালনা করবেন;
-* Fraud Signal পর্যবেক্ষণ করবেন;
-* Commission সেট করবেন;
-* Featured Listing পরিচালনা করবেন;
-* Audit Trail সংরক্ষণ করবেন।
-
----
-
-# ৩. প্রযুক্তিগত ভিত্তি
-
-ETP Web Application:
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-
-Backend:
-
-* Node.js
-* Express
-* TypeScript
-* Prisma ORM
-
-Database:
-
-* MVP পর্যায়ে SQLite/Prisma
-* Production পর্যায়ে PostgreSQL Migration
-
-Authentication:
-
-* JWT
-* Refresh Token
-* OTP Verification
-* Role-Based Access Control
-
-প্রাথমিক Role:
-
-* Customer
-* Vendor
-* Admin
-
-ভবিষ্যৎ Role:
-
-* Support
-* Finance
-* Operations
-* Content Manager
-* Super Admin
-
-Mobile Application-এর লক্ষ্য:
-
-* React Native
-* TypeScript
-
----
-
-# ৪. ব্যবসায়িক মডেল
-
-ETP একটি Marketplace/Commission Model অনুসরণ করবে।
-
-ETP নিজে সব Hotel, Room, Bus Seat, Vehicle বা Activity-এর মালিক হবে না। বরং যাচাইকৃত Service Provider-দের Customer-এর সঙ্গে যুক্ত করবে।
-
-ETP-এর সম্ভাব্য Revenue:
-
-* Booking Commission
-* Vendor Subscription
-* Featured Listing
-* Destination Promotion
-* Corporate/B2B Travel
-* Premium Services
-
-সব Commission Percentage বর্তমানে প্রস্তাবিত এবং Vendor Agreement ও Market Testing-এর মাধ্যমে চূড়ান্ত হবে।
-
----
-
-# ৫. Revenue Streams
-
-| Revenue Stream                 | বিবরণ                         | Status  |
-| ------------------------------ | ----------------------------- | ------- |
-| Bus Booking Commission         | Bus Ticket Booking থেকে কমিশন | MVP     |
-| Hotel Commission               | Hotel Booking থেকে কমিশন      | MVP     |
-| Restaurant/Activity Commission | Booking/Redemption থেকে কমিশন | Phase 2 |
-| Car Rental Commission          | Vehicle Rental থেকে কমিশন     | Phase 2 |
-| Vendor Subscription            | Optional Paid Vendor Plan     | Phase 2 |
-| Featured Listing               | Paid Visibility               | Phase 2 |
-| Destination Promotion          | Tourism Promotion             | Phase 2 |
-| Corporate/B2B                  | Corporate Travel              | Phase 3 |
-| Premium Services               | Insurance/Concierge ইত্যাদি   | Future  |
-
----
-
-# ৬. Commission Sharing ও Customer Benefit Model
-
-ETP-এর একটি গুরুত্বপূর্ণ ব্যবসায়িক ধারণা হলো Vendor-এর কাছ থেকে পাওয়া Commission-এর একটি অংশ Customer Benefit হিসেবে ব্যবহার করা।
-
+১১. Tourist Destination Local Transport
+ETP-এর Local Transport Model মূলত Tourist Destination-কেন্দ্রিক হবে।
+এটি শুরুতে ঢাকার সাধারণ দৈনন্দিন Transport Marketplace হিসেবে পরিকল্পিত নয়।
 উদাহরণ:
+Cox's Bazar
+Khagrachhari
+Rangamati
+Bandarban
+অন্যান্য Tourist Destination
+Customer Destination-এ গিয়ে প্রয়োজন অনুযায়ী:
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Local Transport
+নিতে পারবে।
 
-একটি Hotel Room-এর মূল্য:
+১২. ETP HOTEL ECOSYSTEM
+ETP-এর Hotel System শুধুমাত্র Hotel Booking Marketplace হবে না।
+ETP Hotel-এর জন্য দুই ধরনের Value তৈরি করবে:
+Small/Medium Hotel-এর জন্য
+Hotel Management System + Booking Platform + Customer Acquisition
+Large Hotel-এর জন্য
+Customer Acquisition + Booking Platform + PMS/API Integration
+অর্থাৎ ETP Hotel vertical হবে একটি:
+Hotel Digital Operating System
+এর সঙ্গে:
+Customer Acquisition Platform
 
-*৳১০,০০০*
+১৩. ETP Hotel-এর লক্ষ্য
+ETP এমন Hotel-কে Digital করার সুযোগ দিতে চায় যাদের:
+নিজস্ব Website নেই;
+Online Booking System নেই;
+PMS নেই;
+Manual Register ব্যবহার করতে হয়;
+Excel-এর মাধ্যমে Booking manage করতে হয়;
+Customer management দুর্বল;
+Digital Marketing সীমিত।
+ETP তাদের জন্য একটি সহজ Hotel Management Platform দিতে পারে।
 
-Hotel ETP-কে:
+১৪. Hotel-এর ধরন
+ETP বিভিন্ন ধরনের Accommodation Provider অন্তর্ভুক্ত করতে পারবে।
+Core Hotel
+Budget Hotel
+Mid-range Hotel
+Premium Hotel
+Guest House
+Future Stay
+Resort
+Villa
+Cottage
+Family Homestay
+Eco Stay
+Group Stay
+Premium Stay
+সব ধরনের Property একই নিয়মে পরিচালিত হবে না।
+Property Type অনুযায়ী আলাদা Features প্রয়োজন হতে পারে।
 
-*২০% Commission*
+১৫. Hotel Dashboard
+Hotel Owner/Manager একটি Dashboard থেকে পুরো Hotel পরিচালনা করতে পারবে।
+Dashboard-এ দেখা যাবে:
+মোট Room
+Available Room
+Reserved Room
+Occupied Room
+Cleaning Required
+Maintenance Room
+Check-in
+Check-out
+Today's Revenue
+Pending Payment
+Upcoming Booking
+Booking Source
+Occupancy
+Customer Activity
+Notifications
+Reports
+Owner চাইলে Mobile/Web থেকে দূর থেকেও Hotel-এর Performance দেখতে পারবে।
 
-দিতে রাজি হলো।
+১৬. Hotel Room Management
+প্রতিটি Room-এর জন্য থাকবে:
+Room Number
+Room Type
+Capacity
+Price
+Seasonal Price
+Amenities
+Photos
+Extra Bed
+Discount
+Availability
+Status
+Room Status হতে পারে:
+Available
+↓
+Reserved
+↓
+Checked-in / Occupied
+↓
+Checked-out
+↓
+Cleaning
+↓
+Ready
+এছাড়াও:
+Maintenance / Out of Service
 
-২০% = *৳২,০০০*
+১৭. Unified Hotel Inventory
+Hotel-এর সবচেয়ে গুরুত্বপূর্ণ বিষয় হবে:
+One Live Inventory
+একই Room Inventory বিভিন্ন Booking Source ব্যবহার করবে।
+যেমন:
+ETP Booking
+Hotel Direct Booking
+Walk-in Booking
+Phone Booking
+Manual Booking
+Future OTA/API Booking
+সব Booking একই Inventory-তে update হবে।
+এর ফলে একই Room দুই Customer-কে ভুলভাবে Book হয়ে যাওয়ার ঝুঁকি কমবে।
 
-ETP চাইলে পুরো ২০% নিজের Revenue না রেখে:
+১৮. Hotel Direct Customer Model
+Hotel যদি নিজের Customer নিজে নিয়ে আসে, তাহলে ETP-এর বিশেষ Business Model প্রযোজ্য হবে।
+Hotel-এর Own Customer
+Booking Commission = 0%
+Hotel ETP-কে agreed:
+Monthly Subscription Fee
+দেবে।
+অর্থাৎ Hotel নিজের Customer আনলে প্রতিটি Booking-এর ওপর ETP আলাদা Commission নেবে না।
 
-*৩% = ৳৩০০*
+১৯. ETP Customer Model
+যদি Customer ETP Platform থেকে Hotel-এ আসে:
+ETP-Originated Booking
+তাহলে Hotel ETP-কে Vendor Agreement অনুযায়ী:
+Booking Commission
+দেবে।
+Commission percentage আগে থেকে স্থায়ীভাবে নির্ধারিত হবে না।
+এটি:
+Hotel Type
+Market
+Booking Volume
+Service Category
+Vendor Agreement
+অনুযায়ী নির্ধারণ করা যেতে পারে।
 
-নিজের Revenue হিসেবে রাখতে পারে এবং:
+২০. Hotel-এর জন্য এই Model কেন গুরুত্বপূর্ণ?
+Hotel Owner-এর কাছে ETP-এর Value Proposition হবে:
+“আপনার নিজের Customer-এর জন্য আমরা booking commission নেব না। ETP Customer এনে দিলে agreed commission প্রযোজ্য হবে।”
+এতে Hotel Owner একইসাথে:
+নিজের Customer রাখতে পারবে;
+ETP Software ব্যবহার করতে পারবে;
+Digital Management পাবে;
+ETP থেকে নতুন Customer পাবে।
 
-*১৭% = ৳১,৭০০*
+২১. Hotel Mini Website
+প্রতিটি Hotel-এর জন্য ETP একটি Professional Hotel Page তৈরি করতে পারবে।
+Page-এ থাকবে:
+Hotel Name
+Photos
+Location
+Facilities
+Room Types
+Price
+Availability
+Reviews
+Rating
+Policies
+Offers
+Contact
+Book Now
+Hotel এই Page-এর Link:
+Facebook
+WhatsApp
+Google Business
+QR Code
+Printed Material
+ইত্যাদির মাধ্যমে Share করতে পারবে।
+ছোট Hotel-এর জন্য এটি নিজস্ব Website-এর প্রাথমিক বিকল্প হিসেবে কাজ করতে পারে।
 
-Customer Discount/Benefit হিসেবে দিতে পারে।
+২২. Hotel Booking System
+Customer দেখতে পারবে:
+Room Type
+Price
+Availability
+Capacity
+Amenities
+Check-in
+Check-out
+Cancellation Policy
+Refund Policy
+Hotel Rules
+তারপর Booking করতে পারবে।
+Booking-এর একটি Unique Reference থাকবে।
 
-তাহলে Customer-এর কার্যকর মূল্য হতে পারে:
+২৩. ETP Hotel Booking QR
+ETP-এর মাধ্যমে Hotel Booking করলে Customer একটি:
+Secure Booking QR
+পাবে।
+Hotel Reception ETP Dashboard/Scanner দিয়ে QR Scan করবে।
+Workflow:
+Customer arrives
+↓
+QR Scan
+↓
+ETP Server Verification
+↓
+Booking Found
+↓
+Guest Information Load
+↓
+Room/Booking Details Load
+↓
+Check-in
+এইভাবে Reception-এর Manual Data Entry কমানো যাবে।
 
-*৳১০,০০০ − ৳১,৭০০ = ৳৮,৩০০*
+২৪. QR দিয়ে Commission Verification
+Hotel QR Scan করার ফলে ETP Database-এ প্রমাণ থাকবে যে:
+এই Booking ETP-এর মাধ্যমে এসেছে।
+এতে:
+Booking Source
+Booking ID
+Hotel
+Guest Reference
+Check-in
+Check-out
+Booking Status
+ইত্যাদি Server-side-এ যাচাই করা যাবে।
+এর ফলে ETP ও Hotel-এর মধ্যে:
+Commission Dispute
+কম হওয়ার সম্ভাবনা থাকবে।
+Hotel ETP-originated Booking অনুযায়ী agreed Commission Settlement করবে।
 
-ফলে:
+২৫. QR Security
+QR-এর ভিতরে সরাসরি:
+NID
+Password
+Phone Number
+Sensitive Personal Data
+রাখা হবে না।
+QR-এ থাকবে একটি:
+Secure / Signed / Opaque Verification Token
+Server Token যাচাই করে প্রয়োজনীয় Data দেখাবে।
+QR System-এ:
+Expiration
+Replay Protection
+Used/Unused State
+Booking Status
+Audit Log
+থাকবে।
 
-*Hotel Customer পেল।*
+২৬. Hotel Guest Management
+Hotel Dashboard-এ Guest-এর:
+Name
+Booking
+Stay History
+Check-in
+Check-out
+Payment Status
+Special Request
+Booking Reference
+ইত্যাদি প্রয়োজনীয় তথ্য থাকবে।
+Sensitive Data Role-based Access-এর মাধ্যমে সুরক্ষিত থাকবে।
 
-*Customer কম দামে Hotel পেল।*
+২৭. Digital Check-in / Check-out
+Hotel Stay Workflow:
+Booking
+↓
+Guest Verification
+↓
+Check-in
+↓
+Stay
+↓
+Check-out
+↓
+Final Bill
+↓
+Review
+QR Verification এই Workflow-এর গুরুত্বপূর্ণ অংশ হতে পারে।
 
-*ETP Revenue পেল।*
-
-এটি ETP-এর সম্ভাব্য:
-
-## Win-Win-Win Model
-
-তবে বাস্তবে Discount, Commission, Tax, Payment Cost এবং Vendor Agreement অনুযায়ী কাঠামো নির্ধারণ করা হবে। ৩% ও ১৭% শুধুমাত্র উদাহরণ।
-
----
-
-# ৭. Trust & Safety
-
-ETP-এর জন্য Trust & Safety একটি কেন্দ্রীয় বিষয়।
-
-Vendor Control:
-
-* KYC
-* Trade License Verification
-* Business Verification
-* Location Verification
-* Listing Approval
-* Vendor Agreement
-* Performance Monitoring
-
-Booking Control:
-
-* Booking Verification
-* QR Verification
-* Duplicate Booking Detection
-* Cancellation Monitoring
-* Refund Rules
-* Dispute Handling
-
-Platform Security:
-
-* Password Hashing
-* JWT/Refresh Token Security
-* OTP
-* Role-Based Access
-* Webhook Signature Verification
-* Idempotency
-* Admin Audit Trail
-
----
-
-# ৮. Local Payment Strategy
-
-বর্তমানে Payment Gateway Live নয়।
-
-পরিকল্পিত Payment:
-
-* বিকাশ
-* নগদ
-* রকেট
-* Card
-* Local Payment Gateway
-
-MVP-তে প্রযোজ্য ক্ষেত্রে:
-
-* Cash
-* Partner Settlement
-* Manual Settlement
-
-ব্যবহার করা যেতে পারে।
-
-Payment Integration Phase 2-তে পরিকল্পিত।
-
----
-
-# ৯. Language Strategy
-
-ETP হবে:
-
-## বাংলা-প্রথম
-
-Customer Application-এ:
-
-* বাংলা Default
-* English Support
-* বাংলা + English Toggle
-
-Vendor/Admin-এর ক্ষেত্রে প্রয়োজন অনুযায়ী English ও Bangla উভয় Support থাকবে।
-
----
-
-# ১০. Offline & Low Connectivity
-
-Phase 2-তে:
-
-* Cached e-Ticket
-* Cached QR
-* Offline Ticket View
-* SMS Booking Confirmation
-* Manual Verification Fallback
-
-পরিকল্পনা করা হয়েছে।
-
-MVP-তে এগুলো সম্পূর্ণভাবে বাস্তবায়িত বলে দাবি করা হবে না।
-
----
-
-# ১১. QR Travel Pass
-
-QR Travel Pass ETP Ecosystem-এর একটি গুরুত্বপূর্ণ অংশ।
-
-QR-এর মাধ্যমে:
-
-* Booking Verification
-* Hotel Check-in
-* Bus Verification
-* Activity Verification
-* Partner Service Validation
-
+২৮. Free Hotel Bill / Invoice System
+ETP Hotel Subscription-এর মধ্যে:
+Free Digital Bill System
+থাকবে।
+Hotel আলাদা Bill Generation Charge দেবে না।
+Hotel Dashboard থেকে:
+Generate Bill → PDF
+করা যাবে।
+Bill:
+PDF হিসেবে Save
+Print
+WhatsApp-এ Share
+Customer-কে Digitalভাবে Send
 করা যাবে।
 
-QR-এ Customer-এর সরাসরি:
+২৯. Hotel Bill-এ কী থাকবে?
+Bill-এ থাকবে:
+Hotel Information
+Guest Information
+Booking Reference
+Invoice Number
+Room Number
+Room Type
+Check-in Date
+Check-out Date
+Room Charge
+Extra Charge
+Discount
+Paid Amount
+Due Amount
+Refund
+Total Amount
+প্রয়োজনে Hotel-এর নিজস্ব Billing Information-ও যুক্ত করা যাবে।
 
-* Phone Number
-* NID
-* Sensitive Personal Data
+৩০. Hotel Housekeeping
+Hotel-এর Room Status Dashboard-এর সঙ্গে Housekeeping যুক্ত থাকবে।
+Status:
+Cleaning Required
+Cleaning in Progress
+Clean
+Ready
+Occupied
+Maintenance
+Housekeeping Staff Mobile/Web Interface থেকে Task দেখতে পারবে।
+Reception দেখতে পারবে কোন Room Ready।
 
-রাখা হবে না।
+৩১. Hotel Maintenance
+Hotel-এ কোনো সমস্যা হলে:
+Reported
+↓
+Assigned
+↓
+In Progress
+↓
+Fixed
+↓
+Closed
+Workflow থাকবে।
+যেমন:
+AC সমস্যা
+Light সমস্যা
+Plumbing
+Furniture
+Electrical
+অন্যান্য Maintenance Issue
+History সংরক্ষণ করা যাবে।
 
-বরং Secure Token/Reference ব্যবহার করা হবে।
-
-Backend QR Token-এর মাধ্যমে Booking Status যাচাই করবে।
-
----
-
-# ১২. Vendor Onboarding
-
-Vendor Flow:
-
-1. আবেদন
-2. KYC
-3. Document Submission
-4. Admin Verification
-5. Vendor Approval
-6. Commission Agreement
-7. Listing Live
-8. Booking
-9. QR Verification
-10. Settlement
-11. Customer Review
-12. Performance Monitoring
-
----
-
-# ১৩. AI Trip Planner
-
-### MVP
-
-Rule-Based Trip Planner:
-
-* Destination Template
-* Budget Filter
-* Basic Schedule
-* Basic Recommendations
-
-### Phase 2
-
-AI-Assisted Trip Planning:
-
-* User Input
-* Budget
-* Duration
-* Preference
-* Suggested Itinerary
-
-### Future
-
-Personalized Recommendation Engine:
-
-* Consent-based Booking Data
-* Review Data
-* Preference Data
-
-ব্যবহার করে ব্যক্তিগতকরণ।
-
----
-
-# ১৪. MVP বনাম Future Feature Matrix
-
-| Feature                     | Status                 |
-| --------------------------- | ---------------------- |
-| Bus Booking                 | MVP                    |
-| Hotel Booking               | MVP                    |
-| Authentication              | Implemented/Foundation |
-| e-Ticket                    | MVP                    |
-| Basic QR Verification       | MVP                    |
-| Vendor System               | MVP                    |
-| Admin Panel                 | MVP                    |
-| Customer Dashboard          | MVP                    |
-| Rule-Based Trip Planner     | MVP                    |
-| Restaurant/Activity         | Phase 2                |
-| Car Rental                  | Phase 2                |
-| Rewards/Loyalty             | Phase 2                |
-| bKash/Nagad/Rocket/Card     | Phase 2                |
-| AI Trip Planner             | Phase 2                |
-| Complete QR Travel Pass     | Phase 2                |
-| Offline Support             | Phase 2                |
-| Vendor Analytics            | Phase 2                |
-| Push Notification           | Phase 2                |
-| 2FA                         | Phase 2                |
-| Train Ticketing             | Phase 3                |
-| Air Ticketing               | Phase 3                |
-| International Travel        | Phase 3                |
-| Corporate Travel            | Phase 3                |
-| Advanced AI Personalization | Future                 |
-| Insurance/Concierge         | Future                 |
-
----
-
-# ১৫. Three-Phase Roadmap
-
-## Phase 1 — MVP
-
-* Bus
-* Hotel
-* Basic Trip Planner
-* Authentication
-* e-Ticket
-* QR Foundation
-* Vendor System
-* Admin Operations
-* Customer Dashboard
-
-## Phase 2 — Growth
-
-* Boat/Additional Local Transport
-* Restaurant
-* Activity
-* Car Rental
-* Rewards
-* Local Payment
-* AI Planner
-* Complete QR Travel Pass
-* Offline
-* Vendor Analytics
-* Notifications
-
-## Phase 3 — Expansion
-
-* Train
-* Air
-* International
-* Corporate/B2B
-* Advanced AI
-* Expanded Ecosystem
-
----
-
-# ১৬. Go-To-Market Strategy
-
-ETP শুরুতে পুরো বাংলাদেশে একসাথে না গিয়ে সীমিত সংখ্যক জনপ্রিয় Tourist Destination ও Route নিয়ে Pilot করবে।
-
-লক্ষ্য:
-
-* Verified Hotel
-* Bus/Transport Provider
-* Restaurant
-* Activity
-* Local Transport
-* Local Service Provider
-
-এর একটি ছোট কিন্তু কার্যকর Network তৈরি করা।
-
----
-
-# ১৭. Tourist Destination Local Service Model
-
-ETP-এর Local Service Model মূলত Tourist Destination-কেন্দ্রিক হবে।
-
-এটি ঢাকার সাধারণ দৈনন্দিন Transport Marketplace হিসেবে পরিকল্পিত নয়।
-
+৩২. Hotel Staff Management
+Hotel-এ Role-based Access থাকবে।
+সম্ভাব্য Role:
+Owner
+General Manager
+Hotel Manager
+Receptionist
+Housekeeping
+Maintenance
+Accountant
+প্রত্যেক Role-এর Permission আলাদা হবে।
 উদাহরণ:
+Receptionist Booking Manage করতে পারবে।
+কিন্তু Financial Configuration পরিবর্তন করার Permission নাও থাকতে পারে।
 
-* Cox's Bazar
-* Khagrachhari
-* Rangamati
-* Bandarban
-* অন্যান্য Tourist Destination
+৩৩. Hotel Billing & Revenue
+Hotel System-এ:
+Room Charge
+Extra Charge
+Discount
+Paid
+Due
+Refund
+Payment Status
+Invoice
+Track করা যাবে।
+Owner দেখতে পারবে:
+আজকের Revenue
+মাসিক Revenue
+Pending Amount
+Refund
+ETP Commission
+Vendor Settlement
 
-এসব এলাকায় Customer প্রয়োজন অনুযায়ী:
-
-* CNG
-* Auto-Rickshaw
-* Bike
-* Cycle
-* Boat
-* Local Transport
-* Local Assistance
-
-নিতে পারবেন।
-
----
-
-# ১৮. Local Student Network
-
-ETP Tourist Destination-এর স্থানীয় Student-দের জন্য earning opportunity তৈরি করতে পারে।
-
-যেখানে উপযুক্ত ও আইনগতভাবে অনুমোদিত ক্ষেত্রে Student-রা:
-
-* Local Explorer
-* Local Information Assistant
-* Translation Assistance
-* Photography Assistance
-* Tourist Support
-* Local Spot Information
-* Basic Local Assistance
-
-এর মতো Service দিতে পারবে।
-
-তাদেরকে যেখানে প্রয়োজন সেখানে সরকারি/পেশাগতভাবে অনুমোদিত Tour Guide হিসেবে উপস্থাপন করা হবে না।
-
----
-
-# ১৯. বেকার ও স্থানীয় মানুষের কর্মসংস্থানের সুযোগ
-
-ETP-এর লক্ষ্য শুধুমাত্র Customer-এর Travel Booking নয়।
-
-Tourist Destination-এর স্থানীয় মানুষও ETP-এর Marketplace থেকে বৈধভাবে আয় করার সুযোগ পেতে পারে।
-
+৩৪. Hotel Backup & Data Retention
+ETP Platform নিয়মিত Platform-level Backup রাখবে।
+Hotel প্রয়োজন অনুযায়ী নির্দিষ্ট সময়ের Data Export/Retention করতে পারবে।
 যেমন:
-
-* CNG Service
-* Auto-Rickshaw Service
-* Bike Service
-* Cycle Rental
-* Boat Service
-* Local Food
-* Small Restaurant
-* Small Hotel
-* Cottage
-* Local Activity
-* Photography
-* Local Assistance
-* অন্যান্য পর্যটন-সংশ্লিষ্ট বৈধ Service
-
-এর ফলে পর্যটকের খরচের একটি অংশ সরাসরি স্থানীয় অর্থনীতিতে প্রবাহিত হতে পারে।
-
----
-
-# ২০. Small Hotel & Restaurant Inclusion
-
-ETP শুধুমাত্র বড় Hotel বা বড় Restaurant নিয়ে কাজ করবে না।
-
-ছোট:
-
-* Hotel
-* Guest House
-* Cottage
-* Family Restaurant
-* Local Food Business
-* Small Resort
-
-কেও Marketplace-এ অন্তর্ভুক্ত করার লক্ষ্য থাকবে।
-
-যেসব ব্যবসার নিজস্ব Website বা App নেই, ETP তাদের জন্য:
-
-* Digital Listing
-* Customer Reach
-* Booking
-* Review
-* Settlement
-* Promotional Opportunity
-
-দিতে পারে।
-
----
-
-# ২১. Traditional Tourist Group বনাম ETP
-
-বাংলাদেশে বিভিন্ন পরিচিত Tourist Group রয়েছে যারা নির্দিষ্ট Schedule অনুযায়ী Group Tour পরিচালনা করে।
-
-তাদের সুবিধা:
-
-* Group Pricing
-* Fixed Schedule
-* Pre-arranged Hotel
-* Pre-arranged Food
-* Pre-arranged Transport
-* Group Management
-
-এটি একটি কার্যকর Travel Model।
-
-কিন্তু Customer-এর স্বাধীনতা অনেক ক্ষেত্রে সীমিত হতে পারে।
-
-যেমন:
-
-* Group যে তারিখ ঠিক করেছে সেই তারিখে যেতে হবে;
-* Group যে Hotel ঠিক করেছে সেখানে থাকতে হতে পারে;
-* Group যে Restaurant নির্ধারণ করেছে সেখানে খেতে হতে পারে;
-* Group যে Route ঠিক করেছে সেটি অনুসরণ করতে হতে পারে;
-* নিজের ইচ্ছামতো Schedule পরিবর্তন করা কঠিন হতে পারে।
-
-ETP এই Model-এর বিকল্প হিসেবে একটি:
-
-## Independent Travel Model
-
-তৈরি করতে চায়।
-
----
-
-# ২২. ETP-এর মূল পার্থক্য — Customer Choice
-
-ETP Customer-কে বলতে চায়:
-
-**"আপনার ভ্রমণ—আপনার সিদ্ধান্ত।"**
-
-Customer নিজের:
-
-* Hotel
-* Restaurant
-* Food
-* Transport
-* Activity
-* Guide/Explorer
-* Schedule
-* Budget
-
-নিজেই নির্বাচন করতে পারবেন।
-
-ETP-এর কাজ হবে Customer-এর সিদ্ধান্ত কেড়ে নেওয়া নয়, বরং সিদ্ধান্ত নেওয়ার জন্য:
-
-*Information + Verified Options + Transparent Price + Booking + Discount Opportunity*
-
-দেওয়া।
-
----
-
-# ২৩. Group Tour-এর সুবিধা ও ETP-এর স্বাধীনতা
-
-ETP-এর দীর্ঘমেয়াদি লক্ষ্য:
-
-## Group Tour-এর সাশ্রয়ী সুবিধা
-
-এবং
-
-## Independent Travel-এর স্বাধীনতা
-
-দুটিকে একসাথে আনার চেষ্টা করা।
-
-অর্থাৎ Customer চাইলে:
-
-### Option 1
-
-পুরো নিজের মতো ভ্রমণ করতে পারবেন।
-
-### Option 2
-
-ETP-এর Suggested Trip Plan অনুসরণ করতে পারবেন।
-
-### Option 3
-
-ভবিষ্যতে ETP-এর মাধ্যমে Group/Community Trip-এ অংশ নিতে পারবেন।
-
-Customer-এর হাতে Choice থাকবে।
-
----
-
-# ২৪. ETP Commission Sharing-এর উদাহরণ
-
-ধরা যাক Customer একটি Hotel বুক করতে চায়।
-
-Hotel-এর মূল্য:
-
-*৳১০,০০০*
-
-Hotel ETP-কে:
-
-*২০% Commission*
-
-দেবে।
-
-ETP মোট পাবে:
-
-*৳২,০০০*
-
-এর মধ্যে উদাহরণস্বরূপ:
-
-*৳৩০০ ETP Revenue*
-
-এবং:
-
-*৳১,৭০০ Customer Benefit*
-
-দিতে পারে।
-
-Customer:
-
-*৳৮,৩০০*
-
-কার্যকর মূল্যে Hotel পেতে পারে।
-
-এটি শুধুমাত্র Business Model-এর উদাহরণ।
-
-বাস্তবে:
-
-* Vendor Agreement
-* Tax
-* Payment Cost
-* Discount Policy
-* Commission Structure
-
-অনুযায়ী সিদ্ধান্ত হবে।
-
----
-
-# ২৫. ETP Win-Win-Win Model
-
-### Vendor
-
-নতুন Customer পায়।
-
-### Customer
-
-নিজের পছন্দ অনুযায়ী Service পায় এবং সম্ভাব্য কম দামে পেতে পারে।
-
-### ETP
-
-Commission/Service Revenue পায়।
-
-এই তিন পক্ষের মধ্যে ভারসাম্য তৈরি করাই ETP-এর দীর্ঘমেয়াদি Marketplace Philosophy।
-
----
-
-# ২৬. Destination Example — Cox's Bazar
-
-ধরা যাক একজন Customer Cox's Bazar গেলেন।
-
-ETP-তে তিনি দেখতে পারেন:
-
-### Hotel
-
-* Budget Hotel
-* Mid-range Hotel
-* Resort
-* Cottage
-
-### Local Transport
-
-* CNG
-* Auto-Rickshaw
-* Bike
-* Cycle
-
-### Food
-
-* Local Restaurant
-* Family Restaurant
-* Budget Food
-* অন্যান্য Food Option
-
-### Activity
-
-* Beach-related Activity
-* Local Tour
-* Boat Experience
-* Local Explorer
-* অন্যান্য Verified Activity
-
-Customer নিজের:
-
-*Budget + Time + Preference*
-
-অনুযায়ী এগুলো নির্বাচন করতে পারবেন।
-
----
-
-# ২৭. Destination Example — Khagrachhari
-
-Customer চাইলে:
-
-* Hotel
-* CNG
-* Auto-Rickshaw
-* Bike
-* Cycle
-* Local Student/Explorer
-* Local Food
-* Local Activity
-* Local Transport
-
-নিজের প্রয়োজন অনুযায়ী নির্বাচন করতে পারবেন।
-
-এখানে ETP-এর লক্ষ্য হবে Tourist Destination-এর স্থানীয় Service Economy-কে ডিজিটাল Marketplace-এর সঙ্গে যুক্ত করা।
-
----
-
-# ২৮. Destination Local Boat
-
-যেসব Tourist Destination-এ নৌকা পর্যটন সেবার অংশ, সেখানে যাচাইকৃত Boat Service Provider-দের ETP Marketplace-এ অন্তর্ভুক্ত করা যেতে পারে।
-
-Customer:
-
-* Boat Type
-* Duration
-* Price
-* Availability
-* Route/Service Details
-
-দেখে নির্বাচন করতে পারবেন।
-
----
-
-# ২৯. Customer Freedom
-
-ETP-এর Freedom Model-এর অর্থ:
-
-Customer চাইলে Hotel পরিবর্তন করতে পারবেন।
-
-Customer চাইলে Restaurant পরিবর্তন করতে পারবেন।
-
-Customer চাইলে Transport পরিবর্তন করতে পারবেন।
-
-Customer চাইলে কোনো Activity বাদ দিতে পারবেন।
-
-Customer চাইলে নিজের Schedule অনুযায়ী Trip সাজাতে পারবেন।
-
+Booking History
+Guest Records
+Bills
+Payment Records
+Room Data
+Reports
+Operational Records
+Hotel নির্দিষ্ট কয়েক মাসের Data নিজের Record হিসেবে রাখতে পারবে, যেখানে আইন ও Privacy Policy অনুযায়ী তা অনুমোদিত।
+Unlimited Personal Data Retention-এর প্রতিশ্রুতি দেওয়া হবে না।
+
+৩৫. Hotel Analytics
+Hotel Owner দেখতে পারবে:
+Occupancy Rate
+Revenue
+Average Room Rate
+Booking Volume
+Cancellation Rate
+Average Booking Value
+Direct Booking
+ETP Booking
+Room Performance
+Monthly Revenue
+Returning Customer Rate
+এতে Hotel Owner Business Decision নিতে পারবে।
+
+৩৬. AI Hotel Manager
+ভবিষ্যতে ETP Hotel Dashboard-এ AI Assistant যুক্ত করা যাবে।
+Owner প্রশ্ন করতে পারবে:
+“এই মাসে Hotel-এর Performance কেমন?”
+“কোন Room সবচেয়ে বেশি Book হয়েছে?”
+“কোন দিন Occupancy কম?”
+“গত মাসের তুলনায় Revenue কেমন?”
+“Weekend-এর জন্য Offer দেওয়া উচিত কি?”
+AI Data বিশ্লেষণ করে Decision Support দিতে পারবে।
+AI নিজে অনুমতি ছাড়া Financial বা Critical Operational Decision নেবে না।
+
+৩৭. Large Hotel PMS Integration
+বড় Hotel-এর অনেক সময় নিজস্ব PMS থাকে।
+ETP তাদের PMS replace করতে চাইবে না।
+বরং API Integration-এর মাধ্যমে:
+Room Inventory
+Availability
+Rate
+Reservation
+Cancellation
+Booking Status
+Sync করার সুযোগ থাকবে।
+এভাবে:
+Small Hotel → ETP PMS/Management System
+Large Hotel → ETP Integration Layer
+হতে পারবে।
+
+৩৮. Multi-Property Hotel Management
+একজন Hotel Owner যদি একাধিক Property পরিচালনা করে:
+Hotel A + Hotel B + Hotel C
+একটি Login থেকেই দেখতে পারবে:
+Total Rooms
+Occupancy
+Revenue
+Booking
+Property Performance
+Staff
+Booking Source
+প্রতিটি Property-এর Data আলাদা থাকবে।
+
+৩৯. Hotel Customer Acquisition
+ETP Hotel-কে শুধু Software দেবে না।
+ETP-এর Marketplace থেকেও Customer আসবে।
+Hotel-এর জন্য থাকবে:
+Search Listing
+Destination Listing
+Hotel Page
+Room Listing
+Review
+Rating
+Offers
+Promotional Campaign
+Featured Listing
+Future Sponsored Placement
 অর্থাৎ:
-
-## "One Package Fits Everyone" নয়।
-
-বরং:
-
-## "One Platform, Many Choices."
-
----
-
-# ৩০. Local Economy Impact
-
-ETP-এর লক্ষ্য হলো Tourist Destination-এ পর্যটনের অর্থনৈতিক সুবিধা আরও বিস্তৃতভাবে ছড়িয়ে দেওয়া।
-
-একজন Tourist-এর ব্যয় যেন শুধু বড় ব্যবসায়ীর কাছেই সীমাবদ্ধ না থাকে।
-
-বরং সুযোগ পেতে পারে:
-
-* Small Hotel Owner
-* Restaurant Owner
-* CNG Driver
-* Auto-Rickshaw Driver
-* Bike/Cycle Provider
-* Boat Owner
-* Local Student
-* Local Service Provider
-* Local Activity Provider
-
-এতে ETP একটি Local Tourism Economy Platform হিসেবেও কাজ করতে পারে।
-
----
-
-# ৩১. Customer Trust
-
-Customer যেন বুঝতে পারেন:
-
-*কে Service Provider, কী Service, কত Price, কী Terms, কী Refund Rule।*
-
-এই কারণে:
-
-* Vendor Verification
-* Listing Approval
-* Review
-* Rating
-* QR Verification
-* Booking Reference
-* Complaint System
-
-গুরুত্বপূর্ণ হবে।
-
----
-
-# ৩২. Review & Rating
-
-Customer Service গ্রহণের পর:
-
-* Rating
-* Review
-* Experience Feedback
-
-দিতে পারবেন।
-
-এই Review System Vendor Quality বজায় রাখতে সাহায্য করবে।
-
-Admin:
-
-* Fake Review
-* Abuse
-* Complaint
-* Repeated Poor Service
-
-পর্যবেক্ষণ করতে পারবে।
-
----
-
-# ৩৩. Refund & Cancellation
-
-প্রতিটি Vendor-এর:
-
-* Cancellation Policy
-* Refund Policy
-* No-show Policy
-* Modification Rules
-
-আগেই প্রকাশ করা হবে।
-
-Customer Booking করার আগে Terms দেখতে পারবেন।
-
----
-
-# ৩৪. Dispute Resolution
-
-Customer ও Vendor-এর মধ্যে সমস্যা হলে ETP:
-
-1. Complaint গ্রহণ করবে;
-2. Booking যাচাই করবে;
-3. প্রয়োজনীয় তথ্য সংগ্রহ করবে;
-4. Vendor-এর বক্তব্য নেবে;
-5. Policy অনুযায়ী সিদ্ধান্ত নেবে;
-6. প্রযোজ্য ক্ষেত্রে Refund/Adjustment করবে।
-
-Phase 2-তে উন্নত Dispute Management System তৈরি করা হবে।
-
----
-
-# ৩৫. Fraud Prevention
-
-MVP-তে:
-
-* Duplicate Booking Check
-* QR Validation
-* Booking Status
-* Cancellation Pattern
-* Admin Review
-
-ব্যবহার করা হবে।
-
-ভবিষ্যতে:
-
-* Risk Scoring
-* Automated Fraud Detection
-* Suspicious Activity Detection
-
-যোগ করা যেতে পারে।
-
----
-
-# ৩৬. Data Privacy
-
-ETP Customer-এর প্রয়োজনীয় তথ্যই সংগ্রহ করার নীতি অনুসরণ করবে।
-
-QR-এ:
-
-* NID
-* Password
-* Phone Number
-* Sensitive Personal Information
-
-সরাসরি রাখা হবে না।
-
-Customer Data ব্যবহারের ক্ষেত্রে Privacy Policy ও প্রযোজ্য আইন অনুসরণ করা হবে।
-
-ভবিষ্যতের Personalization Feature-এর জন্য Customer Consent গুরুত্বপূর্ণ হবে।
-
----
-
-# ৩৭. Government & Legal Compliance
-
-ETP-এর Business Model অনুযায়ী প্রযোজ্য Government Documentation ধাপে ধাপে সম্পন্ন করতে হবে।
-
-সম্ভাব্য প্রধান বিষয়:
-
-### Business
-
-* Company Registration
-* Name Clearance
-* Memorandum & Articles
-* Certificate of Incorporation
-* Trade License
-* TIN
-* প্রযোজ্য ক্ষেত্রে BIN/VAT
-
-### Travel Sector
-
-Business Model অনুযায়ী:
-
-* Travel Agency Registration
-* Tour Operator Registration
-* সংশ্লিষ্ট Tourism Compliance
-
-প্রযোজ্য হতে পারে।
-
-ETP নিজে Tour Operator হিসেবে কাজ করবে নাকি Marketplace/Technology Platform হিসেবে কাজ করবে—এটি Legal Review-এর মাধ্যমে নির্ধারণ করতে হবে।
-
----
-
-# ৩৮. Tour Operator Compliance
-
-যদি ETP নিজে Tour Operator হিসেবে Registration গ্রহণ করে, তাহলে সংশ্লিষ্ট Registration এবং Security/Financial Requirements প্রযোজ্য হতে পারে।
-
-বাংলাদেশ Tourism Board-এর বর্তমান Tour Operator Registration process-এ Application Fee, Registration Fee, Service Charge, VAT এবং Security Deposit-এর requirements রয়েছে।
-
-সুতরাং ETP-এর Business Structure চূড়ান্ত করার আগে Travel Agency/Tour Operator classification একজন যোগ্য আইনজীবী/Consultant ও সংশ্লিষ্ট কর্তৃপক্ষের সঙ্গে যাচাই করা হবে।
-
----
-
-# ৩৯. Company Registration
-
-ETP-এর দীর্ঘমেয়াদি ব্যবসায়িক কাঠামোর জন্য Private Limited Company বিবেচনা করা যেতে পারে।
-
-প্রয়োজন হতে পারে:
-
-* Name Clearance
-* MOA
-* AOA
-* Director Information
-* Share Structure
-* Registered Office
-* RJSC Filing
-
-RJSC-এর সরকারি fee schedule অনুযায়ী Name Clearance ও Company Registration-এর বিভিন্ন ফি প্রযোজ্য।
-
-বাস্তব খরচের মধ্যে Professional Documentation/Legal Assistance আলাদা হতে পারে।
-
----
-
-# ৪০. Trade License
-
-ETP-এর Office/Business Operation অনুযায়ী সংশ্লিষ্ট Local Authority থেকে Trade License প্রয়োজন হতে পারে।
-
-Trade License fee:
-
-* Business Type
-* Location
-* Local Authority
-* Signboard/Other Applicable Charges
-
-অনুযায়ী পরিবর্তিত হতে পারে।
-
----
-
-# ৪১. TIN & Tax
-
-Business-এর জন্য TIN ও Tax Compliance প্রয়োজন হবে।
-
-Revenue তৈরি হওয়ার পর:
-
-* Tax Accounting
-* Return Filing
-* Business Expense Record
-* Commission Revenue Record
-
-সঠিকভাবে পরিচালনা করতে হবে।
-
----
-
-# ৪২. BIN/VAT
-
-ETP-এর Business Activity ও Turnover অনুযায়ী BIN/VAT/Turnover Tax applicability নির্ধারণ করতে হবে।
-
-এটি Business Launch-এর আগে একজন Tax Practitioner/Accountant-এর মাধ্যমে যাচাই করা উচিত।
-
----
-
-# ৪৩. Trademark
-
-ETP-এর Brand Name:
-
-*Extra Travel Point*
-
-এবং:
-
-*ETP*
-
-দীর্ঘমেয়াদে সুরক্ষিত করার জন্য Trademark Registration বিবেচনা করা হবে।
-
----
-
-# ৪৪. Vendor Legal Documents
-
-প্রতিটি Vendor-এর জন্য প্রয়োজন অনুযায়ী:
-
-* Vendor Agreement
-* KYC
-* Trade License
-* Owner Information
-* Business Address
-* Settlement Information
-* Commission Agreement
-* Refund Terms
-* Service Terms
-
-সংরক্ষণ করা হবে।
-
----
-
-# ৪৫. Customer Legal Documents
-
-ETP-এর Customer-facing platform-এ:
-
-* Terms & Conditions
-* Privacy Policy
-* Refund Policy
-* Cancellation Policy
-* Vendor Terms
-* Booking Terms
-* QR Terms
-* Data Consent
-
-প্রকাশ করা হবে।
-
----
-
-# ৪৬. Software Development Cost
-
-ETP-এর বর্তমান Software Foundation ইতিমধ্যে তৈরি হওয়ায় সম্পূর্ণ Software নতুন করে বানানোর খরচ প্রয়োজন নেই।
-
-যদি বাইরে থেকে সম্পূর্ণ নতুন করে তৈরি করা হয়, আনুমানিক:
-
-| Software                    |      সম্ভাব্য খরচ |
-| --------------------------- | ----------------: |
-| Professional Web App        |          ৳২–৪ লাখ |
-| Backend/API                 |          ৳২–৪ লাখ |
-| Admin Panel                 |          ৳১–২ লাখ |
-| Vendor System               |          ৳১–২ লাখ |
-| Mobile App                  |          ৳২–৫ লাখ |
-| QR System                   | ৳৫০ হাজার–১.৫ লাখ |
-| Payment Integration         |   ৳৩০ হাজার–১ লাখ |
-| Testing/Security/Deployment | ৳৫০ হাজার–১.৫ লাখ |
-
-সম্পূর্ণ নতুন Commercial Platform বাইরে থেকে তৈরি করলে মোট খরচ সহজেই:
-
-## ৳৮–১৫ লাখ+
-
-হতে পারে।
-
-তবে ETP-এর বর্তমান Software Foundation থাকার কারণে এই পুরো খরচ এখনই প্রয়োজন হবে না।
-
----
-
-# ৪৭. বর্তমান Software Finalization Cost
-
-বর্তমান ETP Software-এর জন্য প্রথম Pilot-এ মূল খরচ হতে পারে:
-
-* Bug Fix
-* Testing
-* Security Review
-* Deployment
-* Database Setup
-* Backup
-* QR Testing
-* Booking Flow Testing
-* Admin Testing
-* Production Preparation
-
-Planning Budget:
-
-## ৳৩০,০০০–৳৬০,০০০
-
----
-
-# ৪৮. Server, Domain & Infrastructure
-
-প্রথম Pilot-এর জন্য:
-
-* Domain
-* Cloud/VPS
-* Database
-* Backup
-* SSL
-* Storage
-* Monitoring
-
-মিলিয়ে প্রথম পর্যায়ে আনুমানিক:
-
-## ৳২০,০০০–৳৫০,০০০
-
-রাখা যেতে পারে।
-
-User বৃদ্ধি পেলে Server Cost বৃদ্ধি পাবে।
-
----
-
-# ৪৯. Mobile App Development
-
-Mobile App প্রথম দিনেই বাধ্যতামূলক নয়।
-
-প্রথমে:
-
-## Responsive Web App
-
-দিয়ে Pilot করা যেতে পারে।
-
-এরপর:
-
-## React Native Mobile App
-
-তৈরি করা যেতে পারে।
-
-Professional Development Team দিয়ে Mobile App তৈরি করতে আনুমানিক:
-
-## ৳২–৫ লাখ+
-
-লাগতে পারে।
-
----
-
-# ৫০. QR System Finalization
-
-QR System-এর মূল খরচ QR Image তৈরি করা নয়।
-
-মূল কাজ:
-
-* Secure Token
-* Backend Verification
-* Scanner
-* Booking Status
-* Used/Unused State
-* Fraud Protection
-* Audit Log
-
-ইত্যাদি।
-
-বর্তমান Foundation থাকার কারণে Pilot Finalization Budget:
-
-## ৳১৫,০০০–৳৩০,০০০
-
-ধরা যেতে পারে।
-
----
-
-# ৫১. Vendor Acquisition Cost
-
-প্রথম Pilot-এ হাজার Vendor প্রয়োজন নেই।
-
-প্রাথমিক লক্ষ্য হতে পারে:
-
-* ১০–২০ Hotel
-* ৫–১০ Restaurant
-* ৫–১০ Local Transport Provider
-* ৫–১০ Activity/Local Service Provider
-
-অর্থাৎ প্রাথমিকভাবে:
-
-## ৩০–৫০ Verified Vendor
-
-নিয়ে Pilot শুরু করা যেতে পারে।
-
----
-
-# ৫২. Marketing Cost
-
-প্রথম Pilot-এ বড় Advertising Campaign-এর পরিবর্তে:
-
-* Facebook Content
-* TikTok Content
-* Travel Community
-* Tourist Group
-* Referral
-* Student Community
-* Local Partnership
-* Vendor Promotion
-
+ETP = Hotel Software + Customer Acquisition
+
+৪০. Hotel Subscription Plans
+Hotel-এর জন্য তিন ধরনের Plan রাখা যেতে পারে।
+Basic
+Room Management
+Booking
+Guest Management
+Check-in/out
+Basic Dashboard
+Hotel Page
+Basic Reports
+Free Bill/PDF
+Professional
+Basic-এর সঙ্গে:
+Housekeeping
+Staff Management
+Advanced Billing
+Advanced Reports
+Direct Booking
+Offers
+Analytics
+Operations Tools
+Enterprise
+Professional-এর সঙ্গে:
+Multi-property
+PMS/API Integration
+Advanced Roles
+Advanced Analytics
+Enterprise Support
+Custom Integration
+বর্তমানে কোনো নির্দিষ্ট Price Final করা হবে না।
+Pilot-এর মাধ্যমে Price Validate করা হবে।
+
+৪১. Hotel Revenue Model for ETP
+ETP Hotel থেকে Revenue পেতে পারে:
+Monthly Subscription
+ETP-originated Booking Commission
+Featured Listing
+Sponsored Placement
+Premium Promotion
+Optional Advanced Services
+PMS/API Integration Fee
+Enterprise Support
+Future Hotel Service Revenue
+কিন্তু:
+Hotel-এর Own Customer
+Booking Commission = 0%
+ETP Customer
+Agreed Commission প্রযোজ্য।
+
+৪২. Hotel Optional Paid Services
+ভবিষ্যতে Hotel চাইলে আলাদা Paid Service নিতে পারে:
+Premium Listing
+Featured Placement
+Advanced Analytics
+Custom Hotel Page
+Custom Domain
+Digital Marketing
+API Integration
+Dedicated Support
+Premium AI Features
+Additional Integration
+তবে:
+PDF Bill / Print / WhatsApp Bill
+Core Hotel Subscription-এর অংশ হবে।
+এটির জন্য আলাদা Charge থাকবে না।
+
+৪৩. Hotel Trust & Safety
+Hotel-এর জন্য:
+KYC
+Trade License
+Business Verification
+Ownership/Authorization Verification
+Location Verification
+Listing Approval
+Vendor Agreement
+Review Monitoring
+Fraud Detection
+Complaint System
+Suspension System
+থাকবে।
+Unverified Hotel-কে Verified হিসেবে দেখানো হবে না।
+
+৪৪. Hotel Booking Protection
+Booking System-এ:
+Duplicate Booking Detection
+Availability Check
+Booking Status
+Cancellation
+Refund
+No-show Policy
+Modification Rules
+Audit Log
+থাকবে।
+Customer Booking-এর আগে Terms দেখতে পারবে।
+
+৪৫. ETP STAY — Hotel-এর বাইরে
+ETP Stay umbrella-এর মধ্যে ভবিষ্যতে থাকবে:
+Hotel
+Family Homestay
+Resort
+Villa
+Cottage
+Guest House
+Eco Stay
+Group Stay
+Budget Stay
+Premium Stay
+Hotel হবে প্রথম এবং সবচেয়ে শক্তিশালী Stay Vertical-এর একটি।
+
+৪৬. Family Homestay
+Verified Local Family-এর সঙ্গে থাকার সুযোগ তৈরি করা যেতে পারে।
+Features:
+Host Profile
+Property Information
+Room/Bed Availability
+Photos
+Location
+House Rules
+Meal Availability
+Local Assistance
+Reviews
+Rating
+Booking
+Cancellation Policy
+Emergency Contact
+সম্ভাব্য ব্যবহার:
+Family Tourism
+Village Tourism
+Cultural Tourism
+Student Travel
+Long Stay
+International Tourism
+Budget Travel
+
+৪৭. Resort / Villa / Cottage
+ETP ভবিষ্যতে:
+Resort
+Villa
+Cottage
+Eco Resort
+Private Property
+Family Vacation Property
+Premium Stay
+অন্তর্ভুক্ত করতে পারবে।
+Property Owner manage করতে পারবে:
+Unit
+Price
+Availability
+Amenities
+Photos
+Rules
+Check-in/out
+Seasonal Price
+Offers
+Cancellation
+Customer তুলনা করতে পারবে:
+Price
+Rating
+Location
+Amenities
+Availability
+Reviews
+Distance from Tourist Attraction
+
+৪৮. Group Stay
+Group Stay-এর জন্য:
+Family
+Student Group
+Friends
+Corporate Team
+Tour Group
+School/College Group
+Community Group
+Multi-room Booking করা যাবে।
+Features:
+Group Size
+Multi-room Booking
+Group Pricing
+Discount
+Extra Bed
+Payment Tracking
+Transport Integration
+Activity Integration
+Group QR Verification
+
+৪৯. Local Experience
+ভবিষ্যতে Verified Local Provider বিভিন্ন Experience দিতে পারবে।
+যেমন:
+Village Tour
+River Trip
+Boat Ride
+Cultural Experience
+Fishing
+Photography Tour
+Heritage Tour
+Nature Tour
+Handicraft Experience
+Eco Tourism
+Local Guide Service
+Adventure Activity
+প্রতিটি Experience-এ:
+Description
+Provider
+Location
+Duration
+Capacity
+Price
+Availability
+Photos
+Safety Information
+Requirements
+Review
+Cancellation Policy
+থাকবে।
+
+৫০. Local Experience Safety
+Local Experience Provider-এর জন্য:
+Identity Verification
+Service Verification
+Location Verification
+Safety Information
+Capacity Control
+Review
+Complaint
+Admin Monitoring
+থাকবে।
+যেখানে আইনগত/পেশাগত অনুমোদন প্রয়োজন, সেখানে অনুমোদন ছাড়া কোনো Provider-কে Licensed Guide বা Professional হিসেবে উপস্থাপন করা হবে না।
+
+৫১. Local Student Network
+Tourist Destination-এর Local Student-দের জন্য ভবিষ্যতে earning opportunity তৈরি করা যেতে পারে।
+যেখানে উপযুক্ত ও আইনগতভাবে অনুমোদিত ক্ষেত্রে তারা:
+Local Information Assistance
+Translation Assistance
+Photography Assistance
+Tourist Support
+Local Spot Information
+Local Explorer Service
+দিতে পারবে।
+তাদেরকে প্রয়োজনীয় অনুমোদন ছাড়া Official Tour Guide হিসেবে উপস্থাপন করা হবে না।
+
+৫২. Local Employment Opportunity
+ETP-এর লক্ষ্য Local Tourism Economy-তে Digital Marketplace তৈরি করা।
+এর মাধ্যমে সুযোগ পেতে পারে:
+Small Hotel Owner
+CNG Driver
+Auto-Rickshaw Driver
+Bike Provider
+Cycle Provider
+Boat Owner
+Local Student
+Small Business
+Local Service Provider
+Activity Provider
+অর্থাৎ Tourist-এর Travel Spending-এর একটি অংশ স্থানীয় অর্থনীতিতে প্রবাহিত হতে পারে।
+
+৫৩. Destination Local Boat
+যেসব Destination-এ Boat Tourism-এর অংশ, সেখানে Verified Boat Provider যুক্ত করা যাবে।
+Customer দেখতে পারবে:
+Boat Type
+Capacity
+Duration
+Price
+Availability
+Route
+Safety Information
+এবং প্রয়োজন অনুযায়ী Booking করতে পারবে।
+
+৫৪. AI Trip Planner
+ETP-এর Trip Planner ধাপে ধাপে উন্নত হবে।
+Customer প্রথমে বলবে:
+Destination
+Total Budget
+তারপর System প্রয়োজন অনুযায়ী জানতে চাইবে:
+কয়জন যাবে?
+কতদিন থাকবে?
+কোনো নির্দিষ্ট Plan আছে কি?
+Hotel Preference কী?
+Transport Preference কী?
+Activity Preference কী?
+যদি Customer-এর নির্দিষ্ট Plan না থাকে, ETP-এর available data ব্যবহার করে Budget-এর মধ্যে একাধিক সম্ভাব্য Trip Plan তৈরি করা যাবে।
+Customer সেখান থেকে পছন্দের Plan নির্বাচন করতে পারবে।
+
+৫৫. AI Trip Plan-এর উদাহরণ
+Customer:
+Destination: Cox's Bazar
+Budget: ৳৩০,০০০
+People: ৪ জন
+Duration: ৩ দিন
+ETP সম্ভাব্য Plan দেখাতে পারবে:
+Plan A — Budget
+Budget Hotel
+Bus
+Local Transport
+Selected Activity
+Plan B — Comfort
+Better Hotel
+Better Transport
+More Activities
+Plan C — Flexible
+Customer নিজের মতো Hotel/Transport পরিবর্তন করবে।
+এভাবে AI Customer-এর সিদ্ধান্তকে Replace না করে Decision Support দেবে।
+
+৫৬. AI Development Roadmap
+MVP
+Rule-Based Trip Planner
+Phase 2
+AI-Assisted Trip Planner
+Future
+Personalized Recommendation Engine
+যেখানে Customer Consent অনুযায়ী:
+Booking Data
+Review
+Preferences
+Travel History
 ব্যবহার করা যেতে পারে।
 
-প্রাথমিক Marketing Budget:
+৫৭. QR Travel Pass
+ETP-এর QR System একটি Unified Verification Layer হিসেবে কাজ করবে।
+ব্যবহার হতে পারে:
+Bus Booking
+Hotel Booking
+Hotel Check-in
+Activity
+Local Experience
+Service Verification
+QR-এ Sensitive Data থাকবে না।
+Server-side Verification ব্যবহার করা হবে।
 
-## ৳২০,০০০–৳৪০,০০০
+৫৮. Vendor Onboarding
+Vendor Flow:
+Application
+↓
+KYC
+↓
+Documents
+↓
+Verification
+↓
+Approval
+↓
+Commission Agreement
+↓
+Listing Live
+↓
+Booking
+↓
+Verification
+↓
+Settlement
+↓
+Review
+↓
+Performance Monitoring
 
----
+৫৯. Vendor Status
+Vendor Status:
+Pending
+Under Review
+Verified
+Active
+Rejected
+Suspended
+Master Admin-এর পূর্ণ Control থাকবে।
+Normal Customer কখনো নিজেকে Admin/Vendor Privileged Role দিতে পারবে না।
 
-# ৫৩. Initial Pilot Operations
+৬০. Admin & Operations
+ETP Admin:
+Vendor Approval
+KYC Verification
+Listing Approval
+Booking Monitoring
+Commission Configuration
+Settlement
+Refund
+Dispute
+Fraud Monitoring
+Featured Listing
+User Management
+Audit Logs
+পরিচালনা করবে।
+ভবিষ্যতে Role:
+Super Admin
+Operations
+Finance
+Support
+Content Manager
+যোগ হতে পারে।
 
-Pilot পরিচালনার জন্য:
+৬১. Payment Strategy
+পরিকল্পিত Payment:
+bKash
+Nagad
+Rocket
+Card
+Local Payment Gateway
+MVP-তে প্রয়োজনে:
+Cash
+Manual Settlement
+Partner Settlement
+ব্যবহার করা যেতে পারে।
+Live Payment Gateway না থাকা পর্যন্ত সেটিকে Production Feature হিসেবে দাবি করা হবে না।
 
-* Vendor Visit
-* Destination Visit
-* Communication
-* Data Collection
-* Customer Support
-* Testing
-* Local Operations
+৬২. Commission Management
+Commission Admin-configurable হবে।
+System-এ থাকবে:
+Gross Booking
+Commission
+Vendor Earning
+Discount
+Applicable Tax/Fee
+Refund
+Settlement Status
+Commission Hard-code করা হবে না।
 
-প্রয়োজন হবে।
+৬৩. Commission Sharing & Customer Benefit
+ETP ভবিষ্যতে Commission-এর একটি অংশ Customer Benefit হিসেবে ব্যবহার করতে পারে।
+উদাহরণ:
+Hotel Price = ৳১০,০০০
+Agreed Commission = ২০%
+Total Commission = ৳২,০০০
+এর মধ্যে উদাহরণস্বরূপ:
+ETP Revenue = ৳৩০০
+Customer Benefit = ৳১,৭০০
+Customer Effective Price = ৳৮,৩০০
+এটি শুধুমাত্র উদাহরণ।
+বাস্তবে:
+Vendor Agreement
+Tax
+Payment Cost
+Discount Policy
+Margin
+Market Condition
+অনুযায়ী সিদ্ধান্ত হবে।
 
-প্রাথমিকভাবে:
+৬৪. Review & Rating
+Completed Service-এর পরে Customer:
+Rating
+Review
+Feedback
+দিতে পারবে।
+Review System-এর লক্ষ্য হবে বাস্তব Customer Experience থেকে Vendor Quality বোঝা।
+Fake Review, Abuse এবং Repeated Poor Service Admin Monitor করবে।
 
-## ৳৩০,০০০–৳৫০,০০০
+৬৫. Refund & Cancellation
+প্রতিটি Service-এর:
+Cancellation Policy
+Refund Policy
+No-show Policy
+Modification Rules
+Customer Booking-এর আগে দেখতে পারবে।
+ETP Policy অনুযায়ী Refund/Adjustment পরিচালনা করা হবে।
 
-রাখা যেতে পারে।
+৬৬. Dispute Resolution
+সমস্যা হলে:
+Complaint গ্রহণ
+Booking যাচাই
+তথ্য সংগ্রহ
+Vendor-এর বক্তব্য
+Policy Review
+Decision
+Refund/Adjustment যেখানে প্রযোজ্য
+Phase 2-তে উন্নত Dispute Management System তৈরি করা হবে।
 
----
+৬৭. Fraud Prevention
+MVP:
+Duplicate Booking Check
+QR Validation
+Booking Status
+Cancellation Pattern
+Admin Review
+Future:
+Risk Scoring
+Suspicious Activity Detection
+Automated Fraud Detection
+Advanced Behaviour Analysis
 
-# ৫৪. Initial MVP Funding Estimate
+৬৮. Data Privacy
+ETP প্রয়োজনীয় Data-ই সংগ্রহ করার নীতি অনুসরণ করবে।
+Sensitive Information:
+NID
+Password
+Personal Security Information
+QR-এ সরাসরি রাখা হবে না।
+Customer Data ব্যবহারে:
+Privacy Policy
+Consent
+Access Control
+Data Security
+Applicable Law
+অনুসরণ করা হবে।
 
-প্রথম Pilot-এর জন্য একটি Planning Budget:
+৬৯. Backup & Business Continuity
+ETP-এর গুরুত্বপূর্ণ Data-এর জন্য:
+Regular Backup
+Database Backup
+Recovery Plan
+Audit Record
+Disaster Recovery Strategy
+থাকবে।
+Platform Failure হলে Data Recovery সম্ভব করার জন্য Backup Architecture রাখা হবে।
 
-| খাত                         |      আনুমানিক |
-| --------------------------- | ------------: |
-| Legal/Company/Documentation |       ৳৪০,০০০ |
-| Software Finalization       |       ৳৫০,০০০ |
-| Server/Domain/Security      |       ৳২৫,০০০ |
-| QR/Booking Testing          |       ৳২০,০০০ |
-| Vendor Onboarding           |       ৳৩৫,০০০ |
-| Tourist Destination Pilot   |       ৳৩০,০০০ |
-| Marketing                   |       ৳৩০,০০০ |
-| Operations/Communication    |       ৳২৫,০০০ |
-| Emergency Reserve           |       ৳২৫,০০০ |
-| *মোট*                     | *৳৩,০০,০০০* |
+৭০. Language Strategy
+ETP হবে:
+বাংলা-প্রথম
+Customer Application:
+বাংলা Default
+English Support
+বাংলা/English Toggle
+Vendor ও Admin:
+বাংলা
+English
+প্রয়োজন অনুযায়ী ব্যবহার করতে পারবে।
 
-এটি সরকারি Fixed Fee নয়; এটি ETP Pilot-এর জন্য Planning Estimate।
+৭১. Offline & Low Connectivity
+Phase 2-তে:
+Cached e-Ticket
+Cached QR
+Offline Ticket View
+SMS Confirmation
+Manual Verification Fallback
+পরিকল্পনা করা হয়েছে।
+MVP-তে সম্পূর্ণ Offline System Live বলে দাবি করা হবে না।
 
----
+৭২. Technology Architecture
+Web
+Next.js
+React
+TypeScript
+Tailwind CSS
+Backend
+Node.js
+Express
+TypeScript
+Prisma
+Database
+MVP:
+SQLite + Prisma
+Production:
+PostgreSQL
+Authentication
+JWT
+Refresh Token
+OTP
+Role-Based Access Control
+Mobile
+Future:
+React Native
+TypeScript
 
-# ৫৫. ETP-এর Minimum Startup Budget
-
-বর্তমান Software Foundation ব্যবহার করে এবং খুব ছোট পরিসরে Pilot শুরু করলে:
-
-## Minimum Target:
-
-# *৳২–৩ লাখ*
-
-এই বাজেটে লক্ষ্য হবে:
-
-* Legal Structure
-* Basic Compliance
-* Software Finalization
-* Hosting
-* QR Testing
-* Initial Vendor Network
-* Tourist Destination Pilot
-* Basic Marketing
-* Operations
-
----
-
-# ৫৬. Proper MVP Commercial Launch Budget
-
-আরও Professionalভাবে Launch করতে:
-
-## *৳৫–৮ লাখ*
-
-রাখা যেতে পারে।
-
+৭৩. ETP Software Architecture Principle
+ETP-এর নতুন Feature তৈরি করার সময় একই কাজের জন্য অপ্রয়োজনীয় Duplicate System তৈরি করা হবে না।
+যেখানে সম্ভব:
+Existing Booking System
+Existing QR Architecture
+Existing Authentication
+Existing Vendor System
+Existing Admin System
+Reuse করা হবে।
 এতে:
+Development Cost কমবে;
+Bug কমবে;
+Maintenance সহজ হবে;
+Security উন্নত হবে।
 
-* Better Software Testing
-* More Vendors
-* Better Customer Support
-* Stronger Marketing
-* Better Operations
-* More Destination Coverage
-* Additional Security
-* Better Infrastructure
+৭৪. Small Hotel বনাম Large Hotel Strategy
+Small Hotel
+ETP হবে:
+Hotel Management Software + Booking + Customer Acquisition
+Medium Hotel
+ETP হবে:
+Hotel Operations + Booking + Customer Acquisition + Analytics
+Large Hotel
+ETP হবে:
+Booking + Customer Acquisition + Integration Platform
+এতে ETP বড় Hotel-এর existing PMS-এর সঙ্গে Competition না করে Integration Partner হিসেবে কাজ করতে পারবে।
 
+৭৫. Hotel Implementation Roadmap
+Hotel MVP
+Hotel Registration
+Verification
+Hotel Profile
+Room Management
+Pricing
+Availability
+Booking
+Direct/Manual Booking
+Guest Management
+Check-in/out
+QR Verification
+Free PDF Bill
+Print Bill
+WhatsApp Bill
+Basic Settlement
+Basic Backup
+Admin Control
+Hotel Phase 2
+Housekeeping
+Maintenance
+Staff Management
+Advanced Billing
+Advanced Reports
+Direct Booking Page
+Subscription Management
+Analytics
+Payment Integration
+Notifications
+Offers
+Hotel Phase 3
+PMS/API
+Multi-property
+Advanced AI Manager
+Dynamic Pricing Assistance
+Revenue Management
+Enterprise Integration
+Smart Check-in
+Future
+Predictive Occupancy
+Revenue Prediction
+Automated Recommendations
+Advanced Hospitality Integration
+
+৭৬. ETP Stay Expansion Roadmap
+Hotel-এর পরে Stay Ecosystem সম্প্রসারিত হবে:
+Phase 2
+Family Homestay
+Resort
+Villa
+Cottage
+Guest House
+Group Stay
+Future
+Eco Stay
+Premium Stay
+International Accommodation
+
+৭৭. Local Tourism Expansion
+Phase 2-তে Destination অনুযায়ী:
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Local Experience
+Student Network
+Activity
+যুক্ত করা যেতে পারে।
+
+৭৮. Go-To-Market Strategy
+ETP শুরুতেই পুরো বাংলাদেশে Launch করবে না।
+প্রথমে:
+Limited Destination Pilot
+নির্বাচন করা হবে।
+প্রাথমিক লক্ষ্য:
+Verified Hotel
+Transport Provider
+Local Service Provider
+Activity
+Local Transport
+এর ছোট কিন্তু কার্যকর Network তৈরি করা।
+
+৭৯. Pilot Strategy
+প্রথম Pilot-এ হাজার হাজার Vendor প্রয়োজন নেই।
+একটি সম্ভাব্য Pilot:
+১০–২০ Hotel
+সীমিত Transport Provider
+সীমিত Local Service Provider
+একটি Tourist Destination
+বাস্তব Customer
+বাস্তব Booking
+এর মাধ্যমে Model Validate করা হবে।
+
+৮০. Pilot-এর মূল লক্ষ্য
+প্রথম Pilot-এর উদ্দেশ্য:
+Build → Test → Validate → Measure
+প্রমাণ করতে হবে:
+Customer Booking করে কি না;
+Vendor অংশ নেয় কি না;
+Hotel System ব্যবহার করে কি না;
+Customer পুনরায় আসে কি না;
+Commission Model কাজ করে কি না;
+Subscription Model কাজ করে কি না;
+QR Verification বাস্তবে কাজ করে কি না;
+ETP-এর Revenue তৈরি হয় কি না।
+
+৮১. Customer Acquisition
+প্রথম পর্যায়ে বড় Advertising Campaign না করে:
+Facebook Content
+TikTok
+Travel Community
+Tourist Groups
+Referral
+Student Community
+Vendor Promotion
+Local Partnership
+ব্যবহার করা যেতে পারে।
+
+৮২. Local Economy Impact
+ETP-এর মাধ্যমে Tourist Spending বিভিন্ন Local Business-এর মধ্যে ছড়িয়ে দেওয়ার সুযোগ তৈরি হতে পারে।
+যেমন:
+Hotel Owner
+CNG Driver
+Auto Driver
+Boat Owner
+Bike Provider
+Cycle Provider
+Student
+Local Activity Provider
+Small Business
+এতে Tourism-এর অর্থনৈতিক সুবিধা আরও বিস্তৃত হতে পারে।
+
+৮৩. Business Revenue Streams
+ETP-এর সম্ভাব্য Revenue:
+Revenue Stream
+Stage
+Bus Commission
+MVP
+ETP Hotel Booking Commission
+MVP
+Hotel Monthly Subscription
+Hotel MVP
+Family Homestay Commission
+Phase 2
+Resort Commission
+Phase 2
+Villa/Cottage Commission
+Phase 2
+Group Stay Commission
+Phase 2
+Local Experience Commission
+Phase 2
+Local Transport Commission
+Phase 2
+Featured Listing
+Phase 2
+Sponsored Placement
+Phase 2
+Corporate/B2B
+Phase 3
+Premium Services
+Future
+API/PMS Integration
+Phase 3
+
+Revenue Percentage Pilot এবং Vendor Agreement-এর মাধ্যমে Validate করা হবে।
+
+৮৪. Investor-এর কাছে ETP-এর Value
+Investor-এর কাছে ETP-কে শুধু:
+“একটি Booking App”
+হিসেবে উপস্থাপন করা হবে না।
+ETP হলো:
+Travel Marketplace
+
+
+Local Tourism Ecosystem
+
+
+Hotel Digital Operating System
+
+
+Customer Choice Platform
+
+
+Local Business Digitalization Layer
+
+৮৫. Investor Problem Statement
+Problem
+Travel Services fragmented।
+Hotel Problem
+অনেক ছোট/মাঝারি Hotel-এর Digital Management দুর্বল।
+Customer Problem
+Travel planning এবং booking বিভিন্ন জায়গায় ছড়ানো।
+Local Business Problem
+Customer acquisition ও Digital Reach সীমিত।
+ETP Solution
+একটি Integrated Digital Ecosystem।
+
+৮৬. ETP-এর Competitive Advantage
+ETP-এর সম্ভাব্য পার্থক্য:
+Bangladesh-focused
+Bangla-first
+Customer Freedom
+Local Vendor Ecosystem
+Hotel Management System
+ETP Booking + Direct Hotel Booking
+Secure QR Verification
+Local Transport
+Local Experience
+AI Trip Planning
+Local Economy Integration
+
+৮৭. Government & Legal Compliance
+ETP-এর Business Structure অনুযায়ী প্রযোজ্য Legal Compliance ধাপে ধাপে সম্পন্ন করতে হবে।
+সম্ভাব্য বিষয়:
+Business
+Company Registration
+Name Clearance
+MOA/AOA
+Certificate of Incorporation
+Trade License
+TIN
+Applicable BIN/VAT
+Travel
+Business Model অনুযায়ী:
+Travel Agency Registration
+Tour Operator Registration
+Tourism-related Compliance
+প্রযোজ্য হতে পারে।
+ETP Marketplace/Technology Platform হিসেবে কাজ করবে নাকি নিজে Tour Operator হিসেবে কাজ করবে, সেটি Legal Review-এর মাধ্যমে নির্ধারণ করতে হবে।
+
+৮৮. Tour Operator Compliance
+যদি ETP নিজে Tour Operator হিসেবে কাজ করে, তাহলে সংশ্লিষ্ট Registration ও Financial/Security Requirement প্রযোজ্য হতে পারে।
+সুতরাং Launch-এর আগে:
+Marketplace Model বনাম Tour Operator Model
+আইনগত ও ব্যবসায়িকভাবে যাচাই করতে হবে।
+
+৮৯. Company Registration
+দীর্ঘমেয়াদে Private Limited Company বিবেচনা করা যেতে পারে।
+প্রয়োজনে:
+Name Clearance
+MOA
+AOA
+Director Information
+Share Structure
+Registered Office
+RJSC Filing
+সম্পন্ন করতে হবে।
+Professional/Legal Cost সরকারি Fee-এর বাইরে হতে পারে।
+
+৯০. Trade License, TIN & Tax
+Business Operation অনুযায়ী:
+Trade License
+TIN
+Tax Accounting
+Return Filing
+প্রয়োজন হতে পারে।
+Revenue তৈরি হলে:
+Business Expense
+Commission Revenue
+Subscription Revenue
+Vendor Settlement
+সঠিকভাবে হিসাব রাখতে হবে।
+
+৯১. BIN / VAT
+ETP-এর Business Activity ও Turnover অনুযায়ী:
+BIN
+VAT
+Turnover Tax
+এর applicability নির্ধারণ করতে হবে।
+এটি Tax Practitioner/Qualified Accountant-এর মাধ্যমে যাচাই করা হবে।
+
+৯২. Trademark
+Brand:
+Extra Travel Point
+এবং:
+ETP
+দীর্ঘমেয়াদে Trademark Protection-এর জন্য বিবেচনা করা হবে।
+
+৯৩. Vendor Legal Documents
+Vendor অনুযায়ী:
+KYC
+Trade License
+Vendor Agreement
+Commission Agreement
+Settlement Information
+Refund Terms
+Service Terms
+Business Information
+সংরক্ষণ করা হবে।
+
+৯৪. Customer Legal Documents
+Platform-এ থাকবে:
+Terms & Conditions
+Privacy Policy
+Refund Policy
+Cancellation Policy
+Booking Terms
+Vendor Terms
+QR Terms
+Data Consent
+
+৯৫. Software Development Strategy
+ETP-এর বর্তমান Software Foundation থাকায় সবকিছু নতুন করে বানানোর প্রয়োজন নেই।
+Finalization-এর মূল কাজ:
+Bug Fix
+Testing
+Security
+Booking Flow
+QR
+Database
+Backup
+Deployment
+Admin
+Vendor
+Production Readiness
+UI Design-এর আগে Core System Stable করা হবে।
+
+৯৬. MVP Development Priority
+Implementation Priority:
+Priority 1
+Backend Stability
+Priority 2
+Database & Booking
+Priority 3
+Authentication & Roles
+Priority 4
+Vendor/Hotel System
+Priority 5
+QR Verification
+Priority 6
+Billing
+Priority 7
+Admin Operations
+Priority 8
+Testing & Security
+Priority 9
+Production Deployment
+Priority 10
+শেষে UI Polish
+
+৯৭. Testing Strategy
+প্রতিটি Core Feature-এর জন্য:
+Unit Test
+Integration Test
+API Test
+Booking Test
+QR Test
+Security Test
+Role Permission Test
+Payment Test
+Refund Test
+Admin Test
+করতে হবে।
+একটি Feature তৈরি করেই Production-এ দেওয়া হবে না।
+
+৯৮. MVP বনাম Future Feature Matrix
+Feature
+Target Stage
+Authentication
+Foundation/MVP
+Bus Booking
+MVP
+Hotel Booking
+MVP
+Hotel Management
+Hotel MVP
+Hotel Subscription
+Hotel MVP
+ETP Hotel Commission
+Hotel MVP
+Free PDF Bill
+Hotel MVP
+QR Hotel Check-in
+Hotel MVP
+Basic Vendor
+MVP
+Admin
+MVP
+Customer Dashboard
+MVP
+Basic Trip Planner
+MVP
+Local CNG/Auto
+Phase 2
+Bike/Cycle
+Phase 2
+Boat
+Phase 2
+Restaurant
+Phase 2
+Activity
+Phase 2
+Homestay
+Phase 2
+Resort/Villa/Cottage
+Phase 2
+Group Stay
+Phase 2
+Local Experience
+Phase 2
+Rewards
+Phase 2
+bKash/Nagad/Rocket/Card
+Phase 2
+AI Trip Planner
+Phase 2
+Complete QR Travel Pass
+Phase 2
+Offline
+Phase 2
+Hotel Analytics
+Phase 2
+PMS/API
+Phase 3
+Multi-property
+Phase 3
+Train
+Phase 3
+Air
+Phase 3
+Corporate Travel
+Phase 3
+International
+Phase 3
+Advanced AI
+Future
+Insurance/Concierge
+Future
+
+
+৯৯. Three-Phase Master Roadmap
+PHASE 1 — BUILD & VALIDATE
+Core:
+Web MVP
+Backend
+Authentication
+Bus
+Hotel
+Hotel Management
+Booking
+e-Ticket
+Basic QR
+Vendor
+Admin
+Customer Dashboard
+Basic Trip Planner
+Free Hotel Bill
+Hotel Subscription
+ETP Booking Commission
+Pilot Destination
+Goal:
+একটি বাস্তব Travel Marketplace Model প্রমাণ করা।
+
+১০০. PHASE 2 — GROW
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Restaurant
+Activity
+Car Rental
+Family Homestay
+Resort
+Villa
+Cottage
+Group Stay
+Local Experience
+Student/Local Service Network
+Rewards
+Local Payment
+AI Planner
+Complete QR
+Offline
+Notifications
+Analytics
+Hotel Housekeeping
+Hotel Staff
+Hotel Advanced Billing
+Hotel Direct Booking
+Hotel Premium Services
+Goal:
+Customer + Vendor + Local Tourism Ecosystem বড় করা।
+
+১০১. PHASE 3 — EXPAND
+Train
+Air
+Corporate/B2B
+Multi-property Hotel
+PMS/API Integration
+National Destination Network
+International Travel
+Enterprise Services
+Advanced AI
+Advanced Analytics
+Goal:
+ETP-কে বড় National Travel Platform-এ পরিণত করা।
+
+১০২. FUTURE
+দীর্ঘমেয়াদে:
+Personalized Travel Engine
+Predictive Hotel Occupancy
+AI Revenue Management
+Dynamic Pricing Assistance
+Smart Hotel Operations
+Advanced Fraud Detection
+Insurance
+Premium Concierge
+International Expansion
+Advanced Tourism Ecosystem
+
+১০৩. Initial Pilot Funding Estimate
+Planning Estimate:
+খাত
+সম্ভাব্য Planning Budget
+Legal/Documentation
+৳৪০,০০০
+Software Finalization
+৳৫০,০০০
+Server/Domain/Security
+৳২৫,০০০
+QR/Booking Testing
+৳২০,০০০
+Vendor Onboarding
+৳৩৫,০০০
+Destination Pilot
+৳৩০,০০০
+Marketing
+৳৩০,০০০
+Operations
+৳২৫,০০০
+Emergency Reserve
+৳২৫,০০০
+Total Planning Estimate
+প্রায় ৳৩,০০,০০০
+
+এগুলো Fixed Government Fee নয়।
+বাস্তব খরচ পরিবর্তিত হতে পারে।
+
+১০৪. Minimum Startup Budget
+বর্তমান Software Foundation ব্যবহার করে ছোট Pilot-এর জন্য:
+৳২–৩ লাখ
+Target করা যেতে পারে।
+উদ্দেশ্য:
+Legal
+Software Finalization
+Hosting
+Security
+QR
+Vendor Network
+Pilot
+Marketing
+Operations
+
+১০৫. Proper Commercial MVP
+আরও Professional Launch-এর জন্য:
+৳৫–৮ লাখ
+Planning Range হিসেবে বিবেচনা করা যেতে পারে।
+এতে:
+Better Testing
+More Vendors
+Better Support
+Better Marketing
+Stronger Infrastructure
+More Destination Coverage
 সম্ভব হবে।
 
----
-
-# ৫৭. Strong Commercial Launch Budget
-
-National/large-scale Growth-এর জন্য:
-
-## *৳১২–২০ লাখ+*
-
-প্রয়োজন হতে পারে।
-
-এ পর্যায়ে:
-
-* Mobile App
-* Payment Gateway
-* Larger Vendor Network
-* Marketing
-* Operations Team
-* Customer Support
-* Security
-* Analytics
-* AI Features
-
+১০৬. Strong Commercial Growth
+বড় Scale-এ:
+৳১২–২০ লাখ+
+প্রয়োজন হতে পারে।
+এতে:
+Mobile App
+Payment
+Larger Vendor Network
+Marketing
+Operations Team
+Customer Support
+Analytics
+AI
+Security
 যোগ করা সম্ভব হবে।
 
----
+১০৭. Software Cost Principle
+ETP-এর বর্তমান Software Foundation থাকার কারণে সম্পূর্ণ Software নতুন করে তৈরি করার Budget এখনই প্রয়োজন নেই।
+প্রথম লক্ষ্য হবে:
+Existing Foundation → Stable Commercial MVP
+অর্থাৎ আগে যা তৈরি হয়েছে সেটিকে:
+Audit → Fix → Test → Secure → Deploy
+করা হবে।
 
-# ৫৮. Tour Operator হলে অতিরিক্ত Capital Requirement
-
-যদি ETP নিজেই Tour Operator হিসেবে Registration গ্রহণ করে এবং সংশ্লিষ্ট Security Deposit requirement প্রযোজ্য হয়, তাহলে প্রথম-stage Capital Requirement বৃদ্ধি পাবে।
-
-বর্তমান সরকারি Tour Operator Registration process অনুযায়ী Security Deposit-এর requirement রয়েছে।
-
-তাই Tour Operator Model গ্রহণ করার আগে:
-
-*Marketplace Model বনাম Tour Operator Model*
-
-আইনগত ও ব্যবসায়িকভাবে তুলনা করে সিদ্ধান্ত নেওয়া হবে।
-
----
-
-# ৫৯. Funding Strategy
-
-ETP একসাথে বড় Investment নেওয়ার পরিবর্তে ধাপে ধাপে Capital ব্যবহার করতে পারে।
-
-### Stage 1
-
-*৳২–৩ লাখ*
-
+১০৮. Investor Funding Strategy
+Capital ধাপে ধাপে ব্যবহার করা হবে।
+Stage 1
+৳২–৩ লাখ
 Pilot Validation
-
-### Stage 2
-
-*৳৫–৮ লাখ*
-
+Stage 2
+৳৫–৮ লাখ
 Commercial MVP
-
-### Stage 3
-
-*৳১২–২০ লাখ+*
-
+Stage 3
+৳১২–২০ লাখ+
 Growth
-
-### Stage 4
-
-বড় National Expansion-এর জন্য প্রয়োজন অনুযায়ী Investment।
-
----
-
-# ৬০. প্রথম Investment-এর ব্যবহার
-
-প্রথম Investment-এর মূল উদ্দেশ্য হবে:
-
-**"ETP-এর ধারণা সত্যিই Customer ও Vendor-এর মধ্যে কাজ করে কিনা তা বাস্তবে প্রমাণ করা।"**
-
-প্রথম Investment দিয়ে:
-
-* হাজার হাজার User নেওয়া নয়;
-* সারা বাংলাদেশে Launch নয়;
-* অপ্রয়োজনীয় Feature তৈরি নয়।
-
-বরং:
-
-*একটি Tourist Destination + সীমিত Vendor + বাস্তব Customer + বাস্তব Booking*
-
-দিয়ে Model Validate করা হবে।
-
----
-
-# ৬১. Investor-এর সামনে ETP-এর Value Proposition
-
-Investor-কে দেখানো হবে:
-
-### Problem
-
-Travel Services fragmented।
-
-### Solution
-
-ETP একটি unified platform তৈরি করছে।
-
-### Customer
-
-Choice + Booking + Verification + সম্ভাব্য Savings।
-
-### Vendor
-
-New Customers + Digital Presence + Booking + Settlement।
-
-### Local Economy
-
-Small Business + Student + Local Service Provider-এর earning opportunity।
-
-### ETP
-
-Commission + Subscription + Promotion + Future B2B Revenue।
-
----
-
-# ৬২. Investor-এর কাছে ETP কেন আলাদা
-
-ETP শুধু একটি Booking Website নয়।
-
-এটি:
-
-## Travel Marketplace
-
-এর সঙ্গে:
-
-## Local Tourism Ecosystem
-
-এবং:
-
-## Customer Freedom Model
-
-একত্র করার লক্ষ্য রাখে।
-
----
-
-# ৬৩. ETP-এর Social & Economic Opportunity
-
-ETP ভবিষ্যতে Tourist Destination-এর স্থানীয় অর্থনীতিতে নতুন Digital Layer তৈরি করতে পারে।
-
-একজন Tourist-এর Travel Spending-এর মাধ্যমে:
-
-* Hotel
-* Restaurant
-* Transport
-* Boat
-* Student
-* Local Service Provider
-
-বিভিন্ন পক্ষ আয় করতে পারে।
-
-এটি ETP-এর সম্ভাব্য Social Impact-এর একটি গুরুত্বপূর্ণ অংশ।
-
----
-
-# ৬৪. Final ETP Principle
-
-ETP-এর মূল নীতি:
-
-# *"আপনার ভ্রমণ — আপনার সিদ্ধান্ত।"*
-
-ETP Customer-এর হয়ে সব সিদ্ধান্ত নেবে না।
-
-ETP Customer-কে দেবে:
-
-*সঠিক তথ্য + যাচাইকৃত অপশন + স্বচ্ছ মূল্য + Booking + নিরাপত্তা + সম্ভাব্য Discount + Local Service*
-
-যাতে Customer নিজের জন্য সবচেয়ে উপযুক্ত Travel Experience নির্বাচন করতে পারেন।
-
----
-
-# ৬৫. ETP-এর Final Vision
-
-ETP-এর দীর্ঘমেয়াদি Vision হলো:
-
-**বাংলাদেশের এমন একটি বাংলা-প্রথম Travel Ecosystem তৈরি করা, যেখানে একজন মানুষ একটি প্ল্যাটফর্মের মাধ্যমে ভ্রমণের পরিকল্পনা, পরিবহন, Hotel, Food, Local Transport, Activity, Local Service, Booking, Verification এবং সম্ভাব্য Savings—সবকিছু নিজের পছন্দ অনুযায়ী পরিচালনা করতে পারবেন।**
-
-ETP শুধু বড় ব্যবসার জন্য নয়।
-
-এটি:
-
-* ছোট Hotel,
-* ছোট Restaurant,
-* CNG Driver,
-* Auto-Rickshaw Driver,
-* Bike/Cycle Provider,
-* Boat Owner,
-* Local Student,
-* Local Service Provider,
-* এবং অন্যান্য বৈধ স্থানীয় ব্যবসার
-
-জন্যও Digital Marketplace Opportunity তৈরি করার লক্ষ্য রাখে।
-
----
-
-# ৬৬. Final Business Philosophy
-
-ETP-এর Business Philosophy:
-
-## Vendor খুশি
-
-কারণ Vendor নতুন Customer পায়।
-
-## Customer খুশি
-
-কারণ Customer নিজের পছন্দ অনুযায়ী Service বেছে নিতে পারে এবং সম্ভাব্য কম খরচে পেতে পারে।
-
-## Local Community খুশি
-
-কারণ স্থানীয় মানুষ ও ছোট ব্যবসা earning opportunity পায়।
-
-## ETP খুশি
-
-কারণ ETP sustainable Revenue তৈরি করতে পারে।
-
-এটাই:
-
-# *ETP Win-Win-Win-Win Travel Ecosystem*
-
----
-
-# ৬৭. Final Roadmap Summary
-
-### Phase 1 — Build & Validate
-
-* Web MVP
-* Bus
-* Hotel
-* Basic QR
-* Basic Vendor
-* Admin
-* Customer Dashboard
-* Rule-Based Trip Planner
-* Limited Tourist Destination Pilot
-
-### Phase 2 — Grow
-
-* CNG
-* Auto-Rickshaw
-* Bike
-* Cycle
-* Boat
-* Restaurant
-* Activity
-* Car Rental
-* Student/Local Service Network
-* Rewards
-* Local Payment
-* AI Planner
-* Complete QR Pass
-* Offline
-* Analytics
-
-### Phase 3 — Expand
-
-* Train
-* Air
-* International
-* Corporate/B2B
-* National Destination Network
-* Advanced AI
-
-### Future
-
-* Personalized Travel Engine
-* Insurance
-* Premium Concierge
-* Advanced Tourism Ecosystem
-
----
-
-# ৬৮. Final Financial Roadmap
-
-| Stage                    |                          Estimated Capital |
-| ------------------------ | -----------------------------------------: |
-| Minimum Pilot            |                               *৳২–৩ লাখ* |
-| Proper MVP Launch        |                               *৳৫–৮ লাখ* |
-| Strong Commercial Growth |                            *৳১২–২০ লাখ+* |
-| National Expansion       | Business Performance ও Investment অনুযায়ী |
-
-এই সংখ্যা পরিকল্পনামূলক Estimate। Vendor Contract, Legal Structure, Software Scope, Marketing Scale ও Government Compliance অনুযায়ী প্রকৃত খরচ পরিবর্তিত হবে।
-
----
-
-# ৬৯. Final Government & Compliance Checklist
-
-### Business
-
+Stage 4
+Performance অনুযায়ী National Expansion
+
+১০৯. প্রথম Investment-এর মূল উদ্দেশ্য
+প্রথম Investment-এর লক্ষ্য হাজার হাজার Customer নেওয়া নয়।
+সারা বাংলাদেশে একসাথে Launch করাও নয়।
+অপ্রয়োজনীয় Feature তৈরি করাও নয়।
+মূল লক্ষ্য:
+“কম Capital দিয়ে বাস্তব বাজারে ETP Model কাজ করে কিনা প্রমাণ করা।”
+একটি Destination + সীমিত Vendor + বাস্তব Customer + বাস্তব Booking দিয়ে শুরু করা হবে।
+
+১১০. Success Metrics
+Pilot-এর সফলতা মাপা হবে:
+Number of Verified Hotels
+Number of Active Vendors
+Number of Customers
+Booking Count
+Booking Conversion
+Hotel Occupancy Contribution
+Repeat Customer
+Cancellation Rate
+Refund Rate
+Customer Satisfaction
+Vendor Satisfaction
+Monthly Revenue
+Subscription Revenue
+Commission Revenue
+QR Verification Success Rate
+
+১১১. Investor Communication Principle
+Investor-এর সামনে কোনো কিছু:
+Live
+বলে দাবি করা হবে না যদি সেটি বাস্তবে Production-এ না থাকে।
+কোনো:
+Government Approval
+Payment Gateway
+Partnership
+AI System
+Vendor Network
+বাস্তবে সম্পন্ন না হলে সেটিকে:
+Planned / Target / Under Development
+হিসেবে দেখানো হবে।
+
+১১২. Investor-এর সামনে ETP-এর Growth Story
+ETP-এর Growth Model:
+Build
+Core Platform তৈরি।
+↓
+Test
+Pilot চালানো।
+↓
+Validate
+Customer/Vendor Response দেখা।
+↓
+Measure
+Revenue ও Usage Data সংগ্রহ।
+↓
+Improve
+যেখানে সমস্যা সেখানে উন্নতি।
+↓
+Grow
+আরও Vendor ও Destination।
+↓
+Monetize
+Subscription + Commission + Services।
+↓
+Expand
+National Travel Ecosystem।
+
+১১৩. ETP Customer Journey
+DISCOVER
+   ↓
+PLAN
+   ↓
+COMPARE
+   ↓
+BOOK
+   ↓
+PAY
+   ↓
+QR VERIFY
+   ↓
+TRAVEL
+   ↓
+STAY
+   ↓
+EXPERIENCE
+   ↓
+REVIEW
+   ↓
+REWARD
+
+Customer চাইলে পুরো Journey ব্যবহার করবে।
+আবার প্রয়োজন অনুযায়ী শুধু নির্দিষ্ট Service-ও ব্যবহার করতে পারবে।
+
+১১৪. ETP-এর Long-Term Ecosystem
+                EXTRA TRAVEL POINT
+                         │
+       ┌─────────────────┼─────────────────┐
+       │                 │                 │
+   CUSTOMER            VENDOR            ADMIN
+       │                 │                 │
+       │                 │                 │
+    Travel          Hotel/Stay        Operations
+    Planning        Transport         Verification
+    Booking         Local Service     Settlement
+    Payment         Experience        Security
+    QR              Activity          Support
+    Review          Business          Analytics
+
+এর ওপর থাকবে:
+AI + QR + Payment + Rewards + Data + Security
+
+১১৫. Local Tourism Economy Model
+ETP-এর মাধ্যমে একজন Tourist-এর Spending বিভিন্ন Local Business-এর মধ্যে যেতে পারে।
+উদাহরণ:
+Tourist
+   ↓
+ETP
+   ↓
+Hotel
+Transport
+Boat
+Local Service
+Activity
+Student/Explorer
+Small Business
+
+এতে ETP শুধু Booking Platform নয়, একটি:
+Local Tourism Economy Digital Layer
+হিসেবে কাজ করার সম্ভাবনা রাখে।
+
+১১৬. Trust Model
+Customer যেন সহজে বুঝতে পারে:
+কে Service Provider;
+Service কী;
+Price কত;
+Availability কী;
+Refund Rule কী;
+Cancellation Rule কী;
+Vendor Verified কি না।
+এজন্য:
+KYC
+Verification
+Review
+Rating
+Booking Reference
+QR
+Complaint System
+গুরুত্বপূর্ণ হবে।
+
+১১৭. ETP-এর মূল Business Positioning
+ETP-এর Positioning:
+Customer-এর জন্য
+Travel Freedom + Verified Options + Booking
+Small Hotel-এর জন্য
+Hotel Management + Booking + Customer Acquisition
+Large Hotel-এর জন্য
+Booking + Customer Acquisition + PMS Integration
+Local Provider-এর জন্য
+Digital Marketplace + Customer Reach
+ETP-এর জন্য
+Commission + Subscription + Services + Long-term Ecosystem Revenue
+
+১১৮. ETP-এর Social & Economic Opportunity
+ETP ভবিষ্যতে:
+Small Hotel
+Guest House
+CNG Driver
+Auto Driver
+Boat Owner
+Bike/Cycle Provider
+Student
+Local Experience Provider
+Activity Provider
+সহ বিভিন্ন Local Service Provider-এর জন্য Digital earning opportunity তৈরি করতে পারে।
+তবে সব Service অবশ্যই:
+আইনসম্মত + Verified + Platform Policy-compliant
+হতে হবে।
+
+১১৯. Customer Benefit Philosophy
+ETP-এর লক্ষ্য শুধু Revenue তৈরি করা নয়।
+Customer-এর জন্য:
+Choice
+Transparent Price
+Verified Service
+Possible Discount
+Convenience
+Secure Booking
+QR Verification
+Digital Records
+দেওয়া হবে।
+
+১২০. Vendor Benefit Philosophy
+Vendor-এর জন্য:
+Digital Presence
+New Customer
+Booking
+Management System
+Payment/Settlement
+Customer Records
+Review
+Analytics
+Promotion
+দেওয়ার চেষ্টা থাকবে।
+
+১২১. Hotel-এর বিশেষ Value Proposition
+Hotel Owner-কে ETP বলতে পারবে:
+“আপনার নিজের Customer আপনারই থাকবে। ETP আপনাকে Management System দেবে। আর ETP Customer এনে দিলে agreed commission-এর মাধ্যমে নতুন Business তৈরি হবে।”
+এটাই ETP Hotel Model-এর অন্যতম মূল শক্তি।
+
+১২২. ETP-এর Final Business Philosophy
+ETP এমন Business Model তৈরি করতে চায় যেখানে:
+Vendor
+নতুন Customer পাবে।
+Customer
+নিজের মতো Travel করতে পারবে।
+Hotel
+Management Software + Booking + Customer Acquisition পাবে।
+Local Community
+বৈধ earning opportunity পাবে।
+ETP
+Sustainable Revenue তৈরি করবে।
+
+১২৩. Final Government & Compliance Checklist
+Business
 ☐ Company Registration
 ☐ Name Clearance
 ☐ MOA/AOA
@@ -1673,27 +2068,20 @@ ETP-এর Business Philosophy:
 ☐ Trade License
 ☐ TIN
 ☐ Applicable BIN/VAT
-
-### Travel
-
-☐ Travel Agency Registration — যদি প্রযোজ্য হয়
-☐ Tour Operator Registration — যদি ETP নিজে Tour Operator হয়
-☐ Tourism-related Compliance
-
-### Brand
-
+Travel
+☐ Travel Agency Registration — যদি প্রযোজ্য
+☐ Tour Operator Registration — যদি প্রযোজ্য
+☐ Tourism Compliance
+Brand
 ☐ Trademark
-
-### Vendor
-
+Hotel/Vendor
 ☐ KYC
 ☐ Trade License
 ☐ Vendor Agreement
 ☐ Commission Agreement
 ☐ Settlement Details
-
-### Customer
-
+☐ Service Terms
+Customer
 ☐ Terms & Conditions
 ☐ Privacy Policy
 ☐ Refund Policy
@@ -1702,171 +2090,262 @@ ETP-এর Business Philosophy:
 ☐ QR Terms
 ☐ Data Consent
 
----
-
-# ৭০. Final Investor Position
-
-ETP-এর Investor Pitch-এ কোনো Feature-কে Live বলে দাবি করা হবে না যদি সেটি বাস্তবে Production-এ না থাকে।
-
-কোনো:
-
-* Government Approval
-* Payment Gateway
-* Partnership
-* AI/ML System
-* Vendor Network
-
-বাস্তবে সম্পন্ন না হলে সেটিকে Planned/Target হিসেবে দেখানো হবে।
-
-ETP-এর Investor Communication হবে:
-
-## *সৎ + বাস্তবসম্মত + পরিমাপযোগ্য + ধাপে ধাপে।*
-
-প্রথম লক্ষ্য:
-
-**"কম Capital দিয়ে একটি ছোট Tourist Destination-এ ETP-এর Travel Marketplace Model বাস্তবে প্রমাণ করা।"**
-
-তারপর:
-
-**"বাস্তব Booking, Vendor Participation, Customer Satisfaction এবং Revenue Data দেখিয়ে Growth Investment নেওয়া।"**
-
----
-
-# ৭১. Final Conclusion
-
-এক্সট্রা ট্রাভেল পয়েন্ট একটি বাংলাদেশ-কেন্দ্রিক Travel Super App ও Travel Ecosystem হিসেবে তৈরি হওয়ার লক্ষ্য রাখে।
-
-এর শুরু হবে একটি বাস্তবসম্মত MVP দিয়ে:
-
-*Bus + Hotel + Booking + e-Ticket + QR + Vendor + Admin + Trip Planning*
-
-এরপর ধাপে ধাপে যুক্ত হবে:
-
-*Restaurant + Activity + CNG + Auto-Rickshaw + Bike + Cycle + Boat + Local Student + Local Service + Rewards + Payment + AI + Offline*
-
-এবং পরবর্তীতে:
-
-*Train + Air + International + Corporate + Advanced AI*
-
-ETP-এর বিশেষ লক্ষ্য হলো Traditional Group Tour-এর মতো সংগঠিত ও সম্ভাব্য সাশ্রয়ী সুবিধা এবং Independent Travel-এর স্বাধীনতার মধ্যে একটি নতুন ভারসাম্য তৈরি করা।
-
-Customer নির্দিষ্ট Group-এর সিদ্ধান্তের ওপর সম্পূর্ণ নির্ভরশীল না হয়ে নিজের:
-
-*Hotel + Food + Transport + Activity + Schedule + Budget*
-
-নিজে নির্বাচন করতে পারবেন।
-
-অন্যদিকে Vendor তার Service থেকে Customer পাবে এবং ETP-এর Marketplace-এর মাধ্যমে Digital Reach পাবে।
-
-স্থানীয় Tourist Destination-এর:
-
-*ছোট Hotel + ছোট Restaurant + CNG + Auto-Rickshaw + Bike + Cycle + Boat + Student + Local Service Provider*
-
-রাও ETP-এর মাধ্যমে বৈধভাবে Digital Marketplace-এ যুক্ত হওয়ার সুযোগ পেতে পারে।
-
-ETP-এর Commission Sharing Model-এর মাধ্যমে Vendor-এর দেওয়া Commission-এর একটি অংশ Customer Benefit হিসেবে ব্যবহার করার সুযোগ থাকতে পারে, যার ফলে Customer সম্ভাব্য কম খরচে Service পেতে পারেন এবং ETP নিজের জন্য টেকসই Revenue রাখতে পারে।
-
-সুতরাং ETP-এর দীর্ঘমেয়াদি লক্ষ্য শুধু:
-
-*"Travel Booking"*
-
-নয়।
-
-বরং:
-
-# *"একটি স্বাধীন, সাশ্রয়ী, যাচাইকৃত, Local-First এবং Customer-Centric Travel Ecosystem তৈরি করা।"*
-
-যেখানে:
-
-*Customer নিজের ভ্রমণের সিদ্ধান্ত নিজে নেবে।*
-
-*Local Business নতুন Customer পাবে।*
-
-*Local People earning opportunity পাবে।*
-
-*ETP একটি sustainable digital marketplace তৈরি করবে।*
-
-## *ETP-এর মূল নীতি:*
-
-# *"আপনার ভ্রমণ — আপনার সিদ্ধান্ত।"*
-
----
-
-## ৭২. Master Plan Status & Governance
-
-এই Master Plan-ই ETP-এর বর্তমান *Single Source of Truth* হিসেবে ব্যবহার করা হবে।
-
-পরবর্তী সময়ে কোনো Feature বাস্তবে তৈরি, পরীক্ষা ও Production-এ চালু হলে সংশ্লিষ্ট Status আপডেট করা হবে।
-
+১২৪. Master Plan Governance
+এই Master Plan হবে:
+ETP-এর Single Source of Truth
+পরবর্তীতে কোনো Feature বাস্তবে তৈরি, Test এবং Production-এ Live হলে Status আপডেট করা হবে।
 একইভাবে:
+Government Approval
+Vendor Agreement
+Payment Gateway
+New Destination
+AI Feature
+Revenue Stream
+Partnership
+বাস্তবে সম্পন্ন হলে Master Plan আপডেট হবে।
+Discussion-কে Confirmed Partnership হিসেবে দেখানো হবে না।
+Planned Feature-কে Live Feature হিসেবে দেখানো হবে না।
 
-* Government Approval সম্পন্ন হলে;
-* Vendor Agreement স্বাক্ষরিত হলে;
-* Payment Integration Live হলে;
-* নতুন Destination Launch হলে;
-* AI Feature Production-এ গেলে;
-* নতুন Revenue Stream চালু হলে;
+১২৫. ETP-এর Development Rule
+ETP Development-এর সময়:
+“Feature আগে নয়, Foundation আগে।”
+প্রথমে:
+Architecture
+Database
+Backend
+Authentication
+Roles
+Booking
+Security
+QR
+Vendor
+Admin
+Testing
+Stable করা হবে।
+তারপর UI/Design Polish করা হবে।
 
-Master Plan আপডেট করা হবে।
+১২৬. ETP-এর Final Strategic Roadmap
+FOUNDATION
+     ↓
+CORE BOOKING
+     ↓
+HOTEL
+     ↓
+QR + BILLING
+     ↓
+PILOT
+     ↓
+VALIDATION
+     ↓
+LOCAL TRANSPORT
+     ↓
+STAY EXPANSION
+     ↓
+LOCAL EXPERIENCE
+     ↓
+PAYMENT
+     ↓
+AI
+     ↓
+ANALYTICS
+     ↓
+PMS/API
+     ↓
+NATIONAL EXPANSION
+     ↓
+INTERNATIONAL
 
-কোনো Planned Feature-কে বাস্তবায়িত Feature হিসেবে এবং কোনো Discussion-কে Confirmed Partnership হিসেবে উপস্থাপন করা হবে না।
 
----
+১২৭. Final Investor Position
+ETP Investor-এর কাছে একটি Idea হিসেবে নয়, বরং একটি:
+Step-by-Step Buildable Business Model
+হিসেবে উপস্থাপিত হবে।
+প্রথম ধাপে:
+Build → Test → Validate
+পরের ধাপে:
+Improve → Grow → Monetize
+দীর্ঘমেয়াদে:
+Scale → National Expansion → Full Travel Ecosystem
 
-# ৭৩. Investor Readiness Statement
+১২৮. ETP-এর Final Vision
+ETP-এর দীর্ঘমেয়াদি Vision হলো বাংলাদেশের জন্য এমন একটি বাংলা-প্রথম Travel Ecosystem তৈরি করা যেখানে একজন মানুষ একটি প্ল্যাটফর্মের মাধ্যমে:
+কোথায় যাবে;
+কীভাবে যাবে;
+কোথায় থাকবে;
+কোন Hotel নেবে;
+কত টাকা খরচ করবে;
+কোন Local Transport নেবে;
+কোন Activity করবে;
+কোন Local Experience নেবে;
+Booking কীভাবে করবে;
+QR দিয়ে কীভাবে Verify করবে;
+এসব নিজের মতো সিদ্ধান্ত নিতে পারবে।
 
-ETP Investor-এর কাছে শুধু একটি Idea হিসেবে নয়, বরং একটি ধাপে ধাপে নির্মাণযোগ্য Business Model হিসেবে উপস্থাপিত হবে।
+১২৯. ETP-এর Final Mission
+ETP-এর Mission:
+“Travel-কে আরও সহজ, স্বাধীন, যাচাইকৃত, স্বচ্ছ এবং Local-friendly করা।”
+একইসঙ্গে:
+Customer-এর Travel Experience উন্নত করা;
+Small Business-এর Digital Reach বাড়ানো;
+Hotel-কে Digital Management দেওয়া;
+Local Service Provider-এর Marketplace তৈরি করা;
+Tourist Destination-এর Local Economy-কে Digital Ecosystem-এর সঙ্গে যুক্ত করা।
 
-প্রথম ধাপে উদ্দেশ্য:
-
-*Build → Test → Validate → Measure*
-
-পরবর্তী ধাপে:
-
-*Improve → Grow → Monetize → Expand*
-
-এবং দীর্ঘমেয়াদে:
-
-*Scale → National Expansion → Full Travel Ecosystem*
-
-এই পদ্ধতিতে ETP কম ঝুঁকিতে শুরু করে বাস্তব বাজারের Data ব্যবহার করে ধাপে ধাপে বড় হতে পারবে।
-
----
-
-# ৭৪. Final Master Statement
-
-## *EXTRA TRAVEL POINT — ETP*
-
-### *বাংলাদেশের জন্য একটি নতুন Travel Ecosystem-এর লক্ষ্য*
-
-একটি প্ল্যাটফর্ম যেখানে একজন Tourist বলতে পারবেন:
-
-**আমি কোথায় যাব, কোথায় থাকব, কী খাব, কীভাবে ঘুরব, কত টাকা খরচ করব—সিদ্ধান্ত আমার।**
-
-আর ETP বলবে:
-
-**"আপনার সিদ্ধান্ত নেওয়ার জন্য আমরা আপনাকে যাচাইকৃত অপশন, স্বচ্ছ তথ্য, নিরাপদ Booking এবং সম্ভাব্য সাশ্রয়ের সুযোগ দেব।"**
-
-একই সঙ্গে একটি ছোট Hotel বলতে পারবে:
-
-**"আমি আমার Service নতুন Customer-এর কাছে পৌঁছাতে পারছি।"**
-
-একজন Local Transport Provider বলতে পারবে:
-
-**"আমি Tourist-এর কাছ থেকে বৈধভাবে কাজ পাচ্ছি।"**
-
-একজন Local Student বলতে পারবে:
-
-**"আমি আমার এলাকার পর্যটকদের বৈধ Local Service দিয়ে আয়ের সুযোগ পাচ্ছি।"**
-
-একজন Tourist বলতে পারবে:
-
-**"আমি নিজের মতো করে ঘুরতে পারছি, আবার Group Tour-এর তুলনামূলক সাশ্রয়ের সুবিধার কাছাকাছিও যেতে পারছি।"**
-
+১৩০. FINAL MASTER STATEMENT
+EXTRA TRAVEL POINT — ETP
+বাংলাদেশের জন্য একটি নতুন Travel Ecosystem-এর লক্ষ্য
+একজন Tourist বলবে:
+“আমি কোথায় যাব, কোথায় থাকব, কীভাবে ঘুরব, কত টাকা খরচ করব—সিদ্ধান্ত আমার।”
+ETP বলবে:
+“আপনার সিদ্ধান্ত নেওয়ার জন্য আমরা আপনাকে Verified Options, Transparent Information, Secure Booking, QR Verification এবং সম্ভাব্য Savings-এর সুযোগ দেব।”
+একটি ছোট Hotel বলবে:
+“আমি আমার Hotel পরিচালনা করতে পারছি, Bill তৈরি করতে পারছি, Booking নিতে পারছি এবং নতুন Customer পাচ্ছি।”
+একজন Local Service Provider বলবে:
+“আমি Tourist-এর কাছে আমার Service পৌঁছাতে পারছি।”
+একজন Local Student বলবে:
+“আমি আমার এলাকার Tourist-কে বৈধ Local Service দিয়ে earning opportunity পাচ্ছি।”
+একজন Customer বলবে:
+“আমি নিজের মতো করে ঘুরতে পারছি।”
 আর ETP-এর লক্ষ্য হবে:
+Customer + Hotel + Vendor + Local Community + ETP
+—এই পক্ষগুলোর জন্য একটি:
+নিরাপদ + টেকসই + Customer-Centric + Local-First Travel Ecosystem
+তৈরি করা।
 
-# *Customer + Vendor + Local Community + ETP*
+১৩১. ETP-এর চূড়ান্ত নীতি
+“আপনার ভ্রমণ — আপনার সিদ্ধান্ত।”
+ETP Customer-এর সিদ্ধান্ত কেড়ে নেবে না।
+ETP Customer-কে দেবে:
+সঠিক তথ্য + Verified Options + Transparent Price + Booking + Security + QR Verification + Possible Savings
+যাতে Customer নিজের জন্য সবচেয়ে উপযুক্ত Travel Experience নির্বাচন করতে পারে।
 
-—এই চার পক্ষের জন্য একটি টেকসই, নিরাপদ ও পারস্পরিকভাবে উপকারী Travel Ecosystem তৈরি করা।
+১৩২. FINAL ROADMAP SUMMARY
+PHASE 1 — BUILD & VALIDATE
+Web MVP
+Backend
+Authentication
+Bus
+Hotel
+Hotel Management
+Booking
+e-Ticket
+QR Foundation
+Free Hotel Bill
+Vendor
+Admin
+Customer Dashboard
+Rule-Based Trip Planner
+Pilot Destination
+লক্ষ্য:
+বাস্তব বাজারে ETP Model Validate করা।
 
-## *ETP — আপনার ভ্রমণ, আপনার সিদ্ধান্ত।*
+PHASE 2 — GROW
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Restaurant
+Activity
+Car Rental
+Family Homestay
+Resort
+Villa
+Cottage
+Group Stay
+Local Experience
+Student/Local Network
+Rewards
+Local Payment
+AI Planner
+Complete QR
+Offline
+Analytics
+Notifications
+Hotel Advanced Operations
+লক্ষ্য:
+ETP-এর Customer ও Local Tourism Ecosystem বড় করা।
+
+PHASE 3 — EXPAND
+Train
+Air
+Corporate/B2B
+PMS/API
+Multi-property
+National Destination Network
+International Travel
+Enterprise Services
+Advanced AI
+লক্ষ্য:
+ETP-কে National Travel Super App হিসেবে Scale করা।
+
+FUTURE
+Personalized Travel Engine
+AI Revenue Management
+Predictive Occupancy
+Smart Hotel
+Advanced Fraud Prevention
+Insurance
+Concierge
+International Ecosystem
+Advanced Tourism Infrastructure
+
+১৩৩. FINAL CONCLUSION
+Extra Travel Point (ETP) শুধুমাত্র একটি Travel Booking App হওয়ার জন্য তৈরি হচ্ছে না।
+এর লক্ষ্য হলো ধাপে ধাপে একটি:
+Bangladesh-focused Travel Super App + Local Tourism Ecosystem
+তৈরি করা।
+এর প্রথম ভিত্তি হবে:
+Bus + Hotel + Booking + e-Ticket + QR + Vendor + Admin + Trip Planning
+এরপর যুক্ত হবে:
+Local Transport + Stay Expansion + Activity + Local Experience + Payment + Rewards + AI
+এবং দীর্ঘমেয়াদে:
+Train + Air + Corporate + International + Advanced AI + Full Tourism Ecosystem
+ETP-এর বিশেষত্ব হবে Customer Freedom।
+Customer একটি নির্দিষ্ট Tour Package-এর মধ্যে বাধ্য থাকবে না।
+সে নিজের:
+Hotel + Room + Transport + Activity + Experience + Schedule + Budget
+নিজে নির্বাচন করতে পারবে।
+অন্যদিকে ছোট Hotel ও Local Business শুধু Marketplace-এ Listing পাবে না; তারা প্রয়োজন অনুযায়ী ETP-এর Digital Management System-ও ব্যবহার করতে পারবে।
+বিশেষ করে Hotel-এর জন্য ETP:
+Hotel Management System
+
+
+Booking Platform
+
+
+Customer Acquisition Platform
+হিসেবে কাজ করার লক্ষ্য রাখবে।
+Hotel নিজের Customer আনলে:
+Booking Commission = 0%
+এবং Hotel ETP-এর agreed Monthly Subscription ব্যবহার করবে।
+ETP Customer এনে দিলে:
+Agreed Booking Commission
+প্রযোজ্য হবে।
+ETP Booking-এর ক্ষেত্রে Secure QR Scan-এর মাধ্যমে Booking Source ও Guest Information Server থেকে যাচাই করা যাবে এবং প্রয়োজনীয় Check-in Data automatically load করা যাবে।
+Hotel-এর জন্য Digital Bill/PDF/Print/WhatsApp Bill Core Subscription-এর মধ্যেই Free থাকবে।
+এছাড়াও Hotel প্রয়োজন অনুযায়ী Data Backup/Export রাখতে পারবে।
+এই Model ETP-কে শুধু Booking Marketplace নয়, একটি:
+Hotel Digital Operating System
+হিসেবেও প্রতিষ্ঠা করার সুযোগ দেবে।
+অন্যদিকে Local Tourism Model-এর মাধ্যমে:
+Hotel
+CNG
+Auto-Rickshaw
+Bike
+Cycle
+Boat
+Student
+Local Experience Provider
+Activity Provider
+Small Business
+এর মতো Local অংশগ্রহণকারীদের Digital Marketplace-এর সঙ্গে যুক্ত করার সুযোগ থাকবে।
+সবশেষে ETP-এর লক্ষ্য:
+Customer-এর Travel Freedom
+Vendor-এর Business Growth
+Hotel-এর Digital Transformation
+Local Community-এর Earning Opportunity
+ETP-এর Sustainable Revenue
+—এই পাঁচটি বিষয়কে একটি Ecosystem-এর মধ্যে আনা।
+ETP — আপনার ভ্রমণ, আপনার সিদ্ধান্ত।
+

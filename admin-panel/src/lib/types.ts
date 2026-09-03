@@ -37,6 +37,9 @@ export interface Vendor {
   rating?: number;
   totalReviews?: number;
   createdAt: string;
+  kycStatus?: string;
+  kycSubmittedAt?: string | null;
+  kycRejectionReason?: string | null;
   user?: { id: number; fullName?: string; email?: string; phone?: string };
   _count?: { services: number; bookings: number };
 }
@@ -91,4 +94,46 @@ export interface Review {
   rating: number;
   comment: string;
   status: string;
+}
+
+export interface PayoutProvider {
+  id: number;
+  businessName: string;
+  status: string;
+  kycStatus: string | null;
+  user?: { id: number; fullName?: string | null; email?: string | null; phone?: string | null };
+}
+
+export interface PayoutRequest {
+  id: number;
+  providerId: number;
+  amount: number;
+  currency: string;
+  method: string;
+  payoutDetails?: string | null;
+  status: string;
+  rejectionReason?: string | null;
+  processedAt?: string | null;
+  paidAt?: string | null;
+  transactionRef?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  provider?: PayoutProvider;
+}
+
+export interface VendorBalance {
+  currency: string;
+  grossSales: number;
+  commissionTotal: number;
+  netEarnings: number;
+  pendingBalance: number;
+  paidOut: number;
+  availableBalance: number;
+  payoutRequested: number;
+}
+
+export interface PayoutDetail {
+  payout: PayoutRequest;
+  balance?: VendorBalance;
+  commissionRate?: number | null;
 }

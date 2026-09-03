@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Wallet, MapPin, Clock, Users, Shield, AlertCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../../../lib/apiClient';
 import { useAuth } from '../../../contexts/AuthContext';
-import { API_CONFIG } from '../../../config/api';
 
 interface PaymentMethod {
   id: string;
@@ -55,9 +55,8 @@ export default function PaymentView() {
     setError(null);
 
     try {
-      const { default: axios } = await import('axios');
-      const response = await axios.post(
-        `${API_CONFIG.API_BASE_URL}/payments/initiate`,
+      const response = await api.post(
+        `/payments/initiate`,
         {
           bookingId: parseInt(bookingId),
           method: selectedMethod,
@@ -84,9 +83,8 @@ export default function PaymentView() {
     setError(null);
 
     try {
-      const { default: axios } = await import('axios');
-      const response = await axios.post(
-        `${API_CONFIG.API_BASE_URL}/payments/verify`,
+      const response = await api.post(
+        `/payments/verify`,
         { transactionId }
       );
 

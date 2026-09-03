@@ -10,7 +10,10 @@ import hotelRoutes from '../src/routes/hotel.routes';
 import bookingRoutes from '../src/routes/booking.routes';
 import authRoutes from '../src/routes/auth.routes';
 import providerRoutes from '../src/routes/provider.routes';
+import qrRoutes from '../src/routes/qr.routes';
+import paymentRoutes from '../src/routes/payment.routes';
 import jwt from 'jsonwebtoken';
+import { generateHmacSignature, generateTravelPassToken } from '../src/utils/qr';
 
 function signToken(user: { id: number; phone: string; role: string }): string {
   const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
@@ -24,6 +27,9 @@ function createApp(): express.Express {
   app.use('/api/v1/hotels', hotelRoutes);
   app.use('/api/v1/bookings', bookingRoutes);
   app.use('/api/v1/providers', providerRoutes);
+  app.use('/api/v1/qr', qrRoutes);
+  app.use('/api/v1/travel-passes', qrRoutes);
+  app.use('/api/v1/payments', paymentRoutes);
   return app;
 }
 
@@ -63,7 +69,13 @@ function request(app: express.Express, method: string, path: string, opts: { tok
 }
 
 async function setupHotelWorld() {
-  await prisma.booking.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.qrLog.deleteMany();
+  await prisma.seatLock.deleteMany();
+      await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
+    await prisma.booking.deleteMany();
   await prisma.hotelAvailability.deleteMany();
   await prisma.room.deleteMany();
   await prisma.serviceProvider.deleteMany();
@@ -117,6 +129,12 @@ describe('Hotel MVP', () => {
     await prisma.$disconnect();
   });
   beforeEach(async () => {
+    await prisma.payment.deleteMany();
+    await prisma.review.deleteMany();
+    await prisma.qrLog.deleteMany();
+    await prisma.seatLock.deleteMany();
+        await prisma.payoutRequest.deleteMany();
+    await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
     await prisma.hotelAvailability.deleteMany();
     await prisma.room.deleteMany();
@@ -252,30 +270,39 @@ describe('Hotel MVP', () => {
   describe('5. Check-in / Check-out', () => {
     it('should check in a hotel booking (vendor)', async () => {
       const { hotel, vendor, customer, room } = await setupHotelWorld();
-      const token = signToken({ id: vendor.id, phone: vendor.phone, role: 'vendor' });
+      const vendToken = signToken({ id: vendor.id, phone: vendor.phone, role: 'vendor' });
+      const custToken = signToken({ id: customer.id, phone: customer.phone, role: 'customer' });
 
-      // Create a booking first
-      const bookingRes = await request(app, 'POST', '/api/v1/bookings', {
-        token: signToken({ id: customer.id, phone: customer.phone, role: 'customer' }),
+      // Create a booking first via hotel booking flow
+      const bookingRes = await request(app, 'POST', '/api/v1/hotels/book', {
+        token: custToken,
         body: {
-          providerId: hotel.id,
-          category: 'hotel',
-          bookingDate: '2026-09-10',
-          travelDate: '2026-09-15',
-          numberOfPeople: 2,
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-15',
+          checkOutDate: '2026-09-17',
+          numberOfGuests: 2,
           totalAmount: 3500,
-          discountAmount: 0,
-          finalAmount: 3500,
-          status: 'confirmed',
-          paymentStatus: 'paid'
+          customerInfo: { name: 'John Doe', email: 'john@example.com', phone: '01811000001' }
         }
       });
       expect(bookingRes.status).toBe(201);
       const bookingId = bookingRes.body.booking.id;
 
+      // Make payment to confirm booking
+      const payInit = await request(app, 'POST', '/api/v1/payments/initiate', {
+        token: custToken,
+        body: { bookingId, method: 'bkash', amount: 3500 }
+      });
+      expect(payInit.status).toBe(201);
+      await request(app, 'POST', '/api/v1/payments/verify', {
+        token: custToken,
+        body: { transactionId: payInit.body.transactionId }
+      });
+
       // Check-in
       const res = await request(app, 'POST', '/api/v1/hotels/check-in', {
-        token,
+        token: vendToken,
         body: { bookingId }
       });
       expect(res.status).toBe(200);
@@ -283,28 +310,44 @@ describe('Hotel MVP', () => {
     });
 
     it('should check out a hotel booking (vendor)', async () => {
-      const { hotel, vendor, customer } = await setupHotelWorld();
-      const token = signToken({ id: vendor.id, phone: vendor.phone, role: 'vendor' });
+      const { hotel, vendor, customer, room } = await setupHotelWorld();
+      const vendToken = signToken({ id: vendor.id, phone: vendor.phone, role: 'vendor' });
+      const custToken = signToken({ id: customer.id, phone: customer.phone, role: 'customer' });
 
-      const bookingRes = await request(app, 'POST', '/api/v1/bookings', {
-        token: signToken({ id: customer.id, phone: customer.phone, role: 'customer' }),
+      // Create booking via hotel flow
+      const bookingRes = await request(app, 'POST', '/api/v1/hotels/book', {
+        token: custToken,
         body: {
-          providerId: hotel.id,
-          category: 'hotel',
-          bookingDate: '2026-09-10',
-          travelDate: '2026-09-15',
-          numberOfPeople: 2,
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-15',
+          checkOutDate: '2026-09-17',
+          numberOfGuests: 2,
           totalAmount: 3500,
-          discountAmount: 0,
-          finalAmount: 3500,
-          status: 'confirmed',
-          paymentStatus: 'paid'
+          customerInfo: { name: 'John Doe', email: 'john@example.com', phone: '01811000001' }
         }
       });
       const bookingId = bookingRes.body.booking.id;
 
+      // Make payment
+      const payInit = await request(app, 'POST', '/api/v1/payments/initiate', {
+        token: custToken,
+        body: { bookingId, method: 'bkash', amount: 3500 }
+      });
+      await request(app, 'POST', '/api/v1/payments/verify', {
+        token: custToken,
+        body: { transactionId: payInit.body.transactionId }
+      });
+
+      // Check-in first
+      await request(app, 'POST', '/api/v1/hotels/check-in', {
+        token: vendToken,
+        body: { bookingId }
+      });
+
+      // Check-out
       const res = await request(app, 'POST', '/api/v1/hotels/check-out', {
-        token,
+        token: vendToken,
         body: { bookingId }
       });
       expect(res.status).toBe(200);
@@ -374,6 +417,114 @@ describe('Hotel MVP', () => {
       });
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/check-out/i);
+    });
+
+    it('should reject booking when numberOfGuests exceeds room capacity', async () => {
+      const { hotel, customer, room } = await setupHotelWorld();
+      const token = signToken({ id: customer.id, phone: customer.phone, role: 'customer' });
+      const res = await request(app, 'POST', '/api/v1/hotels/book', {
+        token,
+        body: {
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-15',
+          checkOutDate: '2026-09-17',
+          numberOfGuests: 10, // room capacity is 2
+          totalAmount: 7000,
+          customerInfo: { name: 'John Doe', email: 'john@example.com', phone: '01811000001' }
+        }
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/capacity/i);
+    });
+
+    it('should prevent double booking when totalRooms capacity is reached for overlapping dates', async () => {
+      const { hotel, customer, room } = await setupHotelWorld();
+      const token1 = signToken({ id: customer.id, phone: customer.phone, role: 'customer' });
+      
+      const otherCust = await prisma.user.create({
+        data: { phone: '01811000099', passwordHash: 'hash', role: 'customer', fullName: 'Cust Two' }
+      });
+      const token2 = signToken({ id: otherCust.id, phone: otherCust.phone, role: 'customer' });
+
+      // First customer books the room (room totalRooms default is 1)
+      const res1 = await request(app, 'POST', '/api/v1/hotels/book', {
+        token: token1,
+        body: {
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-15',
+          checkOutDate: '2026-09-17',
+          numberOfGuests: 2,
+          totalAmount: 7000,
+          customerInfo: { name: 'John Doe', email: 'john@example.com', phone: '01811000001' }
+        }
+      });
+      expect(res1.status).toBe(201);
+
+      // Second customer tries to book overlapping dates for the same room
+      const res2 = await request(app, 'POST', '/api/v1/hotels/book', {
+        token: token2,
+        body: {
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-16',
+          checkOutDate: '2026-09-18',
+          numberOfGuests: 1,
+          totalAmount: 7000,
+          customerInfo: { name: 'Jane Smith', email: 'jane@example.com', phone: '01811000099' }
+        }
+      });
+      expect(res2.status).toBe(409);
+      expect(res2.body.error).toMatch(/not available/i);
+    });
+
+    it('should support QR check-in for hotel vendor', async () => {
+      const { hotel, vendor, customer, room } = await setupHotelWorld();
+      const custToken = signToken({ id: customer.id, phone: customer.phone, role: 'customer' });
+      const vendToken = signToken({ id: vendor.id, phone: vendor.phone, role: 'vendor' });
+
+      const bookRes = await request(app, 'POST', '/api/v1/hotels/book', {
+        token: custToken,
+        body: {
+          hotelId: hotel.id,
+          roomId: room.id,
+          checkInDate: '2026-09-15',
+          checkOutDate: '2026-09-17',
+          numberOfGuests: 2,
+          totalAmount: 7000,
+          customerInfo: { name: 'John Doe', email: 'john@example.com', phone: '01811000001' }
+        }
+      });
+      expect(bookRes.status).toBe(201);
+      const bookingId = bookRes.body.booking.id;
+
+      // Make payment to confirm booking
+      const payInit = await request(app, 'POST', '/api/v1/payments/initiate', {
+        token: custToken,
+        body: { bookingId, method: 'bkash', amount: 7000 }
+      });
+      expect(payInit.status).toBe(201);
+      await request(app, 'POST', '/api/v1/payments/verify', {
+        token: custToken,
+        body: { transactionId: payInit.body.transactionId }
+      });
+
+      // Generate travel pass
+      const passRes = await request(app, 'POST', '/api/v1/travel-passes', {
+        token: custToken,
+        body: { bookingId }
+      });
+      expect(passRes.status).toBe(200);
+
+      // Vendor scans QR data for check-in
+      const checkInRes = await request(app, 'POST', '/api/v1/hotels/check-in', {
+        token: vendToken,
+        body: { qrData: passRes.body.travelPass.qrObject }
+      });
+      expect(checkInRes.status).toBe(200);
+      expect(checkInRes.body.message).toMatch(/Check-in successful/);
+      expect(checkInRes.body.booking.status).toBe('confirmed');
     });
   });
 
