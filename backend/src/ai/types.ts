@@ -49,4 +49,4 @@ export interface AIFactoryOptions {
   config: AIProviderConfig;
 }
 
-export type SupportedProvider = 'ollama' | 'openai' | 'gemini';
+export type SupportedProvider = 'omniroute';

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../prisma';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -33,11 +34,22 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
 };
 
 export const requireRole = (roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Access denied: insufficient permissions' });
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      const user = await prisma.user.findUnique({ where: { id: req.user.id }, select: { isActive: true, role: true } });
+      if (!user || !user.isActive) {
+        return res.status(403).json({ error: 'Account is inactive' });
+      }
+      if (!roles.includes(user.role)) {
+        return res.status(403).json({ error: 'Access denied: insufficient permissions' });
+      }
+      next();
+    } catch (err) {
+      return res.status(500).json({ error: 'Server configuration error' });
     }
-    next();
   };
 };
 

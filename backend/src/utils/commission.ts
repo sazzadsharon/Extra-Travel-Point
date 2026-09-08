@@ -129,10 +129,13 @@ export async function resolveCommissionRate(opts: {
  * Create the financial Settlement ledger entry for a paid booking.
  *
  * - Idempotent via the unique Settlement.bookingId constraint.
- * - Only acts when booking has a serviceId (vendor-service bookings).
- *   Bus Bookings (no serviceId) are explicitly skipped so existing
- *   Bus Booking financial flows remain untouched.
- * - Returns null if the booking is not eligible (no serviceId).
+ * - Acts for vendor-service bookings (serviceId set) and for hotel
+ *   bookings (roomId set) that are sourced through ETP.
+ * - Bus/transport bookings (neither serviceId nor roomId) are skipped
+ *   so existing non-hotel financial flows are untouched.
+ * - DIRECT-source hotel bookings (booked directly with the vendor, no
+ *   ETP commission share) are skipped.
+ * - Returns null if the booking is not paid or not found.
  * - Returns the existing settlement if one already exists (idempotent).
  */
 export interface EnsureSettlementResult {
@@ -157,8 +160,11 @@ export async function ensureSettlementForPaidBooking(
 
     if (booking.paymentStatus !== 'paid') return null;
 
-    // Only vendor-service bookings generate commission entries.
-    if (!booking.serviceId) {
+    // Only vendor-service bookings (serviceId) or ETP-sourced hotel
+    // bookings (roomId, source !== 'DIRECT') generate commission entries.
+    // Bus/transport bookings (neither serviceId nor roomId) and DIRECT
+    // hotel bookings (booked straight with the vendor) are skipped.
+    if (!booking.serviceId && (!booking.roomId || booking.source === 'DIRECT')) {
       return { settlement: null, created: false, skipped: 'no-service' as const };
     }
 

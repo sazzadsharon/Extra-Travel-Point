@@ -18,8 +18,10 @@ export default function Navbar() {
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/destinations', label: 'Destinations' },
+    { href: '/hotels', label: 'Hotels' },
     { href: '/plan-trip', label: 'Plan Trip' },
     { href: '/transport/bus', label: 'Buses' },
+    { href: '/ai-chat', label: 'AI Chat' },
     { href: '/ai-assistant', label: 'AI Trips' },
   ];
 

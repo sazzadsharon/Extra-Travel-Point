@@ -60,7 +60,8 @@ function request(
 }
 
 async function setupWorld() {
-  await prisma.payment.deleteMany();
+      await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+await prisma.payment.deleteMany();
   await prisma.review.deleteMany();
   await prisma.qrLog.deleteMany();
       await prisma.payoutRequest.deleteMany();
@@ -69,8 +70,20 @@ async function setupWorld() {
   await prisma.seatLock.deleteMany();
   await prisma.serviceAvailability.deleteMany();
   await prisma.service.deleteMany();
+    await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
   await prisma.serviceProvider.deleteMany();
-  await prisma.user.deleteMany();
+      await prisma.session.deleteMany();
+    await prisma.hotelStaff.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.hotelTax.deleteMany();
+await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 
   const vendorAUser = await prisma.user.create({
     data: { phone: '01911000011', passwordHash: 'hash', role: 'vendor', fullName: 'Vendor A Owner' }
@@ -100,7 +113,8 @@ async function setupWorld() {
       city: 'Cox\'s Bazar',
       status: 'APPROVED',
       isVerified: true,
-      isActive: true
+      isActive: true,
+      lifecycleStatus: 'APPROVED'
     }
   });
 
@@ -145,6 +159,12 @@ describe('Vendor Service Management', () => {
     await prisma.seatLock.deleteMany();
     await prisma.serviceAvailability.deleteMany();
     await prisma.service.deleteMany();
+    await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
     await prisma.serviceProvider.deleteMany();
     await prisma.user.deleteMany();
   });

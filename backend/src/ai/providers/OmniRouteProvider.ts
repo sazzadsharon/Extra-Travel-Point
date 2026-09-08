@@ -1,17 +1,33 @@
 import { BaseAIProvider } from '../BaseAIProvider';
 import { AIProvider, ChatMessage, AIResponse, StructuredAIResponse, AIProviderConfig } from '../types';
 
+export interface OmniRouteProviderConfig extends AIProviderConfig {
+  apiKey?: string;
+}
+
 export class OmniRouteProvider extends BaseAIProvider implements AIProvider {
   public readonly name = 'omniroute';
 
   private readonly baseUrl: string;
   private readonly model: string;
+  private readonly apiKey: string | undefined;
 
-  constructor(config: AIProviderConfig = {}) {
+  constructor(config: OmniRouteProviderConfig = {}) {
     super(config);
 
-    this.baseUrl = (config.baseUrl || process.env.OMNIROUTE_BASE_URL || 'http://127.0.0.1:20128/v1').replace(/\/$/, '');
+    this.baseUrl = (config.baseUrl || process.env.OMNIROUTE_BASE_URL || 'https://openrouter.ai/api/v1').replace(/\/$/, '');
     this.model = config.model || process.env.OMNIROUTE_MODEL || 'auto';
+    this.apiKey = config.apiKey || process.env.OMNIROUTE_API_KEY || undefined;
+  }
+
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (this.apiKey) {
+      headers['Authorization'] = `Bearer ${this.apiKey}`;
+    }
+    return headers;
   }
 
   async chat(messages: ChatMessage[]): Promise<AIResponse> {
@@ -23,9 +39,7 @@ export class OmniRouteProvider extends BaseAIProvider implements AIProvider {
 
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify({
           model: this.model,
           messages: messages.map(msg => ({
@@ -77,9 +91,7 @@ export class OmniRouteProvider extends BaseAIProvider implements AIProvider {
 
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify({
           model: this.model,
           messages: [{ role: 'user', content: prompt }],
@@ -163,6 +175,7 @@ export class OmniRouteProvider extends BaseAIProvider implements AIProvider {
 
       const response = await fetch(`${this.baseUrl}/models`, {
         method: 'GET',
+        headers: this.getHeaders(),
         signal: controller.signal
       });
 

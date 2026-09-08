@@ -57,16 +57,28 @@ function request(app: express.Express, method: string, path: string, opts: { tok
 }
 
 async function wipeAll() {
-  await prisma.payment.deleteMany();
+      await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+await prisma.payment.deleteMany();
   await prisma.review.deleteMany();
   await prisma.qrLog.deleteMany();
   await prisma.seatLock.deleteMany();
       await prisma.payoutRequest.deleteMany();
     await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
+    await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
   await prisma.serviceProvider.deleteMany();
   await prisma.session.deleteMany();
-  await prisma.user.deleteMany();
+      await prisma.hotelStaff.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.hotelTax.deleteMany();
+await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 }
 
 describe('Auth registration role hardening', () => {

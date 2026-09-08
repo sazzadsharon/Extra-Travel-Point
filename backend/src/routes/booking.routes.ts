@@ -224,6 +224,9 @@ router.post('/seats/lock', authenticateJWT, async (req: AuthRequest, res) => {
       lockIds: acquired.locks.map(r => r.id)
     });
   } catch (error: any) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Seat(s) already locked by another customer' });
+    }
     return res.status(500).json({ error: error.message });
   }
 });

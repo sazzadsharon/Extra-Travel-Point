@@ -8,6 +8,7 @@ import {
   generateTravelPassToken,
   TravelPassPayload
 } from '../utils/qr';
+import { notifyUser } from '../utils/notifications';
 
 const router = Router();
 
@@ -55,6 +56,10 @@ async function generateTravelPass(bookingId: number, userId: number, userRole: s
 
   if (booking.status === 'cancelled') {
     return { status: 400, body: { error: 'Cannot generate travel pass for cancelled booking' } };
+  }
+
+  if (booking.paymentStatus !== 'paid') {
+    return { status: 402, body: { error: 'Ticket is not available until payment is verified' } };
   }
 
   // Generate or reuse token
@@ -224,6 +229,18 @@ router.post('/verify', authenticateJWT, requireRole(['vendor', 'admin']), async 
         isUsed: true
       }
     });
+
+    if (booking.category === 'hotel' && booking.status !== 'completed') {
+      try {
+        await prisma.booking.update({
+          where: { id: booking.id },
+          data: { status: 'confirmed', checkedInAt: booking.checkedInAt ?? new Date() }
+        });
+        void notifyUser(booking.userId, 'HOTEL_CHECKIN', 'Checked in', `You have been checked in to your hotel. Booking: ${booking.bookingCode}`);
+      } catch (e) {
+        // best-effort, do not fail verification
+      }
+    }
 
     return res.json({
       valid: true,

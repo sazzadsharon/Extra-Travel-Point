@@ -38,6 +38,9 @@ export default function PaymentView() {
     { id: 'rocket', name: 'Rocket', key: 'rocket', icon: <Wallet className="w-6 h-6" />, description: 'Pay via DBBL Rocket' },
     { id: 'sslcommerz', name: 'SSLCommerz', key: 'sslcommerz', icon: <CreditCard className="w-6 h-6" />, description: 'Pay via SSLCommerz Gateway' },
     { id: 'card', name: 'Card Payment', key: 'card', icon: <CreditCard className="w-6 h-6" />, description: 'Pay via Debit/Credit Card' },
+    ...(process.env.NODE_ENV === 'development'
+      ? [{ id: 'mock', name: 'Test Payment (Mock)', key: 'mock', icon: <CreditCard className="w-6 h-6" />, description: 'Free mock payment for testing and development' }]
+      : []),
   ];
 
   // Initiate payment

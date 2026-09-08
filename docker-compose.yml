@@ -8,8 +8,11 @@ services:
     environment:
       - PORT=5000
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/extratravel?schema=public
-      - JWT_SECRET=supersecretjwtkey_extratravelpoint_2026
-      - QR_SECRET_KEY=supersecretqrkey_hmac_2026
+      - JWT_SECRET=${JWT_SECRET}
+      - QR_SECRET_KEY=${QR_SECRET_KEY}
+      - OMNIROUTE_API_KEY=${OMNIROUTE_API_KEY:-}
+      - OMNIROUTE_BASE_URL=${OMNIROUTE_BASE_URL:-https://openrouter.ai/api/v1}
+      - OMNIROUTE_MODEL=${OMNIROUTE_MODEL:-auto}
     depends_on:
       - postgres
       - redis

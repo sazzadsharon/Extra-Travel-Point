@@ -1,5 +1,22 @@
 import { PaymentGateway, PaymentGatewayConfig, PaymentGatewayInitiateInput, PaymentGatewayInitiateResult, PaymentGatewayVerificationInput, PaymentGatewayVerificationResult, PaymentGatewayRefundInput, PaymentGatewayRefundResult, PaymentGatewayQueryInput, PaymentGatewayExecuteInput, PaymentGatewayExecuteResult } from './payment-gateway';
+export { PaymentGateway, PaymentGatewayConfig, PaymentGatewayInitiateInput, PaymentGatewayInitiateResult, PaymentGatewayVerificationInput, PaymentGatewayVerificationResult, PaymentGatewayRefundInput, PaymentGatewayRefundResult, PaymentGatewayQueryInput, PaymentGatewayExecuteInput, PaymentGatewayExecuteResult } from './payment-gateway';
 import { BkashSandboxGateway } from './bkash-sandbox';
+export { BkashSandboxGateway };
+
+interface MockProviderTransaction {
+  reference: string;
+  amount: number;
+  currency: string;
+  status: 'init' | 'success' | 'failed' | 'refunded';
+  paidAt?: Date;
+  createdAt: Date;
+}
+
+const mockProviderStore = new Map<string, MockProviderTransaction>();
+
+export function resetMockGatewayStore(): void {
+  mockProviderStore.clear();
+}
 
 export class MockPaymentGateway implements PaymentGateway {
   name = 'mock';
@@ -11,6 +28,13 @@ export class MockPaymentGateway implements PaymentGateway {
 
   async initiate(input: PaymentGatewayInitiateInput): Promise<PaymentGatewayInitiateResult> {
     const transactionId = `MOCK-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    mockProviderStore.set(transactionId, {
+      reference: transactionId,
+      amount: Number(input.amount),
+      currency: String(input.currency || 'BDT'),
+      status: 'init',
+      createdAt: new Date()
+    });
     return {
       success: true,
       transactionId,
@@ -22,29 +46,133 @@ export class MockPaymentGateway implements PaymentGateway {
   }
 
   async verify(input: PaymentGatewayVerificationInput): Promise<PaymentGatewayVerificationResult> {
+    const txn = mockProviderStore.get(input.gatewayReference);
+    if (!txn) {
+      return {
+        success: false,
+        status: 'failed',
+        raw: { mode: 'mock', provider: this.config.provider, reason: 'unknown_reference' }
+      };
+    }
+    if (txn.status === 'success') {
+      return {
+        success: true,
+        status: 'success',
+        amount: txn.amount,
+        currency: txn.currency,
+        paidAt: txn.paidAt || new Date(),
+        raw: { mode: 'mock', provider: this.config.provider }
+      };
+    }
+    if (txn.status === 'init') {
+      return {
+        success: false,
+        status: 'pending',
+        amount: txn.amount,
+        currency: txn.currency,
+        raw: { mode: 'mock', provider: this.config.provider }
+      };
+    }
     return {
-      success: true,
-      status: 'success',
-      amount: input.expectedAmount,
-      currency: input.expectedCurrency,
-      paidAt: new Date(),
+      success: false,
+      status: 'failed',
+      amount: txn.amount,
+      currency: txn.currency,
       raw: { mode: 'mock', provider: this.config.provider }
     };
   }
 
   async execute(input: PaymentGatewayExecuteInput): Promise<PaymentGatewayExecuteResult> {
-    throw new Error('Mock gateway does not support execution. Use PAYMENT_MODE=sandbox for the real flow.');
-  }
-
-  async queryPayment(input: PaymentGatewayQueryInput): Promise<PaymentGatewayVerificationResult> {
+    const txn = mockProviderStore.get(input.gatewayReference);
+    if (!txn) {
+      return {
+        success: false,
+        status: 'failed',
+        raw: { mode: 'mock', provider: this.config.provider, reason: 'unknown_reference' }
+      };
+    }
+    if (txn.status !== 'success') {
+      if (txn.status === 'init') {
+        txn.status = 'success';
+        txn.paidAt = new Date();
+        return {
+          success: true,
+          status: 'success',
+          providerRefId: txn.reference,
+          amount: txn.amount,
+          currency: txn.currency,
+          paidAt: txn.paidAt,
+          raw: { mode: 'mock', provider: this.config.provider }
+        };
+      }
+      return {
+        success: false,
+        status: 'failed',
+        providerRefId: txn.reference,
+        raw: { mode: 'mock', provider: this.config.provider }
+      };
+    }
     return {
       success: true,
       status: 'success',
+      providerRefId: txn.reference,
+      amount: txn.amount,
+      currency: txn.currency,
+      paidAt: txn.paidAt,
+      raw: { mode: 'mock', provider: this.config.provider }
+    };
+  }
+
+  async queryPayment(input: PaymentGatewayQueryInput): Promise<PaymentGatewayVerificationResult> {
+    const txn = mockProviderStore.get(input.gatewayReference);
+    if (!txn) {
+      return {
+        success: false,
+        status: 'failed',
+        raw: { mode: 'mock', provider: this.config.provider, reason: 'unknown_reference' }
+      };
+    }
+    if (txn.status === 'success') {
+      return {
+        success: true,
+        status: 'success',
+        amount: txn.amount,
+        currency: txn.currency,
+        paidAt: txn.paidAt,
+        raw: { mode: 'mock', provider: this.config.provider }
+      };
+    }
+    if (txn.status === 'init') {
+      return {
+        success: false,
+        status: 'pending',
+        raw: { mode: 'mock', provider: this.config.provider }
+      };
+    }
+    return {
+      success: false,
+      status: 'failed',
       raw: { mode: 'mock', provider: this.config.provider }
     };
   }
 
   async refund(input: PaymentGatewayRefundInput): Promise<PaymentGatewayRefundResult> {
+    const txn = mockProviderStore.get(input.gatewayReference);
+    if (!txn || txn.status !== 'success') {
+      return {
+        success: false,
+        status: 'failed',
+        raw: { mode: 'mock', provider: this.config.provider, reason: 'no_successful_transaction' }
+      };
+    }
+    if (Number(input.amount) !== txn.amount) {
+      return {
+        success: false,
+        status: 'failed',
+        raw: { mode: 'mock', provider: this.config.provider, reason: 'amount_mismatch' }
+      };
+    }
+    txn.status = 'refunded';
     return {
       success: true,
       refundReference: `MOCK-REF-${Date.now()}`,
@@ -85,14 +213,7 @@ export class BkashPaymentGateway implements PaymentGateway {
       throw new Error('bKash stub gateway is not configured.');
     }
 
-    return {
-      success: true,
-      status: 'success',
-      amount: input.expectedAmount,
-      currency: input.expectedCurrency,
-      paidAt: new Date(),
-      raw: { mode: 'stub', provider: 'bkash', note: 'STUB: No real bKash API call is made. Use PAYMENT_MODE=sandbox for the real sandbox flow.' }
-    };
+    throw new Error('bKashPaymentGateway.verify() is not implemented for production use');
   }
 
   async execute(input: PaymentGatewayExecuteInput): Promise<PaymentGatewayExecuteResult> {
@@ -152,14 +273,7 @@ export class NagadPaymentGateway implements PaymentGateway {
       throw new Error('Nagad gateway is not configured.');
     }
 
-    return {
-      success: true,
-      status: 'success',
-      amount: input.expectedAmount,
-      currency: input.expectedCurrency,
-      paidAt: new Date(),
-      raw: { mode: 'stub', provider: 'nagad', note: 'STUB: No real Nagad API call is made. Production integration required.' }
-    };
+    throw new Error('NagadPaymentGateway.verify() is not implemented for production use');
   }
 
   async execute(input: PaymentGatewayExecuteInput): Promise<PaymentGatewayExecuteResult> {
@@ -219,14 +333,7 @@ export class SSLCommerzPaymentGateway implements PaymentGateway {
       throw new Error('SSLCommerz gateway is not configured.');
     }
 
-    return {
-      success: true,
-      status: 'success',
-      amount: input.expectedAmount,
-      currency: input.expectedCurrency,
-      paidAt: new Date(),
-      raw: { mode: 'stub', provider: 'sslcommerz', note: 'STUB: No real SSLCommerz API call is made. Production integration required.' }
-    };
+    throw new Error('SSLCommerzPaymentGateway.verify() is not implemented for production use');
   }
 
   async execute(input: PaymentGatewayExecuteInput): Promise<PaymentGatewayExecuteResult> {
@@ -263,6 +370,10 @@ export function resolvePaymentGateway(provider: string, config: PaymentGatewayCo
     return new BkashSandboxGateway(config);
   }
 
+  if (normalized === 'bkash' && process.env.USE_MOCK_PAYMENT === 'true') {
+    return new MockPaymentGateway(config);
+  }
+
   switch (normalized) {
     case 'bkash':
       return new BkashPaymentGateway(config);
@@ -271,10 +382,12 @@ export function resolvePaymentGateway(provider: string, config: PaymentGatewayCo
     case 'sslcommerz':
       return new SSLCommerzPaymentGateway(config);
     case 'mock':
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Mock payment gateway is not allowed in production');
+      }
       return new MockPaymentGateway(config);
     default:
-      return new MockPaymentGateway(config);
+      throw new Error(`Unsupported payment provider: ${provider}`);
   }
 }
 
-export { BkashSandboxGateway, PaymentGatewayConfig };

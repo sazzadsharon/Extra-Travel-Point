@@ -15,6 +15,11 @@ import paymentRoutes from '../src/routes/payment.routes';
 import jwt from 'jsonwebtoken';
 import { generateHmacSignature, generateTravelPassToken } from '../src/utils/qr';
 
+process.env.BKASH_API_KEY = 'test-key';
+process.env.BKASH_SECRET_KEY = 'test-secret';
+process.env.BKASH_BASE_URL = 'https://sandbox.bka.sh';
+process.env.PAYMENT_MODE = 'stub';
+
 function signToken(user: { id: number; phone: string; role: string }): string {
   const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
   return jwt.sign(user, secret, { expiresIn: '1h' });
@@ -69,17 +74,29 @@ function request(app: express.Express, method: string, path: string, opts: { tok
 }
 
 async function setupHotelWorld() {
+  await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+  await prisma.auditLog.deleteMany();
   await prisma.payment.deleteMany();
-  await prisma.review.deleteMany();
   await prisma.qrLog.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.settlement.deleteMany();
   await prisma.seatLock.deleteMany();
-      await prisma.payoutRequest.deleteMany();
-    await prisma.settlement.deleteMany();
-    await prisma.booking.deleteMany();
+  await prisma.hotelMaintenanceRequest.deleteMany();
+  await prisma.housekeepingTask.deleteMany();
+  await prisma.hotelStaff.deleteMany();
+  await prisma.hotelTax.deleteMany();
+  await prisma.hotelImage.deleteMany();
+  await prisma.hotelAmenity.deleteMany();
+  await prisma.hotelPolicy.deleteMany();
+  await prisma.hotelPromotion.deleteMany();
   await prisma.hotelAvailability.deleteMany();
+  await prisma.ratePlan.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.session.deleteMany();
   await prisma.room.deleteMany();
   await prisma.serviceProvider.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 
   const customer = await prisma.user.create({
     data: { phone: '01811000001', passwordHash: 'hash', role: 'customer', fullName: 'Cust One' }
@@ -101,6 +118,8 @@ async function setupHotelWorld() {
       status: 'APPROVED',
       isVerified: true,
       isActive: true,
+      isPublished: true,
+      lifecycleStatus: 'APPROVED',
       rating: 4.5
     }
   });
@@ -129,17 +148,29 @@ describe('Hotel MVP', () => {
     await prisma.$disconnect();
   });
   beforeEach(async () => {
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+    await prisma.auditLog.deleteMany();
     await prisma.payment.deleteMany();
-    await prisma.review.deleteMany();
     await prisma.qrLog.deleteMany();
-    await prisma.seatLock.deleteMany();
-        await prisma.payoutRequest.deleteMany();
+    await prisma.review.deleteMany();
     await prisma.settlement.deleteMany();
-    await prisma.booking.deleteMany();
+    await prisma.seatLock.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelStaff.deleteMany();
+    await prisma.hotelTax.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
     await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.booking.deleteMany();
+    await prisma.session.deleteMany();
     await prisma.room.deleteMany();
     await prisma.serviceProvider.deleteMany();
     await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
   });
 
   const app = createApp();

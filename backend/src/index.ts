@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 
 import { prisma } from './prisma';
 
+import { logDebug, logError, logInfo, logWarn } from './utils/logger';
+
 import authRoutes from './routes/auth.routes';
 import bookingRoutes from './routes/booking.routes';
 import providerRoutes from './routes/provider.routes';
@@ -17,11 +19,16 @@ import webhookRoutes from './routes/webhook.routes';
 import uploadRoutes from './routes/upload.routes';
 import notificationRoutes from './routes/notification.routes';
 import aiRoutes from './routes/ai.routes';
+import aiChatRoutes from './routes/ai-chat.routes';
 import loyaltyRoutes from './routes/loyalty.routes';
 import trackingRoutes from './routes/tracking.routes';
 import emergencyRoutes from './routes/emergency.routes';
 import reviewRoutes from './routes/review.routes';
 import hotelRoutes from './routes/hotel.routes';
+import hotelManageRoutes from './routes/hotel-manage.routes';
+import hotelRoomRoutes from './routes/hotel-room.routes';
+import hotelBookingRoutes from './routes/hotel-booking.routes';
+import hotelOperationsRoutes from './routes/hotel-operations.routes';
 import transportRoutes from './routes/transport.routes';
 import vendorRoutes from './routes/vendor.routes';
 import vendorServiceRoutes from './routes/vendor-service.routes';
@@ -34,6 +41,10 @@ import serviceBookingRoutes from './routes/service-booking.routes';
 import vendorFinanceRoutes from './routes/vendor-finance.routes';
 import adminSettingsRoutes from './routes/admin-settings.routes';
 import adminPayoutRoutes from './routes/admin-payouts.routes';
+import busRoutes from './routes/bus.routes';
+import busRouteRoutes from './routes/bus-route.routes';
+import busTripRoutes from './routes/bus-trip.routes';
+import busTripPublicRoutes from './routes/bus-trip-public.routes';
 
 dotenv.config();
 
@@ -54,6 +65,13 @@ export const WEBHOOK_SECRET = requireSecret('WEBHOOK_SECRET');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Request correlation ID middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  (req as any).requestId = req.headers['x-request-id'] as string || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  res.setHeader('x-request-id', (req as any).requestId);
+  next();
+});
 
 // Security middleware
 app.use(helmet({
@@ -91,9 +109,23 @@ app.use(cors({
 }));
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
+
+// Request logging for security-sensitive routes
+app.use('/api/v1/payments', (req: Request, res: Response, next: NextFunction) => {
+  logDebug('Payment request', { requestId: (req as any).requestId, method: req.method, path: req.path });
+  next();
+});
+app.use('/api/v1/hotel-bookings', (req: Request, res: Response, next: NextFunction) => {
+  logDebug('Hotel booking request', { requestId: (req as any).requestId, method: req.method, path: req.path });
+  next();
+});
+app.use('/api/v1/auth', (req: Request, res: Response, next: NextFunction) => {
+  logDebug('Auth request', { requestId: (req as any).requestId, method: req.method, path: req.path });
+  next();
+});
 
 // Rate limiting
 const apiLimiter = rateLimit({
@@ -112,8 +144,26 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later.' }
 });
 
+const paymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many payment requests, please try again later.' }
+});
+
+const bookingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many booking requests, please try again later.' }
+});
+
 app.use('/api/', apiLimiter);
 app.use('/api/v1/auth', authLimiter);
+app.use('/api/v1/payments', paymentLimiter);
+app.use('/api/v1/hotel-bookings', bookingLimiter);
 
 // Health Check endpoints
 app.get('/health', (req: Request, res: Response) => {
@@ -195,11 +245,16 @@ app.use('/api/v1/webhooks', webhookRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/ai', aiChatRoutes);
 app.use('/api/v1/loyalty', loyaltyRoutes);
 app.use('/api/v1/tracking', trackingRoutes);
 app.use('/api/v1/emergency', emergencyRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/hotels', hotelRoutes);
+app.use('/api/v1/hotels', hotelManageRoutes);
+app.use('/api/v1/hotel-rooms', hotelRoomRoutes);
+app.use('/api/v1/hotel-bookings', hotelBookingRoutes);
+app.use('/api/v1/hotels', hotelOperationsRoutes);
 app.use('/api/v1/flights', flightRoutes);
 app.use('/api/v1/services', serviceBookingRoutes);
 app.use('/api/v1/vendors', vendorFinanceRoutes);
@@ -207,8 +262,12 @@ app.use('/api/v1/admin', adminPayoutRoutes);
 // Shared Travel Pass API consumed by Web + Mobile (same router as /api/v1/qr)
 app.use('/api/v1/travel-passes', qrRoutes);
 app.use('/api/v1/transport', transportRoutes);
+app.use('/api/v1/transport/trips', busTripPublicRoutes);
 app.use('/api/v1/vendors', vendorRoutes);
 app.use('/api/v1', vendorServiceRoutes);
+app.use('/api/v1/vendors/me/buses', busRoutes);
+app.use('/api/v1/vendors/me/bus-routes', busRouteRoutes);
+app.use('/api/v1/vendors/me/bus-trips', busTripRoutes);
 app.use('/api/v1/security', securityRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/discovery', discoveryRoutes);
@@ -224,10 +283,12 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Unhandled error:', err);
+  const requestId = (req as any).requestId || 'unknown';
+  logError('Unhandled error', err, { requestId, method: req.method, path: req.path });
   res.status(500).json({
     error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message
+    message: process.env.NODE_ENV === 'production' ? 'Something went wrong' : err.message,
+    requestId
   });
 });
 

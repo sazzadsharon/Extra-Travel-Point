@@ -27,6 +27,7 @@ model User {
   seatLocks        SeatLock[]
   serviceProviders ServiceProvider[]
   sessions         Session[]
+  hotelStaff       HotelStaff[]
 
   @@map("users")
 }
@@ -45,43 +46,66 @@ model Session {
 }
 
 model ServiceProvider {
-  id              Int          @id @default(autoincrement())
-  userId          Int
-  businessName    String
-  category        String
-  description     String?
-  address         String
-  city            String?
-  latitude        Float?
-  longitude       Float?
-  phone           String?
-  logo            String?
-  commissionRate  Float        @default(10.00)
-  status          String       @default("PENDING")
-  isVerified      Boolean      @default(false)
-  isActive        Boolean      @default(true)
-  verifiedAt      DateTime?
-  reviewedBy      Int?
-  rejectionReason String?
-  rating          Float        @default(0)
-  totalReviews    Int          @default(0)
-  kycStatus       String       @default("NOT_SUBMITTED")
-  kycSubmittedAt  DateTime?
-  kycReviewedAt   DateTime?
+  id               Int          @id @default(autoincrement())
+  userId           Int
+  businessName     String
+  category         String
+  description      String?
+  address          String
+  city             String?
+  latitude         Float?
+  longitude        Float?
+  phone            String?
+  logo             String?
+  commissionRate   Float        @default(10.00)
+  status           String       @default("PENDING")
+  isVerified       Boolean      @default(false)
+  isActive         Boolean      @default(true)
+  verifiedAt       DateTime?
+  reviewedBy       Int?
+  rejectionReason  String?
+  rating           Float        @default(0)
+  totalReviews     Int          @default(0)
+  kycStatus        String       @default("NOT_SUBMITTED")
+  kycSubmittedAt   DateTime?
+  kycReviewedAt    DateTime?
   kycRejectionReason String?
-  kycData         String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  bookings        Booking[]
-  flights         Flight[]
-qrLogs          QrLog[]
-  rooms           Room[]
-  seatLocks       SeatLock[]
-  user            User            @relation(fields: [userId], references: [id])
-  services        Service[]
-  settlements     Settlement[]
-  payoutRequests  PayoutRequest[]
+  kycData          String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  bookings         Booking[]
+  flights          Flight[]
+  qrLogs           QrLog[]
+  rooms            Room[]
+  seatLocks        SeatLock[]
+  user             User            @relation(fields: [userId], references: [id])
+  services         Service[]
+  settlements      Settlement[]
+  payoutRequests   PayoutRequest[]
+  // Hotel-specific fields
+  slug             String?   @unique
+  starRating       Int?
+  onboardingMode   String?        @default("ADVANCED")
+  lifecycleStatus  String?        @default("DRAFT")
+  isPublished      Boolean        @default(false)
+  publishedAt      DateTime?
+  hotelImages      HotelImage[]
+  hotelAmenities   HotelAmenity[]
+  hotelPolicy      HotelPolicy?
+  hotelPromotions  HotelPromotion[]
+  hotelTaxes       HotelTax[]
+  hotelStaff       HotelStaff[]
+  buses            Bus[]
+  busRoutes        BusRoute[]
+  busTrips         BusTrip[]
+  housekeepingTasks HousekeepingTask[]
+  hotelMaintenanceRequests HotelMaintenanceRequest[]
 
+  @@index([userId])
+  @@index([category])
+  @@index([status])
+  @@index([city])
+  @@index([slug])
   @@map("service_providers")
 }
 
@@ -158,23 +182,34 @@ model ServiceAvailability {
 }
 
 model Room {
-  id             Int                 @id @default(autoincrement())
-  providerId     Int
-  name           String
-  type           String
-  description    String?
-  price          Float
-  capacity       Int                 @default(2)
-  totalRooms     Int                 @default(1)
-  amenities      String?
-  images         String?
-  isAvailable    Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  bookings       Booking[]
-  availabilities HotelAvailability[]
-  provider       ServiceProvider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  id              Int                  @id @default(autoincrement())
+  providerId      Int
+  name            String
+  type            String
+  description     String?
+  price           Float
+  capacity        Int                  @default(2)
+  adultCapacity   Int                  @default(2)
+  childCapacity   Int                  @default(0)
+  totalRooms      Int                  @default(1)
+  roomNumber      String?
+  bedConfig       String?
+  amenities       String?
+  images          String?
+  isAvailable     Boolean              @default(true)
+  baseCurrency    String               @default("BDT")
+  status          String               @default("ACTIVE")
+  size            String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  bookings        Booking[]
+  availabilities  HotelAvailability[]
+  ratePlans       RatePlan[]
+  housekeepingTasks HousekeepingTask[]
+  hotelMaintenanceRequests HotelMaintenanceRequest[]
+  provider        ServiceProvider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
+  @@index([providerId])
   @@map("rooms")
 }
 
@@ -192,6 +227,171 @@ model HotelAvailability {
   @@unique([roomId, date])
   @@index([roomId, date])
   @@map("hotel_availabilities")
+}
+
+model RatePlan {
+  id              Int      @id @default(autoincrement())
+  roomId          Int
+  name            String
+  description     String?
+  mealPlan        String   @default("RO")
+  refundable      Boolean  @default(true)
+  price           Float
+  currency        String   @default("BDT")
+  minStay         Int      @default(1)
+  maxStay         Int?
+  startDate       DateTime?
+  endDate         DateTime?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("rate_plans")
+}
+
+model HotelImage {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  url         String
+  caption     String?
+  isPrimary   Boolean          @default(false)
+  sortOrder   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@map("hotel_images")
+}
+
+model HotelAmenity {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  name        String
+  icon        String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, name])
+  @@index([providerId])
+  @@map("hotel_amenities")
+}
+
+model HotelPolicy {
+  id              Int              @id @default(autoincrement())
+  providerId      Int              @unique
+  cancellationPolicy String?
+  checkInTime     String?
+  checkOutTime    String?
+  childPolicy     String?
+  petPolicy       String?
+  smokingPolicy   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  provider        ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("hotel_policies")
+}
+
+model HotelPromotion {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  code        String
+  name        String
+  description String?
+  discountType String          // 'percentage' | 'fixed'
+  discountValue Float
+  minNights   Int              @default(1)
+  minAmount   Float            @default(0)
+  usageLimit  Int?
+  usedCount   Int              @default(0)
+  validFrom   DateTime
+  validUntil  DateTime
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, code])
+  @@index([providerId])
+  @@index([validFrom, validUntil])
+  @@map("hotel_promotions")
+}
+
+model HotelTax {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  name        String
+  type        String           // 'percentage' | 'fixed'
+  value       Float
+  isInclusive Boolean          @default(false)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@map("hotel_taxes")
+}
+
+model HotelStaff {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  userId      Int
+  role        String           @default("RECEPTIONIST") // RECEPTIONIST | HOUSEKEEPING | MAINTENANCE | MANAGER
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, userId])
+  @@index([providerId])
+  @@index([userId])
+  @@map("hotel_staff")
+}
+
+model HousekeepingTask {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  roomId      Int
+  assignedTo  Int?
+  notes       String?
+  status      String           @default("PENDING") // PENDING | ASSIGNED | IN_PROGRESS | COMPLETED | CANCELLED
+  completedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  room        Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([roomId])
+  @@index([status])
+  @@map("housekeeping_tasks")
+}
+
+model HotelMaintenanceRequest {
+  id          Int              @id @default(autoincrement())
+  providerId  Int
+  roomId      Int?
+  title       String
+  description String?
+  category    String           @default("OTHER")
+  assignedTo  String?
+  status      String           @default("REPORTED") // REPORTED | ASSIGNED | IN_PROGRESS | RESOLVED | CANCELLED
+  resolvedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  room        Room?            @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([providerId])
+  @@index([roomId])
+  @@index([status])
+  @@map("hotel_maintenance_requests")
 }
 
 model Flight {
@@ -221,6 +421,75 @@ model Flight {
   @@map("flights")
 }
 
+model Bus {
+  id              Int              @id @default(autoincrement())
+  providerId      Int
+  registrationNumber String
+  busName         String
+  busType         String
+  totalSeats      Int
+  amenities       String?
+  status          String           @default("ACTIVE")
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  provider        ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  trips           BusTrip[]
+
+  @@index([providerId])
+  @@unique([registrationNumber])
+  @@map("buses")
+}
+
+model BusRoute {
+  id                      Int              @id @default(autoincrement())
+  providerId              Int
+  origin                  String
+  destination             String
+  distanceKm              Float?
+  estimatedDurationMinutes Int?
+  isActive                Boolean          @default(true)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  provider                ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  trips                   BusTrip[]
+
+  @@index([providerId])
+  @@unique([providerId, origin, destination])
+  @@map("bus_routes")
+}
+
+model BusTrip {
+  id                      Int              @id @default(autoincrement())
+  busId                   Int
+  routeId                 Int
+  providerId              Int
+  departureDate           DateTime
+  departureTime           String
+  arrivalTime             String
+  departureTimestamp      DateTime
+  arrivalTimestamp        DateTime
+  availableSeats          Int
+  pricePerSeat            Float?
+  bookingCutoffMinutes    Int              @default(30)
+  status                  String           @default("SCHEDULED")
+  isActive                Boolean          @default(true)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  bus                     Bus              @relation(fields: [busId], references: [id], onDelete: Cascade)
+  route                   BusRoute         @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  provider                ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  bookings                Booking[]
+
+  @@index([providerId])
+  @@index([busId])
+  @@index([routeId])
+  @@index([departureDate])
+  @@index([status])
+  @@unique([busId, routeId, departureDate, departureTime])
+  @@map("bus_trips")
+}
+
 model Booking {
   id              Int             @id @default(autoincrement())
   bookingCode     String          @unique @default(uuid())
@@ -229,11 +498,14 @@ model Booking {
   serviceId       Int?
   flightId        Int?
   roomId          Int?
+  ratePlanId      Int?
+  tripId          Int?
   category        String
   bookingDate     DateTime
   travelDate      DateTime
   returnDate      DateTime?
   numberOfPeople  Int             @default(1)
+  numberOfRooms   Int?
   totalAmount     Float
   discountAmount  Float           @default(0.00)
   finalAmount     Float
@@ -248,11 +520,18 @@ model Booking {
   rejectionReason String?
   cancelledAt     DateTime?
   completedAt     DateTime?
+  checkedInAt     DateTime?
+  expiresAt       DateTime?
+  source          String?
+  priceSnapshot   String?
+  promotionId     Int?
+  promotionCode   String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   room            Room?           @relation(fields: [roomId], references: [id])
   flight          Flight?         @relation(fields: [flightId], references: [id])
   service         Service?        @relation(fields: [serviceId], references: [id])
+  trip            BusTrip?        @relation(fields: [tripId], references: [id])
   provider        ServiceProvider @relation(fields: [providerId], references: [id])
   user            User            @relation(fields: [userId], references: [id])
   payments        Payment[]
@@ -265,6 +544,7 @@ model Booking {
   @@index([serviceId])
   @@index([flightId])
   @@index([roomId])
+  @@index([tripId])
   @@index([status])
   @@map("bookings")
 }
@@ -297,6 +577,8 @@ model Payment {
   paidAt          DateTime?
   refundedAt      DateTime?
   refundReason    String?
+  providerRefId   String?
+  currency        String    @default("BDT")
   createdAt       DateTime  @default(now())
   booking         Booking   @relation(fields: [bookingId], references: [id])
 

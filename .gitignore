@@ -36,3 +36,25 @@ Thumbs.db
 
 # Next.js build cache
 web-app/tsconfig.tsbuildinfo
+# Local development / AI tooling
+.kilo/
+
+# Local archives
+web-app.zip
+
+# Temporary/debug files
+backend/check-db.js
+backend/check-dupes.cjs
+backend/check-index.cjs
+backend/check-path.cjs
+backend/db-inspect-tmp.cjs
+backend/debug-middleware.js
+backend/debug-test.cjs
+backend/debug-test.ts
+backend/profile-qr.ts
+backend/test-db.cjs
+
+# Temporary hotel comparison files
+hotel-baseline.txt
+hotel-no-change.txt
+hotel-with-change.txt

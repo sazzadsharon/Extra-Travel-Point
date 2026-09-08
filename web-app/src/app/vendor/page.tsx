@@ -6,7 +6,7 @@ import api from '../../lib/apiClient';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   Store, Package, CheckCircle, Clock, XCircle, Users, Wallet,
-  Plus, List, Ticket, AlertCircle, Loader2, Shield, TrendingUp, Banknote
+  Plus, List, Ticket, AlertCircle, Loader2, Shield, TrendingUp, Banknote, Hotel
 } from 'lucide-react';
 import type { VendorDashboard, Vendor, VendorStatus } from '../../types/vendor';
 
@@ -142,6 +142,7 @@ export default function VendorDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <ActionCard href="/vendor/profile" icon={<Store className="w-5 h-5" />} title="Business Profile" />
           <ActionCard href="/vendor/kyc" icon={<Shield className="w-5 h-5" />} title="KYC Verification" />
+          <ActionCard href="/vendor/hotels" icon={<Hotel className="w-5 h-5" />} title="My Hotels" />
           <ActionCard href="/vendor/services/new" icon={<Plus className="w-5 h-5" />} title="Add Service" disabled={status !== 'APPROVED'} />
           <ActionCard href="/vendor/services" icon={<List className="w-5 h-5" />} title="Manage Services" />
           <ActionCard href="/vendor/bookings" icon={<Ticket className="w-5 h-5" />} title="Bookings" />

@@ -57,16 +57,10 @@ function request(app: express.Express, method: string, path: string, opts: { tok
   });
 }
 
+import { cleanup } from './utils/test-db';
+
 async function setupQrWorld() {
-  await prisma.payment.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.qrLog.deleteMany();
-  await prisma.seatLock.deleteMany();
-      await prisma.payoutRequest.deleteMany();
-    await prisma.settlement.deleteMany();
-    await prisma.booking.deleteMany();
-  await prisma.serviceProvider.deleteMany();
-  await prisma.user.deleteMany();
+  await cleanup();
 
   const customer = await prisma.user.create({
     data: { phone: '01811000001', passwordHash: 'hash', role: 'customer', fullName: 'Alice Customer' }
@@ -131,15 +125,7 @@ describe('Travel Pass / QR MVP', () => {
   beforeAll(async () => { await prisma.$connect(); });
   afterAll(async () => { await prisma.$disconnect(); });
   beforeEach(async () => {
-    await prisma.payment.deleteMany();
-    await prisma.review.deleteMany();
-    await prisma.qrLog.deleteMany();
-    await prisma.seatLock.deleteMany();
-        await prisma.payoutRequest.deleteMany();
-    await prisma.settlement.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.serviceProvider.deleteMany();
-    await prisma.user.deleteMany();
+    await cleanup();
   });
 
   const app = createApp();

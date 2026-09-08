@@ -14,6 +14,10 @@ import {
   PAYOUT_STATUS
 } from '../src/utils/commission';
 
+process.env.BKASH_API_KEY = 'test-key';
+process.env.BKASH_SECRET_KEY = 'test-secret';
+process.env.BKASH_BASE_URL = 'https://sandbox.bka.sh';
+
 const prisma = new PrismaClient();
 
 jest.setTimeout(30000);
@@ -88,18 +92,31 @@ interface World {
 }
 
 async function setupWorld(): Promise<World> {
-  await prisma.payment.deleteMany();
+      await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+await prisma.payment.deleteMany();
   await prisma.payoutRequest.deleteMany();
   await prisma.settlement.deleteMany();
   await prisma.review.deleteMany();
   await prisma.qrLog.deleteMany();
   await prisma.booking.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
   await prisma.seatLock.deleteMany();
   await prisma.serviceAvailability.deleteMany();
+  await prisma.hotelAvailability.deleteMany();
+  await prisma.ratePlan.deleteMany();
+  await prisma.hotelImage.deleteMany();
+  await prisma.hotelAmenity.deleteMany();
+  await prisma.hotelPolicy.deleteMany();
+  await prisma.hotelPromotion.deleteMany();
   await prisma.service.deleteMany();
+  await prisma.room.deleteMany();
   await prisma.serviceProvider.deleteMany();
   await prisma.session.deleteMany();
-  await prisma.user.deleteMany();
+      await prisma.hotelStaff.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.hotelTax.deleteMany();
+await prisma.user.deleteMany();
 
   const customer = await prisma.user.create({
     data: { phone: '01811111111', passwordHash: 'hash', role: 'customer', fullName: 'Customer' }

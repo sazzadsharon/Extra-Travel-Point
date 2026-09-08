@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 
-const SECRET_KEY = process.env.QR_SECRET_KEY || '';
+const SECRET_KEY = process.env.QR_SECRET_KEY || process.env.JWT_SECRET || 'change-me-qr-secret';
 
 export interface TravelPassPayload {
   tp: string;

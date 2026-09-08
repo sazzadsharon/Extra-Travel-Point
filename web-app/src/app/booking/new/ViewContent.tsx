@@ -41,6 +41,7 @@ export default function BookingNewView() {
 
       const bookingPayload = {
         providerId: parseInt(providerId),
+        serviceId: vehicleId ? parseInt(vehicleId) : undefined,
         category: vehicleType,
         bookingDate: new Date().toISOString().split('T')[0],
         travelDate: travelDate,

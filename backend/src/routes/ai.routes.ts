@@ -3,6 +3,7 @@ import { authenticateJWT, AuthRequest } from '../middleware/auth';
 import { prisma } from '../prisma';
 import { aiFactory } from '../ai';
 import { z } from 'zod';
+import { logError } from '../utils/logger';
 
 const router = Router();
 
@@ -12,6 +13,49 @@ const aiRequestSchema = z.object({
   origin: z.string().max(100).optional(),
   destination: z.string().max(100).optional(),
   durationDays: z.number().min(1).max(30).optional()
+});
+
+router.get('/health', async (req: Request, res: Response) => {
+  try {
+    if (!process.env.OMNIROUTE_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        provider: null,
+        model: null,
+        reachable: false,
+        error: 'AI provider is not configured. Please configure OMNIROUTE_API_KEY.'
+      });
+    }
+
+    const provider = aiFactory.getDefaultProvider();
+    if (!provider) {
+      return res.status(503).json({
+        success: false,
+        provider: null,
+        model: null,
+        reachable: false,
+        error: 'AI provider is temporarily unavailable.'
+      });
+    }
+
+    const reachable = await provider.isAvailable();
+    const providerName = provider.name;
+    const modelName = process.env.OMNIROUTE_MODEL || 'auto';
+
+    return res.json({
+      success: reachable,
+      provider: providerName,
+      model: modelName,
+      reachable
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      provider: null,
+      model: null,
+      reachable: false
+    });
+  }
 });
 
 router.post('/assistant', async (req: Request, res: Response) => {
@@ -35,11 +79,11 @@ router.post('/assistant', async (req: Request, res: Response) => {
     const emergencyFund = budget - (busFare + hotelCost + foodEstimate + localTransport);
 
     let aiMessage = '';
-    const provider = await aiFactory.getDefaultProvider();
+    const provider = aiFactory.getDefaultProvider();
 
     if (!provider) {
       return res.status(503).json({
-        error: 'AI assistant is temporarily unavailable. No AI provider is configured or reachable.'
+        error: 'AI assistant is temporarily unavailable.'
       });
     }
 
@@ -53,9 +97,13 @@ router.post('/assistant', async (req: Request, res: Response) => {
       );
       aiMessage = response.content;
     } catch (aiError: any) {
+      logError('AI assistant failed to generate a response', aiError, {
+        provider: provider.name,
+        destination: dest
+      });
       return res.status(503).json({
         error: 'AI assistant failed to generate a response.',
-        details: aiError?.message || 'Unknown provider error'
+        details: process.env.NODE_ENV === 'production' ? undefined : aiError?.message || 'Unknown provider error'
       });
     }
 

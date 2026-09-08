@@ -61,7 +61,8 @@ function request(app: express.Express, method: string, path: string, opts: { tok
 }
 
 async function setupBusWorld() {
-  await prisma.payment.deleteMany();
+      await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+await prisma.payment.deleteMany();
   await prisma.review.deleteMany();
   await prisma.qrLog.deleteMany();
       await prisma.payoutRequest.deleteMany();
@@ -69,9 +70,22 @@ async function setupBusWorld() {
     await prisma.booking.deleteMany();
   await prisma.seatLock.deleteMany();
   await prisma.serviceAvailability.deleteMany();
+  await prisma.hotelAvailability.deleteMany();
+  await prisma.ratePlan.deleteMany();
+  await prisma.hotelImage.deleteMany();
+  await prisma.hotelAmenity.deleteMany();
+  await prisma.hotelPolicy.deleteMany();
+  await prisma.hotelPromotion.deleteMany();
   await prisma.service.deleteMany();
+  await prisma.room.deleteMany();
   await prisma.serviceProvider.deleteMany();
-  await prisma.user.deleteMany();
+      await prisma.session.deleteMany();
+    await prisma.hotelStaff.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.hotelTax.deleteMany();
+await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
 
   const vendor = await prisma.user.create({
     data: { phone: '01911000001', passwordHash: 'hash', role: 'vendor', fullName: 'Vendor Owner' }
@@ -131,6 +145,7 @@ describe('Bus MVP', () => {
     await prisma.$disconnect();
   });
   beforeEach(async () => {
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
     await prisma.payment.deleteMany();
     await prisma.review.deleteMany();
     await prisma.qrLog.deleteMany();
@@ -139,9 +154,17 @@ describe('Bus MVP', () => {
     await prisma.booking.deleteMany();
     await prisma.seatLock.deleteMany();
     await prisma.serviceAvailability.deleteMany();
+    await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
     await prisma.service.deleteMany();
+    await prisma.room.deleteMany();
     await prisma.serviceProvider.deleteMany();
     await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
   });
 
   const app = createApp();
@@ -195,6 +218,7 @@ describe('Bus MVP', () => {
       token,
       body: { seatNumbers: seats, providerId: bus.providerId, category: 'bus', travelDate: '2026-09-15' }
     });
+    console.log('LOCK RESPONSE:', JSON.stringify(lockRes));
     expect(lockRes.status).toBe(200);
     expect(lockRes.body.lockedSeats.sort()).toEqual(seats.slice().sort());
   });

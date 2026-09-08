@@ -192,12 +192,113 @@ See `.env.example` for all available configuration options.
 |----------|-------------|---------|
 | NODE_ENV | Environment | development |
 | PORT | Server port | 5000 |
+| HOST | Bind address | 0.0.0.0 |
 | DATABASE_URL | Database connection string | file:./dev.db |
-| JWT_SECRET | JWT signing secret | required |
+| JWT_SECRET | JWT signing secret (min 32 chars) | required |
 | JWT_REFRESH_SECRET | Refresh token secret | required |
-| CORS_ORIGIN | Allowed CORS origins | * |
+| CORS_ORIGIN | Allowed CORS origins (comma-separated) | empty (dev only) |
+| RATE_LIMIT_WINDOW_MS | Rate limit window | 900000 |
+| RATE_LIMIT_MAX | Max requests per window | 100 |
+| LOG_LEVEL | Logging verbosity | info |
 
----
+## Security
+
+### Authentication & Authorization
+- JWT access tokens (2h) + HttpOnly refresh tokens (7d)
+- Role-based access: `customer`, `vendor`, `admin`, `master_admin`
+- All protected routes validate JWT and role before processing
+
+### Hotel Booking Security
+- Server-authoritative pricing: client-submitted `totalAmount`/`finalAmount` are ignored
+- Rate plan validation: dates, min/max stay, capacity enforced server-side
+- Inventory race protection: atomic availability checks within database transactions
+- Booking state machine: validated transitions via `canTransitionHotelBooking`
+- Payment idempotency: duplicate verification requests return success without side effects
+
+### Rate Limiting
+- Global API limiter: 100 requests per 15 minutes
+- Auth endpoints: 20 requests per 15 minutes
+- Payment endpoints: 10 requests per 15 minutes
+- Booking endpoints: 20 requests per 15 minutes
+
+### Request Size Limits
+- JSON body limit: 1MB
+- URL-encoded body limit: 1MB
+
+## Hotel Module Architecture
+
+### Roles
+| Role | Access |
+|------|--------|
+| Public | Search hotels, view approved hotel details, view rooms |
+| Customer | Create bookings, view own bookings, make payments, cancel own bookings |
+| Vendor | Manage owned hotels, rooms, rate plans, view own bookings, check-in/out |
+| Admin | Full platform access, vendor approval, settlement management |
+
+### Booking Lifecycle
+```
+PENDING → CONFIRMED (on payment verification) → CHECKED_IN → COMPLETED
+   ↓           ↓
+   └──→ CANCELLED (by customer/vendor/admin)
+   └──→ EXPIRED (if payment window lapses)
+```
+
+Valid transitions:
+- `pending` → `confirmed`, `cancelled`, `expired`
+- `confirmed` → `completed`, `cancelled`
+- `paid` → `confirmed`, `cancelled`
+- `completed`, `cancelled`, `expired` → terminal states
+
+### Pricing Authority
+- All prices are calculated server-side from trusted `Room.price` or `RatePlan.price`
+- Promotions are validated server-side against `HotelPromotion` records
+- Discounts cannot exceed promotion limits or usage counts
+- Final amount is persisted in `Booking.finalAmount` with a JSON `priceSnapshot`
+
+### Payment Boundary
+- Payment initiation uses `Booking.finalAmount` (server-authoritative)
+- Payment verification updates `Booking.status` and `Booking.paymentStatus` atomically
+- Refunds validate booking state before processing
+- Settlement creation is idempotent via unique `Settlement.bookingId`
+
+## Health & Readiness
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Liveness check |
+| `GET /health/depth` | Readiness check (includes DB connectivity) |
+
+## Logging
+
+- Structured logging with request correlation IDs (`x-request-id`)
+- Sensitive fields (passwords, secrets, tokens) are redacted in logs
+- Important events: booking creation, payment verification, check-in/out, admin actions
+- Log level configurable via `LOG_LEVEL` environment variable
+
+## Backup & Recovery
+
+### Database Backup
+- PostgreSQL: Use `pg_dump` or automated cloud backups
+- Retention: Minimum 7 days, recommended 30 days
+- Test restores quarterly
+
+### Migration Safety
+- Prisma migrations stored in `prisma/migrations/`
+- Run `npm run prisma:deploy` for production migrations
+- Never run `prisma migrate dev` in production
+
+### Rollback Procedure
+1. Identify last known good migration
+2. Run `prisma migrate resolve --rolled-back <migration_name>`
+3. Restore database backup if data corruption occurred
+4. Redeploy previous application version
+
+## CORS & HTTP Security
+
+- CORS origins are explicitly configured via `CORS_ORIGIN`
+- Production defaults to no wildcards
+- Helmet security headers enabled (CSP disabled for API flexibility)
+- Cookies use `httpOnly`, `secure` (production), `sameSite: strict`
 
 ## Project Structure
 
@@ -207,12 +308,14 @@ backend/
 │   ├── schema.prisma    # Database schema
 │   └── seed.ts          # Seed data
 ├── src/
-│   ├── index.ts         # Entry point
+│   ├── index.ts         # Entry point, middleware, route mounting
 │   ├── prisma.ts        # Prisma client
 │   ├── middleware/
 │   │   └── auth.ts      # JWT auth middleware
-│   └── routes/          # API route handlers
-├── .env                 # Environment config
+│   ├── routes/          # API route handlers
+│   └── utils/           # Pricing, logging, QR, commission utilities
+├── tests/               # Jest test suites
+├── .env                 # Environment config (gitignored)
 ├── .env.example         # Example environment
 ├── .env.production      # Production template
 ├── Dockerfile           # Docker build

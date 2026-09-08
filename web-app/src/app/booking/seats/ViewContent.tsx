@@ -99,6 +99,11 @@ export default function SeatingView() {
     }
 
     const lockResult = await handleLockSeats(selectedSeats);
+    if (!lockResult || lockResult.error) {
+      alert(lockResult?.error || 'Failed to lock seats. Please try again.');
+      return;
+    }
+
     const routeQuery = `fromCity=${encodeURIComponent(fromCity)}&toCity=${encodeURIComponent(toCity)}&travelDate=${encodeURIComponent(travelDate)}`;
     router.push(
       `/booking/new?vehicleId=${vehicleId}&providerId=${providerId}&category=${vehicleType}&${routeQuery}&seats=${selectedSeats.map(s => s.seatNumber).join(',')}&totalPrice=${totalPrice}`

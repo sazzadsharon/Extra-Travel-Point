@@ -4,13 +4,14 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, BookOpen, Users, BarChart3, Settings, LogOut, Building2, ShieldAlert, ScrollText, Star, Package, Banknote
+  LayoutDashboard, BookOpen, Users, BarChart3, Settings, LogOut, Building2, ShieldAlert, ScrollText, Star, Package, Banknote, Hotel
 } from 'lucide-react';
 
 const nav = [
   { href: '/', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
   { href: '/bookings', label: 'বুকিং ম্যানেজমেন্ট', icon: BookOpen },
   { href: '/vendors', label: 'সার্ভিস প্রোভাইডার', icon: Building2 },
+  { href: '/hotels', label: 'Hotel Management', icon: Hotel },
   { href: '/vendor-services', label: 'Vendor Services', icon: Package },
   { href: '/users', label: 'User Management', icon: Users },
   { href: '/payouts', label: 'Payouts', icon: Banknote },

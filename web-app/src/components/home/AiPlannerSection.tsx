@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sparkles, ArrowRight, Wand2 } from 'lucide-react';
+import { Sparkles, ArrowRight, Wand2, MessageCircle } from 'lucide-react';
 
 export default function AiPlannerSection() {
   return (
@@ -43,6 +43,13 @@ export default function AiPlannerSection() {
                 className="inline-flex items-center justify-center gap-2 etp-glass-dark border border-white/20 hover:bg-white/10 text-white font-semibold px-7 py-4 rounded-2xl transition-colors"
               >
                 Open AI Assistant
+              </Link>
+              <Link
+                href="/ai-chat"
+                className="inline-flex items-center justify-center gap-2 etp-glass-dark border border-white/20 hover:bg-white/10 text-white font-semibold px-7 py-4 rounded-2xl transition-colors"
+              >
+                <MessageCircle className="w-4 h-4 text-etp-300" />
+                Chat with ETP AI
               </Link>
             </div>
           </div>

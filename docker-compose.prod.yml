@@ -50,7 +50,10 @@ services:
       REDIS_URL: redis://:${REDIS_PASSWORD:-etp_redis_pass}@etp-redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-too}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      OMNIROUTE_API_KEY: ${OMNIROUTE_API_KEY:-}
+      OMNIROUTE_BASE_URL: ${OMNIROUTE_BASE_URL:-https://openrouter.ai/api/v1}
+      OMNIROUTE_MODEL: ${OMNIROUTE_MODEL:-auto}
     ports:
       - "5000:5000"
     depends_on:

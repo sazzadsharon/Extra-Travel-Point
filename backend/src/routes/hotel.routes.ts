@@ -3,7 +3,12 @@ import { prisma } from '../prisma';
 import { authenticateJWT, AuthRequest, requireRole } from '../middleware/auth';
 import { resolveCommissionRate } from '../utils/commission';
 import { z } from 'zod';
-import { verifyHmacSignature } from '../utils/qr';
+import { verifyHmacSignature, generateHmacSignature, generateTravelPassToken } from '../utils/qr';
+import { round2 } from '../utils/pricing';
+import { notifyUser } from '../utils/notifications';
+import { createHotelBooking } from './hotel-booking.routes';
+import { canTransitionHotelBooking } from '../utils/hotel-booking-state';
+import { safeError } from '../utils/safeError';
 
 const router = Router();
 
@@ -29,7 +34,13 @@ const hotelSearchSchema = z.object({
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().nonnegative().optional(),
   checkIn: z.string().optional(),
-  checkOut: z.string().optional()
+  checkOut: z.string().optional(),
+  guests: z.coerce.number().int().positive().optional(),
+  amenities: z.string().optional(), // comma-separated names
+  starRating: z.coerce.number().int().min(1).max(5).optional(),
+  sort: z.enum(['relevance', 'price_asc', 'price_desc', 'rating_desc', 'newest']).optional().default('relevance'),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(50).optional().default(12)
 });
 
 // 1. Hotel listing/search (public)
@@ -39,25 +50,46 @@ router.get('/search', async (req, res) => {
     if (!parse.success) {
       return res.status(400).json({ error: parse.error.issues });
     }
-    const { city, providerId, rating, minPrice, maxPrice } = parse.data;
+    const { city, providerId, rating, minPrice, maxPrice, sort, page, limit, amenities, starRating, guests } = parse.data;
 
-    const where: any = { category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED' };
+    const where: any = { category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED', isPublished: true, lifecycleStatus: 'APPROVED' };
     if (city) where.city = city;
     if (providerId) where.id = providerId;
+    if (starRating) where.starRating = { gte: starRating };
 
-    const hotels = await prisma.serviceProvider.findMany({
-      where,
-      include: {
-        rooms: {
-          include: {
-            availabilities: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    if (amenities) {
+      const names = amenities.split(',').map(s => s.trim()).filter(Boolean);
+      if (names.length > 0) {
+        // AND semantics: hotel must have ALL requested amenities
+        where.AND = names.map(name => ({
+          hotelAmenities: { some: { name } }
+        }));
+      }
+    }
 
-    // Apply price & availability filter based on rooms
+    const orderBy: any =
+      sort === 'price_asc' || sort === 'price_desc' ? { createdAt: 'desc' } :
+      sort === 'rating_desc' ? { rating: 'desc' } :
+      sort === 'newest' ? { createdAt: 'desc' } :
+      { createdAt: 'desc' };
+
+    const skip = (page - 1) * limit;
+
+    const [total, hotels] = await Promise.all([
+      prisma.serviceProvider.count({ where }),
+      prisma.serviceProvider.findMany({
+        where,
+        include: {
+          rooms: { include: { ratePlans: { where: { isActive: true } } } },
+          hotelImages: { where: { isPrimary: true } },
+          hotelAmenities: true
+        },
+        orderBy,
+        skip,
+        take: limit
+      })
+    ]);
+
     const filteredHotels = hotels.map(hotel => {
       const rooms = hotel.rooms || [];
       const prices = rooms.map(room => room.price);
@@ -67,9 +99,11 @@ router.get('/search', async (req, res) => {
       if (minPrice && minRoomPrice < minPrice) return null;
       if (maxPrice && maxRoomPrice > maxPrice) return null;
       if (rating && hotel.rating && hotel.rating < rating) return null;
+      if (guests && !rooms.some(r => (r.adultCapacity ?? r.capacity) >= guests)) return null;
 
       return {
         id: hotel.id,
+        slug: hotel.slug,
         businessName: hotel.businessName,
         category: hotel.category,
         description: hotel.description,
@@ -77,11 +111,14 @@ router.get('/search', async (req, res) => {
         city: hotel.city,
         latitude: hotel.latitude,
         longitude: hotel.longitude,
+        starRating: hotel.starRating,
         isVerified: hotel.isVerified,
         rating: hotel.rating,
         totalReviews: hotel.totalReviews,
         phone: hotel.phone,
-        commissionRate: hotel.commissionRate,
+        primaryImage: hotel.hotelImages?.[0]?.url || null,
+        amenities: hotel.hotelAmenities.map(a => a.name),
+        startingPrice: minRoomPrice,
         rooms: rooms.map(room => ({
           id: room.id,
           name: room.name,
@@ -89,20 +126,87 @@ router.get('/search', async (req, res) => {
           description: room.description,
           price: room.price,
           capacity: room.capacity,
+          adultCapacity: room.adultCapacity,
+          childCapacity: room.childCapacity,
           totalRooms: room.totalRooms,
           amenities: room.amenities,
           images: room.images,
-          isAvailable: room.isAvailable
+          isAvailable: room.isAvailable,
+          ratePlans: room.ratePlans.map(p => ({ id: p.id, name: p.name, price: p.price, mealPlan: p.mealPlan, refundable: p.refundable }))
         }))
       };
     }).filter(hotel => hotel !== null);
 
+    let sorted = filteredHotels;
+    if (sort === 'price_asc') sorted = [...filteredHotels].sort((a, b) => a.startingPrice - b.startingPrice);
+    if (sort === 'price_desc') sorted = [...filteredHotels].sort((a, b) => b.startingPrice - a.startingPrice);
+
     return res.json({
-      count: filteredHotels.length,
-      hotels: filteredHotels
+      count: sorted.length,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hotels: sorted
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
+  }
+});
+
+// 1b. List available cities (public)
+router.get('/cities', async (_req, res) => {
+  try {
+    const cities = await prisma.serviceProvider.findMany({
+      where: { category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED', isPublished: true, lifecycleStatus: 'APPROVED' },
+      select: { city: true },
+      distinct: ['city']
+    });
+    const list = cities.map(c => c.city).filter(Boolean).sort();
+    return res.json({ count: list.length, cities: list });
+  } catch (error: any) {
+    return res.status(500).json({ error: safeError(error) });
+  }
+});
+
+// 1c. Top destinations / featured hotels (public)
+router.get('/discover', async (req, res) => {
+  try {
+    const limit = Math.min(20, Math.max(1, parseInt(String(req.query.limit || '6'))));
+    const featured = await prisma.serviceProvider.findMany({
+      where: {
+        category: 'hotel',
+        isVerified: true,
+        isActive: true,
+        status: 'APPROVED',
+        isPublished: true,
+        rating: { gte: 3 }
+      },
+      include: {
+        rooms: { select: { price: true } },
+        hotelImages: { where: { isPrimary: true }, select: { url: true } },
+        hotelAmenities: { select: { name: true } }
+      },
+      orderBy: [{ rating: 'desc' }, { totalReviews: 'desc' }],
+      take: limit
+    });
+
+    const data = featured.map(h => ({
+      id: h.id,
+      slug: h.slug,
+      businessName: h.businessName,
+      city: h.city,
+      starRating: h.starRating,
+      rating: h.rating,
+      totalReviews: h.totalReviews,
+      primaryImage: h.hotelImages?.[0]?.url || null,
+      amenities: h.hotelAmenities.map(a => a.name),
+      startingPrice: h.rooms.length > 0 ? Math.min(...h.rooms.map(r => r.price)) : 0
+    }));
+
+    return res.json({ count: data.length, hotels: data });
+  } catch (error: any) {
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -115,13 +219,17 @@ router.get('/details/:hotelId', async (req, res) => {
     }
 
     const hotel = await prisma.serviceProvider.findFirst({
-      where: { id: hotelId, category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED' },
+      where: { id: hotelId, category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED', lifecycleStatus: 'APPROVED' },
       include: {
         rooms: {
           include: {
-            availabilities: true
+            availabilities: true,
+            ratePlans: { where: { isActive: true } }
           }
-        }
+        },
+        hotelImages: { orderBy: { sortOrder: 'asc' } },
+        hotelAmenities: true,
+        hotelPolicy: true
       }
     });
 
@@ -129,8 +237,16 @@ router.get('/details/:hotelId', async (req, res) => {
       return res.status(404).json({ error: 'Hotel not found' });
     }
 
+    const reviews = await prisma.review.findMany({
+      where: { booking: { providerId: hotel.id, category: 'hotel' } },
+      include: { user: { select: { fullName: true, phone: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 20
+    });
+
     return res.json({
       id: hotel.id,
+      slug: hotel.slug,
       businessName: hotel.businessName,
       category: hotel.category,
       description: hotel.description,
@@ -139,31 +255,75 @@ router.get('/details/:hotelId', async (req, res) => {
       latitude: hotel.latitude,
       longitude: hotel.longitude,
       isVerified: hotel.isVerified,
+      starRating: hotel.starRating,
       rating: hotel.rating,
       totalReviews: hotel.totalReviews,
       phone: hotel.phone,
-      commissionRate: hotel.commissionRate,
+      images: hotel.hotelImages.map(i => ({ url: i.url, caption: i.caption, isPrimary: i.isPrimary })),
+      amenities: hotel.hotelAmenities.map(a => a.name),
+      policy: hotel.hotelPolicy,
       rooms: hotel.rooms.map(room => ({
         id: room.id,
         name: room.name,
         type: room.type,
         description: room.description,
         price: room.price,
+        currency: room.baseCurrency,
         capacity: room.capacity,
+        adultCapacity: room.adultCapacity,
+        childCapacity: room.childCapacity,
+        bedConfig: room.bedConfig,
         totalRooms: room.totalRooms,
         amenities: room.amenities,
         images: room.images,
         isAvailable: room.isAvailable,
+        ratePlans: room.ratePlans.map(p => ({ id: p.id, name: p.name, price: p.price, mealPlan: p.mealPlan, refundable: p.refundable, minStay: p.minStay, maxStay: p.maxStay })),
         availabilities: room.availabilities.map(avail => ({
           date: avail.date.toISOString().split('T')[0],
           totalRooms: avail.totalRooms,
           bookedRooms: avail.bookedRooms,
           isActive: avail.isActive
         }))
+      })),
+      reviews: reviews.map(r => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        reviewer: r.user.fullName || 'Anonymous',
+        createdAt: r.createdAt
       }))
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
+  }
+});
+
+// Provider: list my hotels
+router.get('/my', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
+  try {
+    const hotels = await prisma.serviceProvider.findMany({
+      where: { userId: req.user!.id, category: 'hotel' },
+      select: {
+        id: true,
+        businessName: true,
+        slug: true,
+        status: true,
+        lifecycleStatus: true,
+        isVerified: true,
+        isActive: true,
+        isPublished: true,
+        city: true,
+        address: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { rooms: true, hotelAmenities: true, bookings: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.json({ count: hotels.length, hotels });
+  } catch (error: any) {
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -226,7 +386,7 @@ router.post('/rooms', authenticateJWT, requireRole(['vendor', 'admin']), async (
       room
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -234,12 +394,18 @@ router.post('/rooms', authenticateJWT, requireRole(['vendor', 'admin']), async (
 router.get('/rooms', async (req, res) => {
   try {
     const hotelId = req.query.hotelId ? parseInt(req.query.hotelId as string) : null;
-    const where: any = {};
-    if (hotelId) where.providerId = hotelId;
+    if (!hotelId) return res.status(400).json({ error: 'hotelId required' });
+
+    const hotel = await prisma.serviceProvider.findFirst({
+      where: { id: hotelId, category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED', lifecycleStatus: 'APPROVED', isPublished: true }
+    });
+    if (!hotel) return res.status(404).json({ error: 'Hotel not found or not available for booking' });
+
+    const where: any = { providerId: hotelId };
     const rooms = await prisma.room.findMany({ where, orderBy: { createdAt: 'desc' } });
     return res.json({ count: rooms.length, rooms });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -299,7 +465,7 @@ router.post('/rooms/:roomId/availability', authenticateJWT, requireRole(['vendor
       availability
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -322,341 +488,276 @@ router.get('/rooms/:roomId/availability', async (req, res) => {
     const availabilities = await prisma.hotelAvailability.findMany({ where, orderBy: { date: 'asc' } });
     return res.json({ count: availabilities.length, availabilities });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
-// 5. Check-in & Check-out handling (vendor only, with QR support)
-router.post('/check-in', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
-  try {
-    let bookingId = req.body.bookingId ? Number(req.body.bookingId) : null;
-    const rawQr = req.body.qrData || req.body.qrToken;
+  // 5. Check-in & Check-out handling (vendor only, with QR support)
+  router.post('/check-in', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
+    try {
+      let bookingId = req.body.bookingId ? Number(req.body.bookingId) : null;
+      const rawQr = req.body.qrData || req.body.qrToken;
 
-    if (rawQr && !bookingId) {
-      let qrObj = rawQr;
-      if (typeof rawQr === 'string') {
-        try { qrObj = JSON.parse(rawQr); }
-        catch { return res.status(400).json({ error: 'Invalid QR JSON format' }); }
-      }
-      const payload = qrObj?.payload;
-      const signature = qrObj?.signature;
-
-      if (!payload || !signature) {
-        return res.status(400).json({ error: 'Missing QR payload or signature' });
-      }
-
-      if (!verifyHmacSignature(payload, signature)) {
-        return res.status(400).json({ error: 'Invalid QR HMAC signature' });
-      }
-
-      const bookingCode = payload.bkg;
-      const token = payload.tp;
-      const bookingFound = await prisma.booking.findFirst({
-        where: { bookingCode, qrToken: token }
-      });
-      if (!bookingFound) {
-        return res.status(404).json({ error: 'Booking not found for provided QR token' });
-      }
-      bookingId = bookingFound.id;
-    }
-
-    if (!bookingId) {
-      return res.status(400).json({ error: 'bookingId or valid QR data is required' });
-    }
-
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: { provider: true, user: true }
-    });
-
-    if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
-    }
-
-    if (booking.provider.category !== 'hotel') {
-      return res.status(400).json({ error: 'Booking is not a hotel booking' });
-    }
-
-    if (booking.provider.userId !== req.user!.id && req.user!.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    if (booking.status === 'cancelled') {
-      return res.status(400).json({ error: 'Cannot check in a cancelled booking' });
-    }
-
-    // Verify payment is confirmed
-    if (booking.paymentStatus !== 'paid') {
-      return res.status(400).json({ error: 'Cannot check in: payment not confirmed' });
-    }
-
-    // Check if already completed
-    if (booking.status === 'completed') {
-      return res.status(400).json({ error: 'Booking already checked out' });
-    }
-
-    // Check if already checked in (status is 'confirmed' and has QR log today)
-    if (booking.status === 'confirmed') {
-      const existingQrLog = await prisma.qrLog.findFirst({
-        where: {
-          bookingId: booking.id,
-          scannedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+      if (rawQr && !bookingId) {
+        let qrObj = rawQr;
+        if (typeof rawQr === 'string') {
+          try { qrObj = JSON.parse(rawQr); }
+          catch { return res.status(400).json({ error: 'Invalid QR JSON format' }); }
         }
-      });
-      if (existingQrLog) {
-        return res.status(400).json({ error: 'Booking already checked in' });
-      }
-    }
+        const payload = qrObj?.payload;
+        const signature = qrObj?.signature;
 
-    // Check if booking is eligible for check-in (must be 'pending' or 'confirmed' with paid status)
-    if (!['pending', 'confirmed'].includes(booking.status)) {
-      return res.status(400).json({ error: `Cannot check in booking with status: ${booking.status}` });
-    }
-
-    // Check for duplicate QR scan (replay protection)
-    const existingQrLog = await prisma.qrLog.findFirst({
-      where: {
-        bookingId: booking.id,
-        scannedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) }
-      }
-    });
-    if (existingQrLog) {
-      return res.status(409).json({ error: 'QR already used for check-in today' });
-    }
-
-    const result = await prisma.$transaction(async (tx) => {
-      // Update booking status to confirmed (checked in)
-      const updated = await tx.booking.update({
-        where: { id: booking.id },
-        data: { status: 'confirmed' }
-      });
-
-      // Create QR audit log
-      const qrLog = await tx.qrLog.create({
-        data: {
-          bookingId: booking.id,
-          userId: booking.userId,
-          providerId: booking.providerId,
-          qrToken: booking.qrToken || '',
-          discountType: 'hotel_checkin',
-          discountValue: 0,
-          isUsed: true
-        }
-      });
-
-      return { updated, qrLog };
-    });
-
-    return res.json({
-      message: `Check-in successful for booking #${booking.bookingCode}`,
-      booking: result.updated,
-      checkedInAt: result.qrLog.scannedAt,
-      guestName: booking.user.fullName || booking.user.phone
-    });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/check-out', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
-  try {
-    const bookingId = req.body.bookingId ? Number(req.body.bookingId) : null;
-    if (!bookingId) {
-      return res.status(400).json({ error: 'bookingId is required' });
-    }
-
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: { provider: true }
-    });
-
-    if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
-    }
-
-    if (booking.provider.category !== 'hotel') {
-      return res.status(400).json({ error: 'Booking is not a hotel booking' });
-    }
-
-    if (booking.provider.userId !== req.user!.id && req.user!.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    if (booking.status === 'cancelled') {
-      return res.status(400).json({ error: 'Cannot check out a cancelled booking' });
-    }
-
-    if (booking.status === 'completed') {
-      return res.status(400).json({ error: 'Booking already checked out' });
-    }
-
-    // Must be checked in (confirmed) to check out
-    if (booking.status !== 'confirmed') {
-      return res.status(400).json({ error: 'Guest must be checked in before check-out' });
-    }
-
-    const updated = await prisma.booking.update({
-      where: { id: booking.id },
-      data: { status: 'completed', completedAt: new Date() }
-    });
-
-    return res.json({
-      message: `Check-out successful for booking #${booking.bookingCode}`,
-      booking: updated
-    });
-  } catch (error: any) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
-// 6. Hotel booking (customer) with full double-booking prevention
-const hotelBookingSchema = z.object({
-  hotelId: z.number().int().positive(),
-  roomId: z.number().int().positive(),
-  checkInDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid check-in date' }),
-  checkOutDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid check-out date' }),
-  numberOfGuests: z.number().int().positive(),
-  totalAmount: z.number().nonnegative(),
-  customerInfo: z.object({
-    name: z.string().min(2),
-    email: z.string().email(),
-    phone: z.string().min(10)
-  })
-});
-
-router.post('/book', authenticateJWT, async (req: AuthRequest, res) => {
-  try {
-    const parse = hotelBookingSchema.safeParse(req.body);
-    if (!parse.success) {
-      return res.status(400).json({ error: parse.error.issues });
-    }
-
-    const { hotelId, roomId, checkInDate, checkOutDate, numberOfGuests, totalAmount, customerInfo } = parse.data;
-
-    // Check if hotel exists and is approved
-    const hotel = await prisma.serviceProvider.findFirst({
-      where: { id: hotelId, category: 'hotel', isVerified: true, isActive: true, status: 'APPROVED' }
-    });
-    if (!hotel) {
-      return res.status(404).json({ error: 'Hotel not found or not approved' });
-    }
-
-    // Check if room exists and belongs to the hotel
-    const room = await prisma.room.findUnique({
-      where: { id: roomId }
-    });
-    if (!room || room.providerId !== hotelId) {
-      return res.status(404).json({ error: 'Room not found or does not belong to this hotel' });
-    }
-
-    // Validate dates
-    const checkIn = new Date(checkInDate);
-    checkIn.setHours(0, 0, 0, 0);
-    const checkOut = new Date(checkOutDate);
-    checkOut.setHours(0, 0, 0, 0);
-
-    if (checkOut <= checkIn) {
-      return res.status(400).json({ error: 'Check-out date must be after check-in date' });
-    }
-
-    if (numberOfGuests > room.capacity) {
-      return res.status(400).json({ error: `Number of guests (${numberOfGuests}) exceeds room capacity (${room.capacity})` });
-    }
-
-    const nights = getDatesInRange(checkIn, checkOut);
-    if (nights.length === 0) {
-      return res.status(400).json({ error: 'At least one night stay required' });
-    }
-
-    // Use transaction for concurrency & double-booking prevention
-    const booking = await prisma.$transaction(async (tx) => {
-      // Check room availability for each night in range
-      for (const d of nights) {
-        const activeBookings = await tx.booking.findMany({
-          where: {
-            roomId,
-            status: { in: ['confirmed', 'pending', 'paid', 'completed'] },
-            travelDate: { lte: d },
-            returnDate: { gt: d }
-          }
-        });
-        const bookedCount = activeBookings.length;
-
-        const avail = await tx.hotelAvailability.findUnique({
-          where: { roomId_date: { roomId, date: d } }
-        });
-
-        if (avail && !avail.isActive) {
-          throw new Error(`ROOM_UNAVAILABLE:${d.toISOString().split('T')[0]}`);
+        if (!payload || !signature) {
+          return res.status(400).json({ error: 'Missing QR payload or signature' });
         }
 
-        const totalCapacity = avail ? avail.totalRooms : (room.totalRooms || 1);
-        if (!room.isAvailable || (bookedCount + 1) > totalCapacity) {
-          throw new Error(`ROOM_FULL:${d.toISOString().split('T')[0]}`);
+        if (!verifyHmacSignature(payload, signature)) {
+          return res.status(400).json({ error: 'Invalid QR HMAC signature' });
         }
+
+        const bookingCode = payload.bkg;
+        const token = payload.tp;
+        const bookingFound = await prisma.booking.findFirst({
+          where: { bookingCode, qrToken: token }
+        });
+        if (!bookingFound) {
+          return res.status(404).json({ error: 'Booking not found for provided QR token' });
+        }
+        bookingId = bookingFound.id;
       }
 
-      // Upsert availability for each night
-      for (const d of nights) {
-        const avail = await tx.hotelAvailability.findUnique({
-          where: { roomId_date: { roomId, date: d } }
-        });
-
-        const newBookedCount = (avail ? avail.bookedRooms : 0) + 1;
-        const totalCap = avail ? avail.totalRooms : (room.totalRooms || 1);
-
-        await tx.hotelAvailability.upsert({
-          where: { roomId_date: { roomId, date: d } },
-          update: { bookedRooms: newBookedCount },
-          create: {
-            roomId,
-            date: d,
-            totalRooms: totalCap,
-            bookedRooms: 1,
-            isActive: true
-          }
-        });
+      if (!bookingId) {
+        return res.status(400).json({ error: 'bookingId or valid QR data is required' });
       }
 
-      // Create booking record
-      const created = await tx.booking.create({
-        data: {
-          userId: req.user!.id,
-          providerId: hotelId,
-          roomId,
-          category: 'hotel',
-          bookingDate: new Date(),
-          travelDate: checkIn,
-          returnDate: checkOut,
-          numberOfPeople: numberOfGuests,
-          totalAmount,
-          discountAmount: 0,
-          finalAmount: totalAmount,
-          status: 'pending',
-          paymentStatus: 'pending'
-        },
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
         include: { provider: true, user: true, room: true }
       });
 
-      return created;
-    });
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
 
-    return res.status(201).json({
-      message: 'Hotel booking created successfully',
-      booking,
-      hotel: {
-        id: hotel.id,
-        businessName: hotel.businessName,
-        address: hotel.address,
-        phone: hotel.phone
-      },
-      customerInfo
-    });
-  } catch (error: any) {
-    if (error.message?.startsWith('ROOM_FULL') || error.message?.startsWith('ROOM_UNAVAILABLE')) {
-      return res.status(409).json({ error: 'Room not available for selected dates' });
+      if (booking.provider.category !== 'hotel') {
+        return res.status(400).json({ error: 'Booking is not a hotel booking' });
+      }
+
+      if (booking.provider.userId !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      if (booking.status === 'cancelled') {
+        return res.status(400).json({ error: 'Cannot check in a cancelled booking' });
+      }
+
+      if (booking.status === 'completed') {
+        return res.status(400).json({ error: 'Booking already checked out' });
+      }
+
+      if (booking.checkedInAt) {
+        return res.status(400).json({ error: 'Booking already checked in' });
+      }
+
+      if (booking.paymentStatus !== 'paid') {
+        return res.status(400).json({ error: 'Cannot check in: payment not confirmed' });
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const checkOutDate = booking.returnDate ? new Date(booking.returnDate) : null;
+      if (checkOutDate) {
+        checkOutDate.setHours(0, 0, 0, 0);
+        if (today > checkOutDate) {
+          return res.status(400).json({ error: 'Booking stay period has ended' });
+        }
+      }
+
+      const validUntilDate = new Date(booking.travelDate);
+      validUntilDate.setDate(validUntilDate.getDate() + 5);
+      if (today > validUntilDate) {
+        return res.status(400).json({ error: 'Travel pass expired' });
+      }
+
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const alreadyScanned = await prisma.qrLog.findFirst({
+        where: {
+          bookingId: booking.id,
+          scannedAt: { gte: todayStart }
+        }
+      });
+      if (alreadyScanned) {
+        return res.status(409).json({
+          error: 'Travel pass already verified today (replay protection)',
+          firstScannedAt: alreadyScanned.scannedAt
+        });
+      }
+
+      const result = await prisma.$transaction(async (tx) => {
+        const updated = await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: 'confirmed', checkedInAt: new Date() }
+        });
+
+        const qrLog = await tx.qrLog.create({
+          data: {
+            bookingId: booking.id,
+            userId: booking.userId,
+            providerId: booking.providerId,
+            qrToken: booking.qrToken || '',
+            discountType: 'hotel_checkin',
+            discountValue: 0,
+            isUsed: true
+          }
+        });
+
+        if (booking.roomId && booking.room && booking.room.totalRooms === 1) {
+          await tx.room.update({
+            where: { id: booking.roomId },
+            data: { status: 'OCCUPIED' }
+          });
+        }
+
+        return { updated, qrLog };
+      });
+
+      return res.json({
+        message: `Check-in successful for booking #${booking.bookingCode}`,
+        booking: result.updated,
+        checkedInAt: result.qrLog.scannedAt,
+        guestName: booking.user.fullName || booking.user.phone
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: safeError(error) });
     }
-    return res.status(500).json({ error: error.message });
+  });
+
+  router.post('/check-out', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
+    try {
+      const bookingId = req.body.bookingId ? Number(req.body.bookingId) : null;
+      if (!bookingId) {
+        return res.status(400).json({ error: 'bookingId is required' });
+      }
+
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { provider: true, room: true }
+      });
+
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+
+      if (booking.provider.category !== 'hotel') {
+        return res.status(400).json({ error: 'Booking is not a hotel booking' });
+      }
+
+      if (booking.provider.userId !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      if (booking.status === 'cancelled') {
+        return res.status(400).json({ error: 'Cannot check out a cancelled booking' });
+      }
+
+      if (booking.status === 'completed') {
+        return res.status(400).json({ error: 'Booking already checked out' });
+      }
+
+      if (!booking.checkedInAt) {
+        return res.status(400).json({ error: 'Guest must be checked in before check-out' });
+      }
+
+      const updated = await prisma.$transaction(async (tx) => {
+        const completed = await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: 'completed', completedAt: new Date() }
+        });
+
+        if (booking.roomId && booking.room && booking.room.totalRooms === 1) {
+          await tx.room.update({
+            where: { id: booking.roomId },
+            data: { status: 'CLEANING' }
+          });
+        }
+
+        await tx.housekeepingTask.create({
+          data: {
+            providerId: booking.providerId,
+            roomId: booking.roomId!,
+            status: 'PENDING',
+            notes: `Auto-created after check-out for booking #${booking.bookingCode}`
+          }
+        });
+
+        return completed;
+      });
+
+      return res.json({
+        message: `Check-out successful for booking #${booking.bookingCode}`,
+        booking: updated
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: safeError(error) });
+    }
+  });
+
+router.post('/book', authenticateJWT, async (req: AuthRequest, res) => {
+  const originalBody = req.body;
+  req.body = {
+    ...originalBody,
+    checkIn: originalBody.checkInDate,
+    checkOut: originalBody.checkOutDate,
+    numberOfRooms: originalBody.numberOfRooms || 1,
+    source: 'ETP'
+  };
+  return createHotelBooking(req, res);
+});
+
+// Customer-facing: list my hotel bookings
+router.get('/my-bookings', authenticateJWT, async (req: AuthRequest, res) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { userId: req.user!.id, category: 'hotel' },
+      include: {
+        provider: { select: { id: true, businessName: true, address: true, city: true, slug: true, starRating: true } },
+        room: { select: { id: true, name: true, type: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.json({ count: bookings.length, bookings });
+  } catch (err: any) {
+    return res.status(500).json({ error: safeError(err) });
+  }
+});
+
+// Provider: list bookings for my hotels
+router.get('/provider-bookings', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
+  try {
+    const providerIds = await prisma.serviceProvider.findMany({
+      where: { userId: req.user!.id, category: 'hotel' },
+      select: { id: true }
+    });
+    const hotelIds = providerIds.map(p => p.id);
+    if (hotelIds.length === 0) return res.json({ count: 0, bookings: [] });
+
+    const status = req.query.status ? String(req.query.status) : null;
+    const bookings = await prisma.booking.findMany({
+      where: {
+        providerId: { in: hotelIds },
+        category: 'hotel',
+        ...(status ? { status } : {})
+      },
+      include: {
+        user: { select: { id: true, fullName: true, phone: true } },
+        room: { select: { id: true, name: true, type: true, price: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    return res.json({ count: bookings.length, bookings });
+  } catch (err: any) {
+    return res.status(500).json({ error: safeError(err) });
   }
 });
 
@@ -681,7 +782,10 @@ router.get('/bookings/:bookingId/confirmation', authenticateJWT, async (req: Aut
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
+    const isOwner = booking.userId === req.user!.id;
+    const isAdmin = req.user!.role === 'admin';
+    const isVendor = booking.provider?.userId === req.user!.id;
+    if (!isOwner && !isAdmin && !isVendor) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -720,7 +824,7 @@ router.get('/bookings/:bookingId/confirmation', authenticateJWT, async (req: Aut
       createdAt: booking.createdAt
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -744,7 +848,10 @@ router.get('/bookings/:bookingId/status', authenticateJWT, async (req: AuthReque
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
+    const isOwner = booking.userId === req.user!.id;
+    const isAdmin = req.user!.role === 'admin';
+    const isVendor = booking.provider?.userId === req.user!.id;
+    if (!isOwner && !isAdmin && !isVendor) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -759,7 +866,7 @@ router.get('/bookings/:bookingId/status', authenticateJWT, async (req: AuthReque
       updatedAt: booking.updatedAt
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -780,7 +887,10 @@ router.patch('/bookings/:bookingId/cancel', authenticateJWT, async (req: AuthReq
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
+    const isOwner = booking.userId === req.user!.id;
+    const isAdmin = req.user!.role === 'admin';
+    const isVendor = booking.provider?.userId === req.user!.id;
+    if (!isOwner && !isAdmin && !isVendor) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -788,7 +898,7 @@ router.patch('/bookings/:bookingId/cancel', authenticateJWT, async (req: AuthReq
       return res.status(400).json({ error: 'This is not a hotel booking' });
     }
 
-    if (!['pending', 'confirmed', 'paid'].includes(booking.status)) {
+    if (!canTransitionHotelBooking(booking.status, 'cancelled')) {
       return res.status(400).json({
         error: `Cannot cancel booking with status: ${booking.status}`
       });
@@ -813,7 +923,7 @@ router.patch('/bookings/:bookingId/cancel', authenticateJWT, async (req: AuthReq
           if (avail && avail.bookedRooms > 0) {
             await tx.hotelAvailability.update({
               where: { id: avail.id },
-              data: { bookedRooms: avail.bookedRooms - 1 }
+              data: { bookedRooms: Math.max(0, avail.bookedRooms - (b.numberOfRooms || 1)) }
             });
           }
         }
@@ -827,7 +937,7 @@ router.patch('/bookings/:bookingId/cancel', authenticateJWT, async (req: AuthReq
       booking: updated
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -884,7 +994,7 @@ router.post('/', authenticateJWT, requireRole(['vendor', 'admin']), async (req: 
       provider
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -928,7 +1038,7 @@ router.patch('/:id', authenticateJWT, requireRole(['vendor', 'admin']), async (r
       provider: updated
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -949,7 +1059,7 @@ router.patch('/:id/verify', authenticateJWT, requireRole(['admin']), async (req:
     });
     return res.json({ message: 'Hotel verified successfully', hotel: updated });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -984,19 +1094,12 @@ router.get('/dashboard/summary', authenticateJWT, requireRole(['vendor', 'admin'
 
     const hotels = await prisma.serviceProvider.findMany({
       where: { id: { in: hotelIds } },
-      include: {
-        rooms: {
-          include: {
-            availabilities: {
-              where: { date: { gte: today, lt: tomorrow } }
-            }
-          }
-        }
-      }
+      select: { id: true, businessName: true, status: true, isVerified: true, commissionRate: true }
     });
 
     const rooms = await prisma.room.findMany({
-      where: { providerId: { in: hotelIds } }
+      where: { providerId: { in: hotelIds } },
+      select: { isAvailable: true }
     });
 
     const bookings = await prisma.booking.findMany({
@@ -1028,10 +1131,7 @@ router.get('/dashboard/summary', authenticateJWT, requireRole(['vendor', 'admin'
     const paidBookings = bookings.filter(b => b.paymentStatus === 'paid');
     const grossRevenue = paidBookings.reduce((sum, b) => sum + b.finalAmount, 0);
 
-    const provider = await prisma.serviceProvider.findFirst({
-      where: { id: { in: hotelIds } }
-    });
-    const commissionRate = await resolveCommissionRate({ providerRate: provider?.commissionRate });
+    const commissionRate = await resolveCommissionRate({ providerRate: hotels[0]?.commissionRate });
     const totalCommission = (grossRevenue * commissionRate) / 100;
     const hotelPayable = grossRevenue - totalCommission;
 
@@ -1064,7 +1164,7 @@ router.get('/dashboard/summary', authenticateJWT, requireRole(['vendor', 'admin'
       }
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -1108,7 +1208,7 @@ router.get('/dashboard/check-ins-today', authenticateJWT, requireRole(['vendor',
       }))
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -1152,7 +1252,7 @@ router.get('/dashboard/check-outs-today', authenticateJWT, requireRole(['vendor'
       }))
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -1196,7 +1296,7 @@ router.get('/dashboard/settlements', authenticateJWT, requireRole(['vendor', 'ad
       }))
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -1254,7 +1354,7 @@ router.post('/dashboard/settlements', authenticateJWT, requireRole(['admin']), a
       settlement
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
   }
 });
 
@@ -1288,7 +1388,123 @@ router.patch('/dashboard/settlements/:id/mark-paid', authenticateJWT, requireRol
       settlement: updated
     });
   } catch (error: any) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: safeError(error) });
+  }
+});
+
+// Hotel review (customer must have completed hotel stay; bookingId is unique on Review)
+router.post('/:hotelId/reviews', authenticateJWT, requireRole(['customer']), async (req: AuthRequest, res) => {
+  try {
+    const hotelId = Number(req.params.hotelId);
+    const { bookingId, rating, comment } = req.body || {};
+    if (!Number.isFinite(hotelId) || !Number.isFinite(bookingId) || !Number.isFinite(rating)) {
+      return res.status(400).json({ error: 'hotelId, bookingId, rating required' });
+    }
+    if (rating < 1 || rating > 5) return res.status(400).json({ error: 'rating must be 1-5' });
+
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
+    if (!booking) return res.status(404).json({ error: 'Booking not found' });
+    if (booking.userId !== req.user!.id) return res.status(403).json({ error: 'Not your booking' });
+    if (booking.category !== 'hotel' || booking.providerId !== hotelId) return res.status(400).json({ error: 'Booking does not match hotel' });
+    if (booking.status !== 'completed' && booking.status !== 'confirmed') {
+      return res.status(400).json({ error: 'Can only review completed or confirmed stays' });
+    }
+
+    const existing = await prisma.review.findUnique({ where: { bookingId } });
+    if (existing) return res.status(409).json({ error: 'Review already exists for this booking' });
+
+    const review = await prisma.review.create({
+      data: { bookingId, userId: req.user!.id, rating, comment: comment?.trim() || null }
+    });
+
+    await recomputeHotelRating(hotelId);
+
+    return res.status(201).json({ message: 'Review submitted', review });
+  } catch (err: any) {
+    return res.status(500).json({ error: safeError(err) });
+  }
+});
+
+async function recomputeHotelRating(hotelId: number) {
+  const result = await prisma.review.aggregate({
+    where: { booking: { providerId: hotelId, category: 'hotel' } },
+    _avg: { rating: true },
+    _count: { rating: true }
+  });
+  await prisma.serviceProvider.update({
+    where: { id: hotelId },
+    data: {
+      rating: result._avg.rating ?? 0,
+      totalReviews: result._count.rating ?? 0
+    }
+  });
+}
+
+// Hotel reports for vendors (and admin); aggregates by date range and optionally per-hotel
+router.get('/reports/summary', authenticateJWT, requireRole(['vendor', 'admin']), async (req: AuthRequest, res) => {
+  try {
+    const { from, to, hotelId } = req.query as { from?: string; to?: string; hotelId?: string };
+    const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 86400000);
+    const toDate = to ? new Date(to) : new Date();
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid date range' });
+    }
+
+    const providerFilter: any = { category: 'hotel' };
+    if (req.user!.role === 'vendor') {
+      providerFilter.userId = req.user!.id;
+    }
+    if (hotelId) {
+      const hid = Number(hotelId);
+      if (!Number.isFinite(hid)) return res.status(400).json({ error: 'Invalid hotelId' });
+      providerFilter.id = hid;
+    }
+
+    const providers = await prisma.serviceProvider.findMany({ where: providerFilter, select: { id: true, businessName: true } });
+    const providerIds = providers.map(p => p.id);
+    if (providerIds.length === 0) {
+      return res.json({ range: { from: fromDate, to: toDate }, byHotel: [], totals: { bookings: 0, gross: 0, commission: 0, net: 0 } });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        category: 'hotel',
+        providerId: { in: providerIds },
+        createdAt: { gte: fromDate, lte: toDate }
+      },
+      select: { providerId: true, status: true, paymentStatus: true, finalAmount: true, source: true }
+    });
+
+    const byHotelMap = new Map<number, { id: number; businessName: string; bookings: number; paid: number; cancelled: number; gross: number; commission: number; net: number }>();
+    for (const p of providers) byHotelMap.set(p.id, { id: p.id, businessName: p.businessName, bookings: 0, paid: 0, cancelled: 0, gross: 0, commission: 0, net: 0 });
+
+    const totals = { bookings: 0, gross: 0, commission: 0, net: 0 };
+    for (const b of bookings) {
+      const row = byHotelMap.get(b.providerId);
+      if (!row) continue;
+      row.bookings += 1;
+      if (b.status === 'cancelled') {
+        row.cancelled += 1;
+        continue;
+      }
+      if (b.paymentStatus !== 'paid') continue;
+      row.paid += 1;
+      const gross = Number(b.finalAmount) || 0;
+      const rate = b.source === 'DIRECT' ? 0 : 0.10;
+      const commission = gross * rate;
+      const net = gross - commission;
+      row.gross = round2(row.gross + gross);
+      row.commission = round2(row.commission + commission);
+      row.net = round2(row.net + net);
+      totals.gross = round2(totals.gross + gross);
+      totals.commission = round2(totals.commission + commission);
+      totals.net = round2(totals.net + net);
+    }
+    totals.bookings = bookings.length;
+
+    return res.json({ range: { from: fromDate, to: toDate }, byHotel: Array.from(byHotelMap.values()), totals });
+  } catch (err: any) {
+    return res.status(500).json({ error: safeError(err) });
   }
 });
 

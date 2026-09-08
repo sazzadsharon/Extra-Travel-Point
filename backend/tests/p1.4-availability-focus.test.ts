@@ -40,7 +40,8 @@ describe('P1.4 Focused: ServiceAvailability', () => {
   });
 
   beforeEach(async () => {
-    await prisma.payment.deleteMany();
+        await prisma.$executeRawUnsafe('PRAGMA foreign_keys = OFF');
+await prisma.payment.deleteMany();
     await prisma.review.deleteMany();
     await prisma.qrLog.deleteMany();
     await prisma.seatLock.deleteMany();
@@ -49,8 +50,20 @@ describe('P1.4 Focused: ServiceAvailability', () => {
     await prisma.booking.deleteMany();
     await prisma.serviceAvailability.deleteMany();
     await prisma.service.deleteMany();
+    await prisma.hotelAvailability.deleteMany();
+    await prisma.ratePlan.deleteMany();
+    await prisma.hotelImage.deleteMany();
+    await prisma.hotelAmenity.deleteMany();
+    await prisma.hotelPolicy.deleteMany();
+    await prisma.hotelPromotion.deleteMany();
     await prisma.serviceProvider.deleteMany();
-    await prisma.user.deleteMany();
+        await prisma.session.deleteMany();
+    await prisma.hotelStaff.deleteMany();
+    await prisma.housekeepingTask.deleteMany();
+    await prisma.hotelMaintenanceRequest.deleteMany();
+    await prisma.hotelTax.deleteMany();
+await prisma.user.deleteMany();
+    await prisma.$executeRawUnsafe('PRAGMA foreign_keys = ON');
   });
 
   // -------------------------------------------------------------------------

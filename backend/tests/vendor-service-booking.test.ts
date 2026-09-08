@@ -7,6 +7,10 @@ import bookingRoutes from '../src/routes/booking.routes';
 import authRoutes from '../src/routes/auth.routes';
 import paymentRoutes from '../src/routes/payment.routes';
 
+process.env.BKASH_API_KEY = 'test-key';
+process.env.BKASH_SECRET_KEY = 'test-secret';
+process.env.BKASH_BASE_URL = 'https://sandbox.bka.sh';
+
 const prisma = new PrismaClient();
 
 jest.setTimeout(30000);
@@ -83,19 +87,10 @@ interface World {
   serviceWithCapacity: any;
 }
 
+import { cleanup as fullCleanup } from './utils/test-db';
+
 async function setupWorld(): Promise<World> {
-  await prisma.payment.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.qrLog.deleteMany();
-      await prisma.payoutRequest.deleteMany();
-    await prisma.settlement.deleteMany();
-    await prisma.booking.deleteMany();
-  await prisma.seatLock.deleteMany();
-  await prisma.serviceAvailability.deleteMany();
-  await prisma.service.deleteMany();
-  await prisma.serviceProvider.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.user.deleteMany();
+  await fullCleanup();
 
   const customer = await prisma.user.create({
     data: { phone: '01811111111', passwordHash: 'hash', role: 'customer', fullName: 'Test Customer' }
@@ -298,10 +293,9 @@ describe('Vendor Service Booking (Vendor Service Booking Foundation)', () => {
   });
 
   beforeEach(async () => {
-    // Reset transient booking state but keep services/providers.
     await prisma.payment.deleteMany();
     await prisma.qrLog.deleteMany();
-        await prisma.payoutRequest.deleteMany();
+    await prisma.payoutRequest.deleteMany();
     await prisma.settlement.deleteMany();
     await prisma.booking.deleteMany();
   });
