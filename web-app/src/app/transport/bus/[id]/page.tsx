@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -135,14 +135,14 @@ export default function BusDetailPage() {
       try {
         const payload = {
           providerId: bus.provider.id,
-          serviceId: bus.id,
+          tripId: bus.id,
           category: 'bus' as const,
           bookingDate: new Date().toISOString().split('T')[0],
           travelDate,
           numberOfPeople: selectedSeats.length,
           seatNumbers: selectedSeats.map(s => s.seatNumber),
           passengers: form.passengers,
-          route: bus.route ?? undefined
+          route: bus.route ? `${bus.route.origin} → ${bus.route.destination}` : undefined
         };
         const res = await api.post(`/bookings`, payload);
         const booking = res.data?.booking;
@@ -189,14 +189,14 @@ export default function BusDetailPage() {
           <BusIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Bus Not Found</h2>
           <Link href="/transport/bus" className="text-blue-600 hover:text-blue-800">
-            ← Back to bus listing
+            â† Back to bus listing
           </Link>
         </div>
       </div>
     );
   }
 
-  const nextSlot = bus.availability && bus.availability.length > 0 ? bus.availability[0] : null;
+  const routeText = `${bus.route.origin} → ${bus.route.destination}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -217,7 +217,7 @@ export default function BusDetailPage() {
                 <BusIcon className="w-8 h-8" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">{bus.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{bus.bus.busName}</h1>
                 <p className="text-blue-100 text-lg flex items-center gap-1">
                   <Shield className="w-4 h-4" />
                   {bus.provider.businessName}
@@ -229,7 +229,7 @@ export default function BusDetailPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-blue-200">FARE</p>
-              <p className="text-2xl font-bold">BDT {bus.price}</p>
+              <p className="text-2xl font-bold">BDT {bus.pricePerSeat}</p>
               <p className="text-xs text-blue-200">per seat</p>
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function BusDetailPage() {
               <MapPin className="w-4 h-4" />
               <p className="text-sm font-medium">Route</p>
             </div>
-            <p className="mt-2 font-semibold text-gray-900">{bus.route ?? 'N/A'}</p>
+            <p className="mt-2 font-semibold text-gray-900">{routeText}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-2 text-green-700">
@@ -250,7 +250,7 @@ export default function BusDetailPage() {
               <p className="text-sm font-medium">Departure</p>
             </div>
             <p className="mt-2 font-semibold text-gray-900">
-              {nextSlot?.startTime ?? 'Scheduled'}
+              {bus.departureTime ?? 'Scheduled'}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -259,7 +259,7 @@ export default function BusDetailPage() {
               <p className="text-sm font-medium">Arrival</p>
             </div>
             <p className="mt-2 font-semibold text-gray-900">
-              {nextSlot?.endTime ?? 'Scheduled'}
+              {bus.arrivalTime ?? 'Scheduled'}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
@@ -267,16 +267,9 @@ export default function BusDetailPage() {
               <Users className="w-4 h-4" />
               <p className="text-sm font-medium">Seats</p>
             </div>
-            <p className="mt-2 font-semibold text-gray-900">{bus.capacity}</p>
+            <p className="mt-2 font-semibold text-gray-900">{bus.bus.totalSeats}</p>
           </div>
         </div>
-
-        {bus.description && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-2">About this bus</h3>
-            <p className="text-gray-700">{bus.description}</p>
-          </div>
-        )}
 
         {/* Steps indicator */}
         <div className="mb-6 flex items-center justify-center gap-2 sm:gap-4">
@@ -344,7 +337,7 @@ export default function BusDetailPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Select Seats</h2>
                 <div className="text-sm text-gray-500">
-                  {seatMap?.totalSeats ?? bus.capacity} seats ·{' '}
+                  {seatMap?.totalSeats ?? bus.bus.totalSeats} seats Â·{' '}
                   {seatMap?.availableSeats ?? '...'} available
                 </div>
               </div>
@@ -365,7 +358,7 @@ export default function BusDetailPage() {
               <dl className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Bus</dt>
-                  <dd className="font-medium text-gray-900">{bus.name}</dd>
+                  <dd className="font-medium text-gray-900">{bus.bus.busName}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Date</dt>
@@ -428,7 +421,7 @@ export default function BusDetailPage() {
               <dl className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Bus</dt>
-                  <dd className="font-medium text-gray-900">{bus.name}</dd>
+                  <dd className="font-medium text-gray-900">{bus.bus.busName}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Operator</dt>
@@ -436,7 +429,7 @@ export default function BusDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Route</dt>
-                  <dd className="font-medium text-gray-900">{bus.route ?? '—'}</dd>
+                  <dd className="font-medium text-gray-900">{routeText}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Date</dt>
@@ -527,22 +520,22 @@ export default function BusDetailPage() {
                 <dl className="space-y-3 text-sm">
                   <div>
                     <dt className="text-gray-500">Route</dt>
-                    <dd className="font-medium text-gray-900">{bus.route ?? '—'}</dd>
+                    <dd className="font-medium text-gray-900">{routeText}</dd>
                   </div>
                   <div>
                     <dt className="text-gray-500">Travel Date</dt>
                     <dd className="font-medium text-gray-900">{travelDate}</dd>
                   </div>
-                  {nextSlot?.startTime && (
+                  {bus.departureTime && (
                     <div>
                       <dt className="text-gray-500">Departure</dt>
-                      <dd className="font-medium text-gray-900">{nextSlot.startTime}</dd>
+                      <dd className="font-medium text-gray-900">{bus.departureTime}</dd>
                     </div>
                   )}
-                  {nextSlot?.endTime && (
+                  {bus.arrivalTime && (
                     <div>
                       <dt className="text-gray-500">Arrival</dt>
-                      <dd className="font-medium text-gray-900">{nextSlot.endTime}</dd>
+                      <dd className="font-medium text-gray-900">{bus.arrivalTime}</dd>
                     </div>
                   )}\r\n                </dl>
               </div>
@@ -598,3 +591,9 @@ export default function BusDetailPage() {
     </div>
   );
 }
+
+
+
+
+
+

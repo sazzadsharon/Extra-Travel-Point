@@ -27,10 +27,14 @@ export default async () => {
   const p = new PrismaClient();
   try {
     await p.$connect();
+    // NOTE: SQLite forbids non-deterministic functions (e.g. datetime('now'))
+    // inside a partial-index WHERE clause, so the "not yet expired" filter uses
+    // a deterministic column-only expression. Expired locks are still excluded
+    // from blocking by the application layer (expiresAt > now) in booking.routes.
     await p.$executeRawUnsafe(`
       CREATE UNIQUE INDEX IF NOT EXISTS seat_locks_active_unique
       ON seat_locks (providerId, category, travelDate, seatNumber)
-      WHERE releasedAt IS NULL AND expiresAt > datetime('now')
+      WHERE releasedAt IS NULL
     `);
   } catch (e) {
     console.error('Failed to create seat lock index:', e);

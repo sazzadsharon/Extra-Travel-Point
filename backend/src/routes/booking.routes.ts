@@ -72,6 +72,7 @@ const bookingSchema = z.object({
   })).optional(),
   route: z.string().optional(),
   serviceId: z.number().int().positive().optional(),
+  tripId: z.number().int().positive().optional(),
   // totalAmount is still accepted for convenience but is recomputed server-side
   totalAmount: z.number().optional()
 });
@@ -468,21 +469,61 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
 
     const {
       providerId, category, bookingDate, travelDate, numberOfPeople,
-      seatNumbers, passengers, route, serviceId, totalAmount
+      seatNumbers, passengers, route, serviceId, tripId, totalAmount
     } = parse.data;
 
-    // --- Seat validation (backend authoritative) ---
+    // --- Normalize seats early so BusTrip validation sees the real count ---
     let normalizedSeats: string[] = [];
     if (seatNumbers && seatNumbers.length > 0) {
       normalizedSeats = seatNumbers.map(s => s.trim()).filter(Boolean);
+    }
 
+    // --- BusTrip-based bus booking: fetch & verify the selected trip server-side ---
+    let tripBooking: any = null;
+    let effectiveTravelDate: Date | null = null;
+    let busTripUnitPrice: number | null = null;
+    let busTotalSeats: number | null = null;
+
+    if (category === 'bus' && tripId) {
+      const trip = await prisma.busTrip.findUnique({
+        where: { id: tripId },
+        include: { route: true, bus: true }
+      });
+
+      if (!trip) {
+        return res.status(404).json({ error: 'Selected bus trip not found' });
+      }
+      if (trip.providerId !== providerId) {
+        return res.status(400).json({ error: 'Selected bus trip does not belong to the selected provider' });
+      }
+      if (trip.isActive !== true || (trip.status !== 'SCHEDULED' && trip.status !== 'OPEN')) {
+        return res.status(400).json({ error: 'Selected bus trip is not available for booking' });
+      }
+
+      tripBooking = trip;
+      effectiveTravelDate = trip.departureDate;
+      busTripUnitPrice = trip.pricePerSeat ?? 0;
+      busTotalSeats = trip.bus?.totalSeats ?? null;
+
+      const seatCount = normalizedSeats.length > 0 ? normalizedSeats.length : numberOfPeople;
+      if (seatCount > trip.availableSeats) {
+        return res.status(400).json({ error: `Only ${trip.availableSeats} seat(s) available on this trip` });
+      }
+    }
+
+    const travelDateForSeats = effectiveTravelDate
+      ? effectiveTravelDate.toISOString().split('T')[0]
+      : travelDate;
+
+    // --- Seat validation (backend authoritative) ---
+    if (normalizedSeats.length > 0) {
       // one seat per passenger
       if (passengers && passengers.length > 0 && normalizedSeats.length !== passengers.length) {
         return res.status(400).json({ error: 'Seat count must match passenger count' });
       }
 
-      // seats must exist in the layout
-      const layout = buildSeatLayout(category, totalSeatsFor(category));
+      const totalSeats = busTotalSeats ?? totalSeatsFor(category);
+      const layout = buildSeatLayout(category, totalSeats);
       const validSeats = new Set(layout.map(s => s.seatNumber));
       const invalid = normalizedSeats.filter(s => !validSeats.has(s));
       if (invalid.length > 0) {
@@ -505,7 +546,7 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
       });
       const occupied = new Set<string>();
       for (const b of conflicting) {
-        if (b.travelDate.toISOString().split('T')[0] !== travelDate) continue;
+        if (b.travelDate.toISOString().split('T')[0] !== travelDateForSeats) continue;
         if (!b.seatNumbers) continue;
         b.seatNumbers.split(',').forEach(s => occupied.add(s.trim()));
       }
@@ -515,10 +556,11 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
       }
     }
 
-    // --- Authoritative price: ignore client totalAmount, recompute from seats/service ---
+    // --- Authoritative price: ignore client totalAmount, recompute from seats/service/trip ---
     let unitPrice = seatUnitPrice(category);
+    if (busTripUnitPrice !== null) unitPrice = busTripUnitPrice;
 
-    if (serviceId) {
+    if (!tripBooking && serviceId) {
       const service = await prisma.service.findUnique({ where: { id: serviceId } });
       if (!service || service.providerId !== providerId) {
         return res.status(400).json({ error: 'Invalid service for this provider' });
@@ -554,9 +596,15 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
       unitPrice = service.price; // backend-authoritative unit price
     }
 
-    const computedFare = normalizedSeats.length > 0
-      ? normalizedSeats.length * unitPrice
-      : (typeof totalAmount === 'number' ? totalAmount : numberOfPeople * unitPrice);
+    let computedFare: number;
+    if (tripBooking) {
+      const seatCount = normalizedSeats.length > 0 ? normalizedSeats.length : numberOfPeople;
+      computedFare = seatCount * unitPrice;
+    } else if (normalizedSeats.length > 0) {
+      computedFare = normalizedSeats.length * unitPrice;
+    } else {
+      computedFare = typeof totalAmount === 'number' ? totalAmount : numberOfPeople * unitPrice;
+    }
 
     // Check user's previous bookings for combo discount calculation
     const existingBookings = await prisma.booking.findMany({
@@ -578,41 +626,59 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
     const discountAmount = (computedFare * discountPercentage) / 100;
     const finalAmount = computedFare - discountAmount;
 
-    const booking = await prisma.booking.create({
-      data: {
-        userId: req.user!.id,
-        providerId,
-        category,
-        bookingDate: new Date(bookingDate),
-        travelDate: new Date(travelDate),
-        numberOfPeople,
-        totalAmount: computedFare,
-        discountAmount,
-        finalAmount,
-        seatNumbers: normalizedSeats.length > 0 ? normalizedSeats.join(',') : null,
-        passengerInfo: passengers && passengers.length > 0 ? JSON.stringify(passengers) : null,
-        route: route ?? null,
-        serviceId: serviceId ?? null,
-        status: 'pending',
-        paymentStatus: 'pending'
-      },
-      include: { provider: true, user: true, service: true }
-    });
+    const booking = await prisma.$transaction(async (tx) => {
+      // Atomically reduce the trip's available seats so two customers cannot
+      // over-book the same trip concurrently.
+      if (tripBooking && tripId) {
+        const seatCount = normalizedSeats.length > 0 ? normalizedSeats.length : numberOfPeople;
+        const updatedTrip = await tx.busTrip.updateMany({
+          where: { id: tripId, availableSeats: { gte: seatCount } },
+          data: { availableSeats: { decrement: seatCount } }
+        });
+        if (updatedTrip.count === 0) {
+          throw Object.assign(new Error('Not enough seats available on this trip'), { status: 409 });
+        }
+      }
 
-    // Mark this customer's active locks for these seats as released & link to the new booking
-    if (normalizedSeats.length > 0) {
-      await prisma.seatLock.updateMany({
-        where: {
+      const created = await tx.booking.create({
+        data: {
           userId: req.user!.id,
           providerId,
           category,
-          travelDate: new Date(travelDate),
-          seatNumber: { in: normalizedSeats },
-          releasedAt: null
+          bookingDate: new Date(bookingDate),
+          travelDate: effectiveTravelDate ? effectiveTravelDate : new Date(travelDate),
+          numberOfPeople,
+          totalAmount: computedFare,
+          discountAmount,
+          finalAmount,
+          seatNumbers: normalizedSeats.length > 0 ? normalizedSeats.join(',') : null,
+          passengerInfo: passengers && passengers.length > 0 ? JSON.stringify(passengers) : null,
+          route: route ?? null,
+          serviceId: serviceId ?? null,
+          tripId: category === 'bus' && tripId ? tripId : undefined,
+          status: 'pending',
+          paymentStatus: 'pending'
         },
-        data: { releasedAt: new Date(), bookingId: booking.id }
+        include: { provider: true, user: true, service: true, trip: true }
       });
-    }
+
+      // Mark this customer's active locks for these seats as released & link to the new booking
+      if (normalizedSeats.length > 0) {
+        await tx.seatLock.updateMany({
+          where: {
+            userId: req.user!.id,
+            providerId,
+            category,
+            travelDate: effectiveTravelDate ? effectiveTravelDate : new Date(travelDate),
+            seatNumber: { in: normalizedSeats },
+            releasedAt: null
+          },
+          data: { releasedAt: new Date(), bookingId: created.id }
+        });
+      }
+
+      return created;
+    });
 
     notifyUser(
       booking.provider.userId,
@@ -631,6 +697,9 @@ router.post('/', authenticateJWT, async (req: AuthRequest, res) => {
       }
     });
   } catch (error: any) {
+    if (error?.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
     return res.status(500).json({ error: error.message });
   }
 });

@@ -4,6 +4,39 @@ import { prisma } from '../prisma';
 
 const router = Router();
 
+const BUS_TOTAL_SEATS = 40;
+
+interface SeatMapSeat {
+  seatNumber: string;
+  isAvailable: boolean;
+  price: number;
+  type: 'Window' | 'Aisle';
+  isLocked?: boolean;
+}
+
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash * 31 + input.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+function buildBusSeatLayout(totalSeats: number): SeatMapSeat[] {
+  const seats: SeatMapSeat[] = [];
+  for (let i = 1; i <= totalSeats; i++) {
+    const row = String.fromCharCode(65 + Math.floor((i - 1) / 4));
+    const col = ((i - 1) % 4) + 1;
+    seats.push({
+      seatNumber: `${row}${col}`,
+      isAvailable: true,
+      price: 0,
+      type: col === 1 || col === 4 ? 'Window' : 'Aisle'
+    });
+  }
+  return seats;
+}
+
 const tripSearchSchema = z.object({
   origin: z.string().optional(),
   destination: z.string().optional(),
@@ -166,6 +199,96 @@ router.get('/:id', async (req, res) => {
       bus: trip.bus,
       route: trip.route,
       provider: trip.provider
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/v1/transport/trips/:id/seats?date=YYYY-MM-DD
+router.get('/:id/seats', async (req, res) => {
+  try {
+    const tripId = parseInt(req.params.id, 10);
+    if (!Number.isFinite(tripId) || tripId <= 0) {
+      return res.status(400).json({ error: 'Invalid trip id' });
+    }
+
+    const date = typeof req.query.date === 'string' && req.query.date
+      ? req.query.date
+      : new Date().toISOString().split('T')[0];
+
+    const trip = await prisma.busTrip.findUnique({
+      where: { id: tripId },
+      include: {
+        bus: true,
+        provider: true
+      }
+    });
+
+    if (!trip) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    const totalSeats = trip.bus?.totalSeats ?? BUS_TOTAL_SEATS;
+    const seats = buildBusSeatLayout(totalSeats);
+    const unitPrice = trip.pricePerSeat ?? 0;
+
+    const occupied = new Set<string>();
+
+    // 1. Stable base occupancy (deterministic hash)
+    seats.forEach(seat => {
+      const h = hashString(`${trip.id}:trip:${date}:${seat.seatNumber}`);
+      if (h % 10 < 3) occupied.add(seat.seatNumber);
+    });
+
+    // 2. Overlay seats already booked for this specific trip on this date
+    const bookings = await prisma.booking.findMany({
+      where: {
+        tripId: trip.id,
+        status: { in: ['confirmed', 'pending'] }
+      },
+      select: { travelDate: true, seatNumbers: true }
+    });
+
+    for (const b of bookings) {
+      const bDate = b.travelDate.toISOString().split('T')[0];
+      if (bDate !== date) continue;
+      if (!b.seatNumbers) continue;
+      b.seatNumbers.split(',').forEach(s => occupied.add(s.trim()));
+    }
+
+    // 3. Overlay active in-flight seat locks held by other customers
+    const now = new Date();
+    const activeLocks = await prisma.seatLock.findMany({
+      where: {
+        providerId: trip.providerId,
+        category: 'bus',
+        travelDate: new Date(date),
+        releasedAt: null,
+        expiresAt: { gt: now }
+      },
+      select: { seatNumber: true }
+    });
+    const locked = new Set(activeLocks.map(l => l.seatNumber));
+
+    const seatMap = seats.map(seat => ({
+      seatNumber: seat.seatNumber,
+      isAvailable: !occupied.has(seat.seatNumber),
+      isLocked: locked.has(seat.seatNumber) && !occupied.has(seat.seatNumber),
+      price: unitPrice,
+      type: seat.type
+    }));
+
+    const availableCount = seatMap.filter(s => s.isAvailable).length;
+
+    return res.json({
+      busId: trip.id,
+      date,
+      totalSeats,
+      availableSeats: availableCount,
+      pricePerSeat: unitPrice,
+      currency: 'BDT',
+      seats: seatMap
     });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });

@@ -668,3 +668,182 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+```ts
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+
+const prisma = new PrismaClient();
+
+const PASSWORD = 'sharon';
+
+async function hashPassword(password: string) {
+  return bcrypt.hash(password, 10);
+}
+
+async function upsertUser(options: {
+  phone: string;
+  email: string;
+  fullName: string;
+  role: string;
+}) {
+  const passwordHash = await hashPassword(PASSWORD);
+
+  const user = await prisma.user.upsert({
+    where: {
+      phone: options.phone,
+    },
+    update: {
+      email: options.email,
+      fullName: options.fullName,
+      role: options.role,
+      passwordHash,
+      isActive: true,
+    },
+    create: {
+      phone: options.phone,
+      email: options.email,
+      fullName: options.fullName,
+      role: options.role,
+      passwordHash,
+      isActive: true,
+    },
+  });
+
+  return user;
+}
+
+async function main() {
+  console.log('\n========================================');
+  console.log(' ETP DEMO ACCOUNTS SEED');
+  console.log('========================================\n');
+
+  // ---------------------------------------
+  // 1. CUSTOMER
+  // ---------------------------------------
+
+  const customer = await upsertUser({
+    phone: '01700000001',
+    email: 'barisalsharon1@gmail.com',
+    fullName: 'Sharon Customer',
+    role: 'customer',
+  });
+
+  console.log('CUSTOMER CREATED/UPDATED');
+  console.log(`  ID:    ${customer.id}`);
+  console.log(`  Login: ${customer.phone}`);
+  console.log(`  Name:  ${customer.fullName}`);
+  console.log(`  Role:  ${customer.role}`);
+
+  // ---------------------------------------
+  // 2. VENDOR
+  // ---------------------------------------
+
+  const vendor = await upsertUser({
+    phone: '01700000002',
+    email: 'barisalsharon2@gmail.com',
+    fullName: 'Sharon Vendor',
+    role: 'vendor',
+  });
+
+  console.log('\nVENDOR CREATED/UPDATED');
+  console.log(`  ID:    ${vendor.id}`);
+  console.log(`  Login: ${vendor.phone}`);
+  console.log(`  Name:  ${vendor.fullName}`);
+  console.log(`  Role:  ${vendor.role}`);
+
+  // ---------------------------------------
+  // Vendor Service Provider
+  // ---------------------------------------
+
+  const provider = await prisma.serviceProvider.upsert({
+    where: {
+      userId: vendor.id,
+    },
+    update: {
+      businessName: 'Sharon Travel & Transport',
+      category: 'BUS',
+      description: 'ETP Investor Demo Bus Vendor',
+      address: 'Dhaka, Bangladesh',
+      city: 'Dhaka',
+      phone: vendor.phone,
+      status: 'APPROVED',
+      isVerified: true,
+      isActive: true,
+      kycStatus: 'APPROVED',
+      lifecycleStatus: 'ACTIVE',
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+    create: {
+      userId: vendor.id,
+      businessName: 'Sharon Travel & Transport',
+      category: 'BUS',
+      description: 'ETP Investor Demo Bus Vendor',
+      address: 'Dhaka, Bangladesh',
+      city: 'Dhaka',
+      phone: vendor.phone,
+      commissionRate: 10,
+      status: 'APPROVED',
+      isVerified: true,
+      isActive: true,
+      verifiedAt: new Date(),
+      kycStatus: 'APPROVED',
+      lifecycleStatus: 'ACTIVE',
+      isPublished: true,
+      publishedAt: new Date(),
+    },
+  });
+
+  console.log(`  Provider ID: ${provider.id}`);
+  console.log(`  Business:    ${provider.businessName}`);
+
+  // ---------------------------------------
+  // 3. ADMIN
+  // ---------------------------------------
+
+  const admin = await upsertUser({
+    phone: '01700000003',
+    email: 'barisalsharon3@gmail.com',
+    fullName: 'Sharon Admin',
+    role: 'admin',
+  });
+
+  console.log('\nADMIN CREATED/UPDATED');
+  console.log(`  ID:    ${admin.id}`);
+  console.log(`  Login: ${admin.phone}`);
+  console.log(`  Name:  ${admin.fullName}`);
+  console.log(`  Role:  ${admin.role}`);
+
+  // ---------------------------------------
+  // FINAL REPORT
+  // ---------------------------------------
+
+  console.log('\n========================================');
+  console.log(' DEMO ACCOUNTS READY');
+  console.log('========================================');
+
+  console.log('\n1. CUSTOMER');
+  console.log('   Login Phone: 01700000001');
+  console.log('   Password:    sharon');
+
+  console.log('\n2. VENDOR');
+  console.log('   Login Phone: 01700000002');
+  console.log('   Password:    sharon');
+
+  console.log('\n3. ADMIN');
+  console.log('   Login Phone: 01700000003');
+  console.log('   Password:    sharon');
+
+  console.log('\n========================================\n');
+}
+
+main()
+  .catch((error) => {
+    console.error('\nDemo account seed failed:');
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+```

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
 import api from '../lib/apiClient';
@@ -22,12 +22,27 @@ export function useBuses() {
   const fetchBuses = useCallback(async (params: BusSearchParams = {}) => {
     setIsLoading(true);
     setError(null);
+
     try {
-      const response = await api.get<BusListResponse>('/transport/buses', { params });
-      setBuses(response.data.buses ?? []);
-      return response.data.buses;
+      const response = await api.get<BusListResponse>('/transport/trips', {
+        params: {
+          origin: params.fromCity,
+          destination: params.toCity,
+          date: params.date,
+        },
+      });
+
+      const trips = response.data.trips ?? [];
+
+      setBuses(trips as unknown as Bus[]);
+      return trips as unknown as Bus[];
     } catch (err: any) {
-      const message = err.response?.data?.error || err.message || 'Failed to fetch buses';
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to fetch buses';
+
       setError(message);
       return [];
     } finally {
@@ -37,27 +52,51 @@ export function useBuses() {
 
   const fetchBus = useCallback(async (id: number): Promise<Bus | null> => {
     try {
-      const response = await api.get<Bus>(`/transport/buses/${id}`);
+      const response = await api.get<Bus>(`/transport/trips/${id}`);
       return response.data;
     } catch (err: any) {
-      const message = err.response?.data?.error || err.message || 'Failed to fetch bus';
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to fetch bus';
+
       setError(message);
       return null;
     }
   }, []);
 
-  const fetchBusSeats = useCallback(async (id: number, date: string): Promise<BusSeatMapResponse | null> => {
-    try {
-      const response = await api.get<BusSeatMapResponse>(`/transport/buses/${id}/seats`, {
-        params: { date }
-      });
-      return response.data;
-    } catch (err: any) {
-      const message = err.response?.data?.error || err.message || 'Failed to fetch seat map';
-      setError(message);
-      return null;
-    }
-  }, []);
+  const fetchBusSeats = useCallback(
+    async (id: number, date: string): Promise<BusSeatMapResponse | null> => {
+      try {
+        const response = await api.get<BusSeatMapResponse>(
+          `/transport/trips/${id}/seats`,
+          {
+            params: { date },
+          }
+        );
 
-  return { buses, isLoading, error, fetchBuses, fetchBus, fetchBusSeats };
+        return response.data;
+      } catch (err: any) {
+        const message =
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          'Failed to fetch seat map';
+
+        setError(message);
+        return null;
+      }
+    },
+    []
+  );
+
+  return {
+    buses,
+    isLoading,
+    error,
+    fetchBuses,
+    fetchBus,
+    fetchBusSeats,
+  };
 }

@@ -11,8 +11,6 @@ interface BusCardProps {
 }
 
 export default function BusMvpCard({ bus, travelDate, index = 0 }: BusCardProps) {
-  const nextSlot = bus.availability && bus.availability.length > 0 ? bus.availability[0] : null;
-
   return (
     <div
       className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all overflow-hidden"
@@ -25,7 +23,7 @@ export default function BusMvpCard({ bus, travelDate, index = 0 }: BusCardProps)
               <BusIcon className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-lg leading-tight">{bus.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-lg leading-tight">{bus.bus.busName}</h3>
               <p className="text-sm text-gray-500 flex items-center gap-1">
                 <Shield className="w-3 h-3" />
                 {bus.provider?.businessName ?? 'Operator'}
@@ -36,15 +34,15 @@ export default function BusMvpCard({ bus, travelDate, index = 0 }: BusCardProps)
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-400">BUS ID</p>
-            <p className="text-xs font-mono text-gray-600">ETP-BUS-{String(bus.id).padStart(4, '0')}</p>
+            <p className="text-xs text-gray-400">TRIP ID</p>
+            <p className="text-xs font-mono text-gray-600">ETP-TRIP-{String(bus.id).padStart(4, '0')}</p>
           </div>
         </div>
 
         {bus.route && (
           <div className="mt-3 flex items-center gap-2 text-sm text-gray-700">
             <MapPin className="w-4 h-4 text-gray-400" />
-            <span className="font-medium">{bus.route}</span>
+            <span className="font-medium">{bus.route.origin} → {bus.route.destination}</span>
           </div>
         )}
 
@@ -53,14 +51,14 @@ export default function BusMvpCard({ bus, travelDate, index = 0 }: BusCardProps)
             <Clock className="w-4 h-4 text-gray-400" />
             <div>
               <p className="text-xs text-gray-400">Departure</p>
-              <p className="font-medium">{nextSlot?.startTime ?? 'Scheduled'}</p>
+              <p className="font-medium">{bus.departureTime}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock className="w-4 h-4 text-gray-400" />
             <div>
               <p className="text-xs text-gray-400">Arrival</p>
-              <p className="font-medium">{nextSlot?.endTime ?? 'Scheduled'}</p>
+              <p className="font-medium">{bus.arrivalTime}</p>
             </div>
           </div>
         </div>
@@ -68,18 +66,18 @@ export default function BusMvpCard({ bus, travelDate, index = 0 }: BusCardProps)
         <div className="mt-4 grid grid-cols-3 gap-3 border-t border-gray-100 pt-4">
           <div>
             <p className="text-xs text-gray-400">Fare / Seat</p>
-            <p className="font-bold text-gray-900">BDT {bus.price}</p>
+            <p className="font-bold text-gray-900">BDT {bus.pricePerSeat}</p>
           </div>
           <div>
-            <p className="text-xs text-gray-400">Capacity</p>
+            <p className="text-xs text-gray-400">Total Seats</p>
             <div className="flex items-center gap-1">
               <Users className="w-3 h-3 text-gray-400" />
-              <p className="font-medium text-gray-700">{bus.capacity}</p>
+              <p className="font-medium text-gray-700">{bus.bus.totalSeats}</p>
             </div>
           </div>
           <div>
-            <p className="text-xs text-gray-400">From</p>
-            <p className="font-medium text-gray-700 truncate">{bus.provider?.city ?? 'N/A'}</p>
+            <p className="text-xs text-gray-400">Available</p>
+            <p className="font-medium text-gray-700">{bus.availableSeats} seats</p>
           </div>
         </div>
 

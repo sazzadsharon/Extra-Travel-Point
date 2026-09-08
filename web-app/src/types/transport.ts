@@ -1,4 +1,4 @@
-export interface Vehicle {
+﻿export interface Vehicle {
   id: number;
   type: string;
   model: string;
@@ -36,33 +36,48 @@ export interface SearchFilters {
 export interface BusProvider {
   id: number;
   businessName: string;
-  category?: string;
-  description?: string | null;
-  address?: string;
   city?: string | null;
-  phone?: string | null;
+  isVerified: boolean;
   rating: number;
   totalReviews: number;
-  isVerified: boolean;
+  phone?: string | null;
+  address?: string | null;
 }
 
-export interface BusAvailabilitySlot {
-  date: string;
-  startTime: string | null;
-  endTime: string | null;
-  capacity: number | null;
+export interface BusRoute {
+  id: number;
+  origin: string;
+  destination: string;
+  distanceKm?: number | null;
+  estimatedDurationMinutes?: number | null;
+}
+
+export interface BusInfo {
+  id: number;
+  busName: string;
+  busType: string;
+  registrationNumber?: string | null;
+  totalSeats: number;
+  amenities?: unknown;
 }
 
 export interface Bus {
   id: number;
-  name: string;
-  route: string | null;
-  description: string | null;
-  price: number;
-  currency: string;
-  capacity: number;
+  departureDate: string;
+  departureTime: string;
+  arrivalTime: string;
+  status: string;
+  availableSeats: number;
+  pricePerSeat: number;
+  bookingCutoffMinutes?: number | null;
+  bus: BusInfo;
+  route: BusRoute;
   provider: BusProvider;
-  availability: BusAvailabilitySlot[];
+}
+
+export interface BusListResponse {
+  count: number;
+  trips: Bus[];
 }
 
 export interface BusSeat {
@@ -81,9 +96,4 @@ export interface BusSeatMapResponse {
   pricePerSeat: number;
   currency: string;
   seats: BusSeat[];
-}
-
-export interface BusListResponse {
-  count: number;
-  buses: Bus[];
 }
