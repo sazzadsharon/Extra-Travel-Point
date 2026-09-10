@@ -46,59 +46,59 @@ model Session {
 }
 
 model ServiceProvider {
-  id               Int          @id @default(autoincrement())
-  userId           Int
-  businessName     String
-  category         String
-  description      String?
-  address          String
-  city             String?
-  latitude         Float?
-  longitude        Float?
-  phone            String?
-  logo             String?
-  commissionRate   Float        @default(10.00)
-  status           String       @default("PENDING")
-  isVerified       Boolean      @default(false)
-  isActive         Boolean      @default(true)
-  verifiedAt       DateTime?
-  reviewedBy       Int?
-  rejectionReason  String?
-  rating           Float        @default(0)
-  totalReviews     Int          @default(0)
-  kycStatus        String       @default("NOT_SUBMITTED")
-  kycSubmittedAt   DateTime?
-  kycReviewedAt    DateTime?
-  kycRejectionReason String?
-  kycData          String?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  bookings         Booking[]
-  flights          Flight[]
-  qrLogs           QrLog[]
-  rooms            Room[]
-  seatLocks        SeatLock[]
-  user             User            @relation(fields: [userId], references: [id])
-  services         Service[]
-  settlements      Settlement[]
-  payoutRequests   PayoutRequest[]
+  id                       Int                       @id @default(autoincrement())
+  userId                   Int
+  businessName             String
+  category                 String
+  description              String?
+  address                  String
+  city                     String?
+  latitude                 Float?
+  longitude                Float?
+  phone                    String?
+  logo                     String?
+  commissionRate           Float                     @default(10.00)
+  status                   String                    @default("PENDING")
+  isVerified               Boolean                   @default(false)
+  isActive                 Boolean                   @default(true)
+  verifiedAt               DateTime?
+  reviewedBy               Int?
+  rejectionReason          String?
+  rating                   Float                     @default(0)
+  totalReviews             Int                       @default(0)
+  kycStatus                String                    @default("NOT_SUBMITTED")
+  kycSubmittedAt           DateTime?
+  kycReviewedAt            DateTime?
+  kycRejectionReason       String?
+  kycData                  String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  bookings                 Booking[]
+  flights                  Flight[]
+  qrLogs                   QrLog[]
+  rooms                    Room[]
+  seatLocks                SeatLock[]
+  user                     User                      @relation(fields: [userId], references: [id])
+  services                 Service[]
+  settlements              Settlement[]
+  payoutRequests           PayoutRequest[]
   // Hotel-specific fields
-  slug             String?   @unique
-  starRating       Int?
-  onboardingMode   String?        @default("ADVANCED")
-  lifecycleStatus  String?        @default("DRAFT")
-  isPublished      Boolean        @default(false)
-  publishedAt      DateTime?
-  hotelImages      HotelImage[]
-  hotelAmenities   HotelAmenity[]
-  hotelPolicy      HotelPolicy?
-  hotelPromotions  HotelPromotion[]
-  hotelTaxes       HotelTax[]
-  hotelStaff       HotelStaff[]
-  buses            Bus[]
-  busRoutes        BusRoute[]
-  busTrips         BusTrip[]
-  housekeepingTasks HousekeepingTask[]
+  slug                     String?                   @unique
+  starRating               Int?
+  onboardingMode           String?                   @default("ADVANCED")
+  lifecycleStatus          String?                   @default("DRAFT")
+  isPublished              Boolean                   @default(false)
+  publishedAt              DateTime?
+  hotelImages              HotelImage[]
+  hotelAmenities           HotelAmenity[]
+  hotelPolicy              HotelPolicy?
+  hotelPromotions          HotelPromotion[]
+  hotelTaxes               HotelTax[]
+  hotelStaff               HotelStaff[]
+  buses                    Bus[]
+  busRoutes                BusRoute[]
+  busTrips                 BusTrip[]
+  housekeepingTasks        HousekeepingTask[]
   hotelMaintenanceRequests HotelMaintenanceRequest[]
 
   @@index([userId])
@@ -182,32 +182,32 @@ model ServiceAvailability {
 }
 
 model Room {
-  id              Int                  @id @default(autoincrement())
-  providerId      Int
-  name            String
-  type            String
-  description     String?
-  price           Float
-  capacity        Int                  @default(2)
-  adultCapacity   Int                  @default(2)
-  childCapacity   Int                  @default(0)
-  totalRooms      Int                  @default(1)
-  roomNumber      String?
-  bedConfig       String?
-  amenities       String?
-  images          String?
-  isAvailable     Boolean              @default(true)
-  baseCurrency    String               @default("BDT")
-  status          String               @default("ACTIVE")
-  size            String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
-  bookings        Booking[]
-  availabilities  HotelAvailability[]
-  ratePlans       RatePlan[]
-  housekeepingTasks HousekeepingTask[]
+  id                       Int                       @id @default(autoincrement())
+  providerId               Int
+  name                     String
+  type                     String
+  description              String?
+  price                    Float
+  capacity                 Int                       @default(2)
+  adultCapacity            Int                       @default(2)
+  childCapacity            Int                       @default(0)
+  totalRooms               Int                       @default(1)
+  roomNumber               String?
+  bedConfig                String?
+  amenities                String?
+  images                   String?
+  isAvailable              Boolean                   @default(true)
+  baseCurrency             String                    @default("BDT")
+  status                   String                    @default("ACTIVE")
+  size                     String?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  bookings                 Booking[]
+  availabilities           HotelAvailability[]
+  ratePlans                RatePlan[]
+  housekeepingTasks        HousekeepingTask[]
   hotelMaintenanceRequests HotelMaintenanceRequest[]
-  provider        ServiceProvider      @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  provider                 ServiceProvider           @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@map("rooms")
@@ -230,50 +230,50 @@ model HotelAvailability {
 }
 
 model RatePlan {
-  id              Int      @id @default(autoincrement())
-  roomId          Int
-  name            String
-  description     String?
-  mealPlan        String   @default("RO")
-  refundable      Boolean  @default(true)
-  price           Float
-  currency        String   @default("BDT")
-  minStay         Int      @default(1)
-  maxStay         Int?
-  startDate       DateTime?
-  endDate         DateTime?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  roomId      Int
+  name        String
+  description String?
+  mealPlan    String    @default("RO")
+  refundable  Boolean   @default(true)
+  price       Float
+  currency    String    @default("BDT")
+  minStay     Int       @default(1)
+  maxStay     Int?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
   @@map("rate_plans")
 }
 
 model HotelImage {
-  id          Int              @id @default(autoincrement())
-  providerId  Int
-  url         String
-  caption     String?
-  isPrimary   Boolean          @default(false)
-  sortOrder   Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  id         Int             @id @default(autoincrement())
+  providerId Int
+  url        String
+  caption    String?
+  isPrimary  Boolean         @default(false)
+  sortOrder  Int             @default(0)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@map("hotel_images")
 }
 
 model HotelAmenity {
-  id          Int              @id @default(autoincrement())
-  providerId  Int
-  name        String
-  icon        String?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  id         Int             @id @default(autoincrement())
+  providerId Int
+  name       String
+  icon       String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, name])
   @@index([providerId])
@@ -281,39 +281,39 @@ model HotelAmenity {
 }
 
 model HotelPolicy {
-  id              Int              @id @default(autoincrement())
-  providerId      Int              @unique
+  id                 Int             @id @default(autoincrement())
+  providerId         Int             @unique
   cancellationPolicy String?
-  checkInTime     String?
-  checkOutTime    String?
-  childPolicy     String?
-  petPolicy       String?
-  smokingPolicy   String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  provider        ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  checkInTime        String?
+  checkOutTime       String?
+  childPolicy        String?
+  petPolicy          String?
+  smokingPolicy      String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  provider           ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@map("hotel_policies")
 }
 
 model HotelPromotion {
-  id          Int              @id @default(autoincrement())
-  providerId  Int
-  code        String
-  name        String
-  description String?
-  discountType String          // 'percentage' | 'fixed'
+  id            Int             @id @default(autoincrement())
+  providerId    Int
+  code          String
+  name          String
+  description   String?
+  discountType  String // 'percentage' | 'fixed'
   discountValue Float
-  minNights   Int              @default(1)
-  minAmount   Float            @default(0)
-  usageLimit  Int?
-  usedCount   Int              @default(0)
-  validFrom   DateTime
-  validUntil  DateTime
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  minNights     Int             @default(1)
+  minAmount     Float           @default(0)
+  usageLimit    Int?
+  usedCount     Int             @default(0)
+  validFrom     DateTime
+  validUntil    DateTime
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  provider      ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, code])
   @@index([providerId])
@@ -322,31 +322,31 @@ model HotelPromotion {
 }
 
 model HotelTax {
-  id          Int              @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   providerId  Int
   name        String
-  type        String           // 'percentage' | 'fixed'
+  type        String // 'percentage' | 'fixed'
   value       Float
-  isInclusive Boolean          @default(false)
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  isInclusive Boolean         @default(false)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@map("hotel_taxes")
 }
 
 model HotelStaff {
-  id          Int              @id @default(autoincrement())
-  providerId  Int
-  userId      Int
-  role        String           @default("RECEPTIONIST") // RECEPTIONIST | HOUSEKEEPING | MAINTENANCE | MANAGER
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         Int             @id @default(autoincrement())
+  providerId Int
+  userId     Int
+  role       String          @default("RECEPTIONIST") // RECEPTIONIST | HOUSEKEEPING | MAINTENANCE | MANAGER
+  isActive   Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  provider   ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, userId])
   @@index([providerId])
@@ -355,17 +355,17 @@ model HotelStaff {
 }
 
 model HousekeepingTask {
-  id          Int              @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   providerId  Int
   roomId      Int
   assignedTo  Int?
   notes       String?
-  status      String           @default("PENDING") // PENDING | ASSIGNED | IN_PROGRESS | COMPLETED | CANCELLED
+  status      String          @default("PENDING") // PENDING | ASSIGNED | IN_PROGRESS | COMPLETED | CANCELLED
   completedAt DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  room        Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  room        Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@index([roomId])
@@ -374,19 +374,19 @@ model HousekeepingTask {
 }
 
 model HotelMaintenanceRequest {
-  id          Int              @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   providerId  Int
   roomId      Int?
   title       String
   description String?
-  category    String           @default("OTHER")
+  category    String          @default("OTHER")
   assignedTo  String?
-  status      String           @default("REPORTED") // REPORTED | ASSIGNED | IN_PROGRESS | RESOLVED | CANCELLED
+  status      String          @default("REPORTED") // REPORTED | ASSIGNED | IN_PROGRESS | RESOLVED | CANCELLED
   resolvedAt  DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  provider    ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  room        Room?            @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  provider    ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  room        Room?           @relation(fields: [roomId], references: [id], onDelete: SetNull)
 
   @@index([providerId])
   @@index([roomId])
@@ -422,71 +422,71 @@ model Flight {
 }
 
 model Bus {
-  id              Int              @id @default(autoincrement())
-  providerId      Int
+  id                 Int             @id @default(autoincrement())
+  providerId         Int
   registrationNumber String
-  busName         String
-  busType         String
-  totalSeats      Int
-  amenities       String?
-  status          String           @default("ACTIVE")
-  isActive        Boolean          @default(true)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  provider        ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  trips           BusTrip[]
+  busName            String
+  busType            String
+  totalSeats         Int
+  amenities          String?
+  status             String          @default("ACTIVE")
+  isActive           Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  provider           ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  trips              BusTrip[]
 
-  @@index([providerId])
   @@unique([registrationNumber])
+  @@index([providerId])
   @@map("buses")
 }
 
 model BusRoute {
-  id                      Int              @id @default(autoincrement())
-  providerId              Int
-  origin                  String
-  destination             String
-  distanceKm              Float?
+  id                       Int             @id @default(autoincrement())
+  providerId               Int
+  origin                   String
+  destination              String
+  distanceKm               Float?
   estimatedDurationMinutes Int?
-  isActive                Boolean          @default(true)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  provider                ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  trips                   BusTrip[]
+  isActive                 Boolean         @default(true)
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+  provider                 ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  trips                    BusTrip[]
 
-  @@index([providerId])
   @@unique([providerId, origin, destination])
+  @@index([providerId])
   @@map("bus_routes")
 }
 
 model BusTrip {
-  id                      Int              @id @default(autoincrement())
-  busId                   Int
-  routeId                 Int
-  providerId              Int
-  departureDate           DateTime
-  departureTime           String
-  arrivalTime             String
-  departureTimestamp      DateTime
-  arrivalTimestamp        DateTime
-  availableSeats          Int
-  pricePerSeat            Float?
-  bookingCutoffMinutes    Int              @default(30)
-  status                  String           @default("SCHEDULED")
-  isActive                Boolean          @default(true)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  bus                     Bus              @relation(fields: [busId], references: [id], onDelete: Cascade)
-  route                   BusRoute         @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  provider                ServiceProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
-  bookings                Booking[]
+  id                   Int             @id @default(autoincrement())
+  busId                Int
+  routeId              Int
+  providerId           Int
+  departureDate        DateTime
+  departureTime        String
+  arrivalTime          String
+  departureTimestamp   DateTime
+  arrivalTimestamp     DateTime
+  availableSeats       Int
+  pricePerSeat         Float?
+  bookingCutoffMinutes Int             @default(30)
+  status               String          @default("SCHEDULED")
+  isActive             Boolean         @default(true)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  bus                  Bus             @relation(fields: [busId], references: [id], onDelete: Cascade)
+  route                BusRoute        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  provider             ServiceProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  bookings             Booking[]
 
+  @@unique([busId, routeId, departureDate, departureTime])
   @@index([providerId])
   @@index([busId])
   @@index([routeId])
   @@index([departureDate])
   @@index([status])
-  @@unique([busId, routeId, departureDate, departureTime])
   @@map("bus_trips")
 }
 
@@ -645,11 +645,11 @@ model PayoutRequest {
 }
 
 model SystemSetting {
-  id         String   @id @default(uuid())
-  key        String   @unique
-  value      String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([key])
   @@map("system_settings")
@@ -668,182 +668,3 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
-```ts
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
-
-const PASSWORD = 'sharon';
-
-async function hashPassword(password: string) {
-  return bcrypt.hash(password, 10);
-}
-
-async function upsertUser(options: {
-  phone: string;
-  email: string;
-  fullName: string;
-  role: string;
-}) {
-  const passwordHash = await hashPassword(PASSWORD);
-
-  const user = await prisma.user.upsert({
-    where: {
-      phone: options.phone,
-    },
-    update: {
-      email: options.email,
-      fullName: options.fullName,
-      role: options.role,
-      passwordHash,
-      isActive: true,
-    },
-    create: {
-      phone: options.phone,
-      email: options.email,
-      fullName: options.fullName,
-      role: options.role,
-      passwordHash,
-      isActive: true,
-    },
-  });
-
-  return user;
-}
-
-async function main() {
-  console.log('\n========================================');
-  console.log(' ETP DEMO ACCOUNTS SEED');
-  console.log('========================================\n');
-
-  // ---------------------------------------
-  // 1. CUSTOMER
-  // ---------------------------------------
-
-  const customer = await upsertUser({
-    phone: '01700000001',
-    email: 'barisalsharon1@gmail.com',
-    fullName: 'Sharon Customer',
-    role: 'customer',
-  });
-
-  console.log('CUSTOMER CREATED/UPDATED');
-  console.log(`  ID:    ${customer.id}`);
-  console.log(`  Login: ${customer.phone}`);
-  console.log(`  Name:  ${customer.fullName}`);
-  console.log(`  Role:  ${customer.role}`);
-
-  // ---------------------------------------
-  // 2. VENDOR
-  // ---------------------------------------
-
-  const vendor = await upsertUser({
-    phone: '01700000002',
-    email: 'barisalsharon2@gmail.com',
-    fullName: 'Sharon Vendor',
-    role: 'vendor',
-  });
-
-  console.log('\nVENDOR CREATED/UPDATED');
-  console.log(`  ID:    ${vendor.id}`);
-  console.log(`  Login: ${vendor.phone}`);
-  console.log(`  Name:  ${vendor.fullName}`);
-  console.log(`  Role:  ${vendor.role}`);
-
-  // ---------------------------------------
-  // Vendor Service Provider
-  // ---------------------------------------
-
-  const provider = await prisma.serviceProvider.upsert({
-    where: {
-      userId: vendor.id,
-    },
-    update: {
-      businessName: 'Sharon Travel & Transport',
-      category: 'BUS',
-      description: 'ETP Investor Demo Bus Vendor',
-      address: 'Dhaka, Bangladesh',
-      city: 'Dhaka',
-      phone: vendor.phone,
-      status: 'APPROVED',
-      isVerified: true,
-      isActive: true,
-      kycStatus: 'APPROVED',
-      lifecycleStatus: 'ACTIVE',
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-    create: {
-      userId: vendor.id,
-      businessName: 'Sharon Travel & Transport',
-      category: 'BUS',
-      description: 'ETP Investor Demo Bus Vendor',
-      address: 'Dhaka, Bangladesh',
-      city: 'Dhaka',
-      phone: vendor.phone,
-      commissionRate: 10,
-      status: 'APPROVED',
-      isVerified: true,
-      isActive: true,
-      verifiedAt: new Date(),
-      kycStatus: 'APPROVED',
-      lifecycleStatus: 'ACTIVE',
-      isPublished: true,
-      publishedAt: new Date(),
-    },
-  });
-
-  console.log(`  Provider ID: ${provider.id}`);
-  console.log(`  Business:    ${provider.businessName}`);
-
-  // ---------------------------------------
-  // 3. ADMIN
-  // ---------------------------------------
-
-  const admin = await upsertUser({
-    phone: '01700000003',
-    email: 'barisalsharon3@gmail.com',
-    fullName: 'Sharon Admin',
-    role: 'admin',
-  });
-
-  console.log('\nADMIN CREATED/UPDATED');
-  console.log(`  ID:    ${admin.id}`);
-  console.log(`  Login: ${admin.phone}`);
-  console.log(`  Name:  ${admin.fullName}`);
-  console.log(`  Role:  ${admin.role}`);
-
-  // ---------------------------------------
-  // FINAL REPORT
-  // ---------------------------------------
-
-  console.log('\n========================================');
-  console.log(' DEMO ACCOUNTS READY');
-  console.log('========================================');
-
-  console.log('\n1. CUSTOMER');
-  console.log('   Login Phone: 01700000001');
-  console.log('   Password:    sharon');
-
-  console.log('\n2. VENDOR');
-  console.log('   Login Phone: 01700000002');
-  console.log('   Password:    sharon');
-
-  console.log('\n3. ADMIN');
-  console.log('   Login Phone: 01700000003');
-  console.log('   Password:    sharon');
-
-  console.log('\n========================================\n');
-}
-
-main()
-  .catch((error) => {
-    console.error('\nDemo account seed failed:');
-    console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-```
