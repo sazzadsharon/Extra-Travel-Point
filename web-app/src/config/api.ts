@@ -12,8 +12,8 @@ const ENV = {
     API_URL: 'https://etp-backend-staging.onrender.com',
   },
   production: {
-    API_BASE_URL: 'https://etp-backend.onrender.com/api/v1',
-    API_URL: 'https://etp-backend.onrender.com',
+    API_BASE_URL: 'https://extra-travel-point-1.onrender.com/api/v1',
+    API_URL: 'https://extra-travel-point-1.onrender.com',
   },
 };
 
