@@ -49,4 +49,4 @@ export interface AIFactoryOptions {
   config: AIProviderConfig;
 }
 
-export type SupportedProvider = 'omniroute';
+export type SupportedProvider = 'omniroute' | 'gemini';

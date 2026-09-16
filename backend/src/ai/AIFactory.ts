@@ -1,5 +1,6 @@
 import { AIProvider } from './types';
 import { OmniRouteProvider } from './providers/OmniRouteProvider';
+import { GeminiProvider } from './providers/GeminiProvider';
 import { BaseAIProvider } from './BaseAIProvider';
 
 export class AIFactory {
@@ -8,6 +9,7 @@ export class AIFactory {
 
   private constructor() {
     this.registerProvider('omniroute', () => new OmniRouteProvider());
+    this.registerProvider('gemini', () => new GeminiProvider());
   }
 
   public static getInstance(): AIFactory {
@@ -33,6 +35,11 @@ export class AIFactory {
   }
 
   public getDefaultProvider(): AIProvider | null {
+    const configured = (process.env.AI_PROVIDER || 'omniroute').toLowerCase();
+    const provider = this.getProvider(configured);
+    if (provider) {
+      return provider;
+    }
     return this.getProvider('omniroute');
   }
 }

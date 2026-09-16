@@ -17,16 +17,6 @@ const aiRequestSchema = z.object({
 
 router.get('/health', async (req: Request, res: Response) => {
   try {
-    if (!process.env.OMNIROUTE_API_KEY) {
-      return res.status(503).json({
-        success: false,
-        provider: null,
-        model: null,
-        reachable: false,
-        error: 'AI provider is not configured. Please configure OMNIROUTE_API_KEY.'
-      });
-    }
-
     const provider = aiFactory.getDefaultProvider();
     if (!provider) {
       return res.status(503).json({
@@ -39,12 +29,17 @@ router.get('/health', async (req: Request, res: Response) => {
     }
 
     const reachable = await provider.isAvailable();
-    const providerName = provider.name;
-    const modelName = process.env.OMNIROUTE_MODEL || 'auto';
+
+    let modelName: string | null = null;
+    if (provider.name === 'gemini') {
+      modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    } else {
+      modelName = process.env.OMNIROUTE_MODEL || 'auto';
+    }
 
     return res.json({
       success: reachable,
-      provider: providerName,
+      provider: provider.name,
       model: modelName,
       reachable
     });
