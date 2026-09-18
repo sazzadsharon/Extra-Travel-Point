@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '../contexts/AuthContext';
+import { LanguageProvider } from '../i18n/LanguageContext';
+import LangSwitcher from '../i18n/LangSwitcher';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -51,7 +53,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <nav className="flex justify-end p-4">
+              <LangSwitcher />
+            </nav>
+            {children}
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
