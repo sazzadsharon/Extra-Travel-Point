@@ -87,9 +87,13 @@ router.post('/assistant', async (req: Request, res: Response) => {
       A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
       Provide a helpful, concise response in Bengali mixed with English.`;
 
-      const response = await provider.generateText(
-        `${context}\n\nUser query: ${prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`}`
-      );
+      const userPrompt =
+        prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`;
+
+      const response = await provider.chat([
+        { role: 'system', content: context },
+        { role: 'user', content: userPrompt }
+      ]);
       aiMessage = response.content;
     } catch (aiError: any) {
       logError('AI assistant failed to generate a response', aiError, {
