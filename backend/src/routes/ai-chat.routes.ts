@@ -674,9 +674,23 @@ function buildServiceCards(
 
 function parseAIResult(raw: string): AIParsedResult | null {
   try {
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const cleaned = raw.replace(/```/g, '');
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
-    return JSON.parse(jsonMatch[0]) as AIParsedResult;
+    const jsonStr = jsonMatch[0];
+    try {
+      return JSON.parse(jsonStr) as AIParsedResult;
+    } catch {
+      const fixed = jsonStr
+        .replace(/\{([a-zA-Z_$][\w$]*)\s*:/g, '{"$1":')
+        .replace(/,\s*([a-zA-Z_$][\w$]*)\s*:/g, ',"$1":');
+      try {
+        return JSON.parse(fixed) as AIParsedResult;
+      } catch {
+        logError('AI response JSON parse failed', new Error('Malformed AI response'), { rawLength: raw.length });
+        return null;
+      }
+    }
   } catch {
     return null;
   }
