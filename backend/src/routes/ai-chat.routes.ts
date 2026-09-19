@@ -513,6 +513,7 @@ async function fetchLiveData(
           isActive: true,
           status: { in: ['SCHEDULED', 'OPEN'] },
           route: { destination: { contains: destination } },
+          departureDate: { gte: new Date() },
         },
         include: {
           bus: { select: { busName: true, busType: true } },
@@ -572,7 +573,7 @@ async function fetchLiveData(
 
     if (intent === 'flight') {
       const flights = await prisma.flight.findMany({
-        where: { isActive: true, destination: { contains: destination } },
+        where: { isActive: true, destination: { contains: destination }, departureTime: { gte: new Date() } },
         orderBy: { departureTime: 'asc' },
         take: 3,
       });
