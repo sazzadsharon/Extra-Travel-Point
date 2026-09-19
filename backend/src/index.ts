@@ -281,6 +281,17 @@ app.use((req: Request, res: Response) => {
   });
 });
 
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if ((err as any).type === 'entity.parse.failed') {
+    return res.status(400).json({
+      error: 'Invalid JSON request body',
+      requestId: (req as any).requestId || 'unknown',
+    });
+  }
+
+  next(err);
+});
+
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   const requestId = (req as any).requestId || 'unknown';
