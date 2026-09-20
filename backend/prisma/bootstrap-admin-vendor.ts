@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -28,7 +28,7 @@ async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
 }
 
-async function upsertUser(tx: PrismaClient, opts: {
+async function upsertUser(tx: Prisma.TransactionClient, opts: {
   phone: string;
   email: string;
   fullName: string;
