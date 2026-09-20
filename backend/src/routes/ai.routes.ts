@@ -77,33 +77,28 @@ router.post('/assistant', async (req: Request, res: Response) => {
     const provider = aiFactory.getDefaultProvider();
 
     if (!provider) {
-      return res.status(503).json({
-        error: 'AI assistant is temporarily unavailable.'
-      });
-    }
+      aiMessage = `Planning your ${days}-day trip to ${dest}...`;
+    } else {
+      try {
+        const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
+        A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
+        Provide a helpful, concise response in Bengali mixed with English.`;
 
-    try {
-      const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
-      A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
-      Provide a helpful, concise response in Bengali mixed with English.`;
+        const userPrompt =
+          prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`;
 
-      const userPrompt =
-        prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`;
-
-      const response = await provider.chat([
-        { role: 'system', content: context },
-        { role: 'user', content: userPrompt }
-      ]);
-      aiMessage = response.content;
-    } catch (aiError: any) {
-      logError('AI assistant failed to generate a response', aiError, {
-        provider: provider.name,
-        destination: dest
-      });
-      return res.status(503).json({
-        error: 'AI assistant failed to generate a response.',
-        details: process.env.NODE_ENV === 'production' ? undefined : aiError?.message || 'Unknown provider error'
-      });
+        const response = await provider.chat([
+          { role: 'system', content: context },
+          { role: 'user', content: userPrompt }
+        ]);
+        aiMessage = response.content;
+      } catch (aiError: any) {
+        logError('AI assistant failed to generate a response', aiError, {
+          provider: provider.name,
+          destination: dest
+        });
+        aiMessage = `Planning your ${days}-day trip to ${dest}...`;
+      }
     }
 
     return res.json({
