@@ -67,11 +67,72 @@ router.post('/assistant', async (req: Request, res: Response) => {
     const startCity = origin || 'Dhaka';
     const days = durationDays || 3;
 
-    const busFare = Math.floor(budget * 0.20);
-    const hotelCost = Math.floor(budget * 0.36);
+    let suggestedHotelName = 'No hotel currently available';
+    let suggestedHotelPrice = 0;
+    try {
+      const hotel = await prisma.serviceProvider.findFirst({
+        where: {
+          category: 'hotel',
+          city: dest,
+          isVerified: true,
+          isActive: true,
+          status: 'APPROVED',
+          isPublished: true,
+          lifecycleStatus: 'APPROVED'
+        },
+        include: { rooms: true }
+      });
+      if (hotel) {
+        suggestedHotelName = hotel.businessName;
+        if (hotel.rooms && hotel.rooms.length > 0) {
+          const prices = hotel.rooms.map(r => r.price);
+          suggestedHotelPrice = Math.floor(Math.min(...prices));
+        }
+      }
+    } catch {
+      // keep neutral fallback
+    }
+
+    const hotelCost = suggestedHotelPrice * days;
     const foodEstimate = Math.floor(budget * 0.24);
     const localTransport = Math.floor(budget * 0.10);
-    const emergencyFund = budget - (busFare + hotelCost + foodEstimate + localTransport);
+
+    let suggestedBusName = 'No bus currently available';
+    let suggestedBusFare = 0;
+    try {
+      const travelDate = req.body?.date as string | undefined;
+      const bus = await prisma.service.findFirst({
+        where: {
+          category: { in: ['bus', 'bus_ac', 'bus_non_ac'] },
+          isActive: true,
+          provider: { status: 'APPROVED', isActive: true, city: origin },
+          route: { contains: dest },
+          ...(travelDate ? {
+            availabilities: {
+              some: {
+                isActive: true,
+                date: {
+                  gte: new Date(travelDate),
+                  lt: new Date(new Date(travelDate).getTime() + 86400000)
+                }
+              }
+            }
+          } : {})
+        },
+        select: { name: true, price: true }
+      });
+      if (bus) {
+        suggestedBusName = bus.name;
+        suggestedBusFare = bus.price;
+      }
+    } catch {
+      // keep neutral fallback
+    }
+
+    const emergencyFund = Math.max(
+      0,
+      budget - (suggestedBusFare + hotelCost + foodEstimate + localTransport)
+    );
 
     let aiMessage = '';
     const provider = aiFactory.getDefaultProvider();
@@ -109,12 +170,17 @@ router.post('/assistant', async (req: Request, res: Response) => {
       totalBudget: budget,
 
       budgetBreakdown: {
-        busTicket: busFare,
+        busTicket: suggestedBusFare,
         hotelCost: hotelCost,
         foodEstimate: foodEstimate,
         localTransport: localTransport,
         emergencyExtra: emergencyFund,
-        totalCalculated: budget
+        totalCalculated:
+          suggestedBusFare +
+          hotelCost +
+          foodEstimate +
+          localTransport +
+          emergencyFund
       },
 
       dayByDayItinerary: [
@@ -125,8 +191,8 @@ router.post('/assistant', async (req: Request, res: Response) => {
         },
         {
           day: 2,
-          title: 'Sunrise, Gangamati & Local Spots',
-          activities: ['Early Morning Sunrise at Gangamati Spot', 'Visit Jhau Bon & Buddhist Temple', 'Seafood Dinner at Local Spot']
+          title: 'Sunrise, Local Spots & Beach',
+          activities: ['Early Morning Sunrise at Beach Viewpoint', 'Visit Jhau Bon & Buddhist Temple', 'Evening Beach Walk']
         },
         {
           day: 3,
@@ -136,22 +202,22 @@ router.post('/assistant', async (req: Request, res: Response) => {
       ],
 
       weatherForecast: {
-        condition: 'Sunny with pleasant sea breeze',
-        temperatureC: 28,
-        recommendation: 'Perfect weather for beach walk & sunrise view.'
+        condition: 'Weather data unavailable',
+        temperatureC: 0,
+        recommendation: 'No verified weather data available at this time.'
       },
 
       suggestedBooking: {
-        transport: { type: 'Non-AC Deluxe Bus (Sakura Paribahan)', fare: busFare },
-        hotel: { name: 'Kuakata Sea Haven Resort (Standard AC)', pricePerNight: Math.floor(hotelCost / 2) },
-        recommendedAction: 'Book All-in-One ETP Smart Combo Package & Save 15%'
+        transport: { type: suggestedBusName, fare: suggestedBusFare },
+        hotel: { name: suggestedHotelName, pricePerNight: suggestedHotelPrice },
+        recommendedAction: 'Review available ETP options'
       },
 
       alternativePlan: {
         title: 'Super Saver Economy Plan',
-        totalCost: Math.floor(budget * 0.8),
-        savings: Math.floor(budget * 0.2),
-        details: 'Includes Non-AC Bus & Standard Guest House.'
+        totalCost: 0,
+        savings: 0,
+        details: 'Alternative ETP options may be available based on current inventory.'
       },
 
       aiMessage
