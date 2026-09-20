@@ -18,6 +18,7 @@
     "db:seed:accounts": "ts-node prisma/seed-demo-accounts.ts",
     "db:reset-demo": "prisma migrate reset --force --skip-seed && ts-node prisma/seed-demo.ts",
     "db:push": "prisma db push",
+    "bootstrap:admin-vendor": "ts-node prisma/bootstrap-admin-vendor.ts",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand"
