@@ -736,6 +736,7 @@ router.post('/chat', async (req: Request, res: Response) => {
 
     let aiReply = '';
     let aiServices: string[] = [];
+    let aiExtractedInfo: Partial<ExtractedInfo> = {};
 
     try {
       const response = await provider.chat(chatMessages);
@@ -743,13 +744,31 @@ router.post('/chat', async (req: Request, res: Response) => {
       if (parsed && parsed.reply && typeof parsed.reply === 'string') {
         aiReply = parsed.reply;
         aiServices = Array.isArray(parsed.services) ? parsed.services : [];
+        aiExtractedInfo = parsed.extractedInfo || {};
       }
     } catch (aiError: any) {
       logError('AI chat failed', aiError, { provider: provider.name });
     }
 
+    // Prefer an explicit request context, then use the AI-extracted context for this turn.
+    // This keeps conversational destinations available to live-data queries without changing
+    // the existing frontend contract.
+    const resolvedDestination =
+      destination ||
+      (typeof aiExtractedInfo.destination === 'string' ? aiExtractedInfo.destination.trim() : undefined) ||
+      undefined;
+    const resolvedBudget =
+      typeof maxBudget === 'number'
+        ? maxBudget
+        : typeof aiExtractedInfo.budget === 'number'
+          ? aiExtractedInfo.budget
+          : undefined;
+
     const detected = detectServiceIntents(messages);
-    const hasTrip = hasTripInfo(messages, { destination: destination ?? undefined, budget: maxBudget });
+    const hasTrip = hasTripInfo(messages, {
+      destination: resolvedDestination,
+      budget: resolvedBudget,
+    });
 
     // Trust deterministic detection first (local OmniRoute may not emit perfect JSON),
     // fall back to AI-extracted services otherwise.
@@ -780,12 +799,10 @@ router.post('/chat', async (req: Request, res: Response) => {
       if (filtered.length > 0) selected = filtered;
     }
 
-    const dest = destination || (messages.length > 0 ? null : null);
-
     const serviceCards: ServiceRecommendation[] = [];
     for (const intent of selected) {
-      const card = buildServiceCards([intent], undefined)[0];
-      const live = await fetchLiveData(intent, destination);
+      const card = buildServiceCards([intent], resolvedDestination)[0];
+      const live = await fetchLiveData(intent, resolvedDestination);
       card.liveData = live.items;
       card.availabilityNote =
         live.note ||
@@ -795,9 +812,9 @@ router.post('/chat', async (req: Request, res: Response) => {
       serviceCards.push(card);
     }
 
-    const reply = aiReply || fallbackReply(selected, destination, maxBudget);
-    const setDest = destination || undefined;
-    const setBudget = typeof maxBudget === 'number' ? maxBudget : undefined;
+    const reply = aiReply || fallbackReply(selected, resolvedDestination, resolvedBudget);
+    const setDest = resolvedDestination;
+    const setBudget = resolvedBudget;
 
     return res.json({
       reply,
