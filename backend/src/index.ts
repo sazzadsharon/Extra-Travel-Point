@@ -64,6 +64,7 @@ export const QR_SECRET_KEY = requireSecret('QR_SECRET_KEY');
 export const WEBHOOK_SECRET = requireSecret('WEBHOOK_SECRET');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
 // Request correlation ID middleware
