@@ -153,6 +153,18 @@ router.post('/seats/lock', authenticateJWT, async (req: AuthRequest, res) => {
     // Atomic per-seat lock acquisition using a transaction so concurrent
     // requests for the same seat can't both succeed.
     const acquired = await prisma.$transaction(async (tx) => {
+      await tx.seatLock.updateMany({
+        where: {
+          providerId,
+          category,
+          travelDate: travelDateObj,
+          seatNumber: { in: seatNumbers },
+          releasedAt: null,
+          expiresAt: { lte: now }
+        },
+        data: { releasedAt: now }
+      });
+
       const takenByOthersNow = await tx.seatLock.findFirst({
         where: {
           providerId,

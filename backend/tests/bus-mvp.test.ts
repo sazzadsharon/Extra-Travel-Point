@@ -471,4 +471,90 @@ describe('Bus MVP', () => {
     const stolen = await request(app, 'GET', `/api/v1/bookings/${bookingId}`, { token: otherToken });
     expect(stolen.status).toBe(403);
   });
+
+  it('14. An expired unreleased lock does not permanently block the seat for another user', async () => {
+    const { provider, bus, customer, otherCustomer } = await setupBusWorld();
+    const token = signToken({ id: customer.id, phone: customer.phone, role: customer.role });
+    const otherToken = signToken({ id: otherCustomer.id, phone: otherCustomer.phone, role: otherCustomer.role });
+
+    const seatsRes = await request(app, 'GET', `/api/v1/transport/buses/${bus.id}/seats?date=2026-09-15`);
+    const seat = (seatsRes.body.seats as Array<{ seatNumber: string; isAvailable: boolean }>)
+      .filter(s => s.isAvailable)
+      .slice(0, 1)
+      .map(s => s.seatNumber)[0];
+
+    const first = await request(app, 'POST', '/api/v1/bookings/seats/lock', {
+      token,
+      body: { seatNumbers: [seat], providerId: provider.id, category: 'bus', travelDate: '2026-09-15' }
+    });
+    expect(first.status).toBe(200);
+    expect(first.body.lockedSeats).toEqual([seat]);
+
+    const past = new Date(Date.now() - 60 * 1000);
+    await prisma.seatLock.updateMany({
+      where: { userId: customer.id, seatNumber: seat, releasedAt: null },
+      data: { expiresAt: past }
+    });
+
+    const stale = await prisma.seatLock.findFirst({
+      where: { userId: customer.id, seatNumber: seat, releasedAt: null }
+    });
+    expect(stale).not.toBeNull();
+    expect(stale!.releasedAt).toBeNull();
+    expect(stale!.expiresAt.getTime()).toBeLessThan(Date.now());
+
+    const otherVendor = await prisma.user.create({
+      data: { phone: '01911000002', passwordHash: 'hash', role: 'vendor', fullName: 'Vendor Two' }
+    });
+    const otherProvider = await prisma.serviceProvider.create({
+      data: {
+        userId: otherVendor.id,
+        businessName: 'Blue Line',
+        category: 'bus',
+        description: 'AC bus operator',
+        address: 'Dhaka',
+        city: 'Dhaka',
+        phone: '01711000002',
+        status: 'APPROVED',
+        isVerified: true,
+        isActive: true
+      }
+    });
+    const foreignLock = await prisma.seatLock.create({
+      data: {
+        providerId: otherProvider.id,
+        userId: otherCustomer.id,
+        category: 'bus',
+        seatNumber: seat,
+        travelDate: new Date('2026-09-15'),
+        expiresAt: past
+      }
+    });
+
+    const second = await request(app, 'POST', '/api/v1/bookings/seats/lock', {
+      token: otherToken,
+      body: { seatNumbers: [seat], providerId: provider.id, category: 'bus', travelDate: '2026-09-15' }
+    });
+    expect(second.status).toBe(200);
+    expect(second.body.lockedSeats).toEqual([seat]);
+
+    const staleAfter = await prisma.seatLock.findFirst({ where: { id: stale!.id } });
+    expect(staleAfter!.releasedAt).not.toBeNull();
+
+    const activeLocks = await prisma.seatLock.findMany({
+      where: {
+        providerId: provider.id,
+        category: 'bus',
+        travelDate: new Date('2026-09-15'),
+        seatNumber: seat,
+        releasedAt: null
+      }
+    });
+    expect(activeLocks).toHaveLength(1);
+    expect(activeLocks[0].userId).toBe(otherCustomer.id);
+
+    const foreignAfter = await prisma.seatLock.findFirst({ where: { id: foreignLock.id } });
+    expect(foreignAfter!.releasedAt).toBeNull();
+    expect(foreignAfter!.providerId).toBe(otherProvider.id);
+  });
 });
