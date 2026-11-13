@@ -698,17 +698,30 @@ function parseAIResult(raw: string): AIParsedResult | null {
   }
 }
 
-function fallbackReply(intents: ServiceIntent[], destination?: string | null, budget?: number | null): string {
+function fallbackReply(
+  intents: ServiceIntent[],
+  destination?: string | null,
+  budget?: number | null,
+  locale: 'en' | 'bn' = 'en'
+): string {
+  const isBangla = locale === 'bn';
   const parts: string[] = [];
   if (destination) parts.push(destination);
-  if (typeof budget === 'number') parts.push(`৳${budget.toLocaleString('en-BD')} বাজেট`);
+  if (typeof budget === 'number') {
+    const formatted = new Intl.NumberFormat(isBangla ? 'bn-BD' : 'en-BD').format(budget);
+    parts.push(isBangla ? `৳${formatted} বাজেট` : `budget ৳${formatted}`);
+  }
   const context = parts.length > 0 ? ` (${parts.join(', ')})` : '';
 
   if (intents.length === 0) {
-    return 'আপনার জন্য কোন সেবা নিশ্চিত করতে আরও তথ্য দরকার। কোথায় যেতে চান, কত দিন এবং কত বাজেট — বলুন!';
+    return isBangla
+      ? 'আপনার জন্য ঠিক কোন সেবাটি দরকার, তা বুঝতে আরও একটু তথ্য চাই। কোথায় যাবেন, কত দিন থাকবেন আর বাজেট কত—জানাবেন?'
+      : 'I need a little more information to find the right options. Where are you going, for how long, and what is your budget?';
   }
-  const names = intents.map((i) => INTENT_META[i].labelBn);
-  return `আপনার প্রয়োজনে ${names.join(', ')} খুঁজে দেওয়ার চেষ্টা করছি${context}। লাইভ availability ও চূড়ান্ত price বুকিংয়ের সময় confirm করা যাবে।`;
+  const names = intents.map((i) => isBangla ? INTENT_META[i].labelBn : INTENT_META[i].label);
+  return isBangla
+    ? `${names.join(', ')} খুঁজে দেখছি${context}। বুকিংয়ের আগে ভাড়া ও আসন খালি আছে কি না, তা যাচাই করে নেবেন।`
+    : `I’m checking ${names.join(', ')} options${context}. Please confirm the final price and availability before booking.`;
 }
 
 router.post('/chat', async (req: Request, res: Response) => {
@@ -791,7 +804,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       card.availabilityNote =
         live.note ||
         (live.items.length === 0
-          ? 'লাইভ availability/price এখন confirm করা যাচ্ছে না — বুকিংয়ের সময় যাচাই করুন।'
+          ? (locale === 'bn' ? 'এখনই ভাড়া ও খালি আছে কি না নিশ্চিত করা যাচ্ছে না। বুকিংয়ের আগে যাচাই করে নিন।' : 'Live price and availability are not confirmed yet. Please check before booking.')
           : undefined);
       serviceCards.push(card);
     }
