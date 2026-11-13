@@ -15,39 +15,36 @@ export default function LangSwitcher({
 }: LangSwitcherProps) {
   const { locale, setLocale, t } = useTranslation();
 
-  const toggleLanguage = () => {
-    const next = locale === 'en' ? 'bn' : 'en';
-    setLocale(next);
-  };
-
-  if (variant === 'compact') {
-    return (
-      <button
-        type="button"
-        onClick={toggleLanguage}
-        aria-label={t('language.switchLanguage')}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-ink-600 bg-ink-50 rounded-lg hover:bg-ink-100 hover:text-ink-800 transition-colors"
-      >
-        {showIcon && <Languages className="w-3.5 h-3.5" />}
-        <span>{LANGUAGE_CONFIG[locale].name}</span>
-      </button>
-    );
-  }
+  const isCompact = variant === 'compact';
 
   return (
-    <div className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-600">
-      {showIcon && <Languages className="w-3.5 h-3.5" />}
+    <label
+      className={
+        isCompact
+          ? 'inline-flex items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-2.5 py-1.5 text-xs font-medium text-ink-700 shadow-sm transition-colors hover:bg-ink-50'
+          : 'inline-flex items-center gap-1.5 text-xs font-medium text-ink-600'
+      }
+    >
+      {showIcon && <Languages aria-hidden="true" className="h-4 w-4 shrink-0" />}
+      <span className={isCompact ? 'sr-only' : 'whitespace-nowrap'}>
+        {t('language.selectLanguage')}
+      </span>
       <select
         value={locale}
-        onChange={(e) => setLocale(e.target.value as typeof locale)}
-        className="border-0 bg-transparent text-ink-700 focus:outline-none focus:ring-2 focus:ring-etp-400 rounded px-2 py-1"
+        aria-label={t('language.selectLanguage')}
+        onChange={(event) => setLocale(event.target.value as typeof locale)}
+        className={
+          isCompact
+            ? 'max-w-[7.5rem] cursor-pointer border-0 bg-transparent py-0 pl-0 pr-5 text-xs font-semibold text-ink-800 outline-none focus:ring-2 focus:ring-etp-400'
+            : 'rounded px-2 py-1 text-ink-700 outline-none focus:ring-2 focus:ring-etp-400'
+        }
       >
-        {SUPPORTED_LOCALES.map((loc) => (
-          <option key={loc} value={loc}>
-            {LANGUAGE_CONFIG[loc].name}
+        {SUPPORTED_LOCALES.map((code) => (
+          <option key={code} value={code}>
+            {LANGUAGE_CONFIG[code].nativeName}
           </option>
         ))}
       </select>
-    </div>
+    </label>
   );
 }
