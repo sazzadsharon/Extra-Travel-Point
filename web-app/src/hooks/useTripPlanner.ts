@@ -9,6 +9,7 @@ export interface TripPlanRequest {
   destination?: string;
   durationDays?: number;
   maxBudget?: number;
+  locale?: 'en' | 'bn';
 }
 
 export interface BudgetBreakdown {
