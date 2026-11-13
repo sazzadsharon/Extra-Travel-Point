@@ -824,7 +824,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logError('Chat endpoint error', error);
-    return res.status(500).json({ error: locale === 'bn' ? 'একটি সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।' : (error.message || 'Internal server error') });
+    return res.status(500).json({ error: req.body?.locale === 'bn' ? 'একটি সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।' : (error.message || 'Internal server error') });
   }
 });
 
