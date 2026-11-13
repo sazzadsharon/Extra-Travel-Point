@@ -8,7 +8,7 @@ import {
   useState,
   ReactNode,
 } from 'react';
-import { type LocaleCode, DEFAULT_LOCALE } from './config';
+import { type LocaleCode, DEFAULT_LOCALE, LANGUAGE_CONFIG } from './config';
 import { langStorage } from './langStorage';
 import { t } from './i18n';
 
@@ -24,9 +24,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<LocaleCode>(DEFAULT_LOCALE);
 
   useEffect(() => {
-    const stored = langStorage.getLanguage();
-    setLocaleState(stored);
+    setLocaleState(langStorage.getLanguage());
   }, []);
+
+  useEffect(() => {
+    const language = LANGUAGE_CONFIG[locale];
+    document.documentElement.lang = language.code;
+    document.documentElement.dir = language.dir;
+  }, [locale]);
 
   const setLocale = useCallback((next: LocaleCode) => {
     langStorage.setLanguage(next);
