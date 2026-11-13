@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "এক্সট্রা ট্রাভেল পয়েন্ট",
+    "name": "Extra Travel Point",
     "tagline": "ভ্রমণের সবকিছু, এক জায়গায়",
-    "title": "এক্সট্রা ট্রাভেল পয়েন্ট — বাংলাদেশ ভ্রমণ সুপার অ্যাপ",
+    "title": "Extra Travel Point — বাংলাদেশের ভ্রমণ অ্যাপ",
     "description": "বাংলাদেশের বিভিন্ন গন্তব্যে বাস ও হোটেল খুঁজুন, সহজে বুকিং করুন। ইটিপি পয়েন্ট ও তাৎক্ষণিক কিউআর টিকিট নিয়ে নিশ্চিন্তে ভ্রমণ করুন।"
   },
   "nav": {
@@ -28,10 +28,10 @@
     "signIn": "সাইন ইন",
     "signUp": "সাইন আপ",
     "signOut": "সাইন আউট",
-    "loginTitle": "এইচটিপিতে লগইন করুন",
-    "loginDesc": "আপনার বুকিংগুলো দেখুন এবং ভ্রমণ ব্যবস্থাপনা করুন",
-    "registerTitle": "আপনার এইচটিপি অ্যাকাউন্ট তৈরি করুন",
-    "registerDesc": "মিনিটের মধ্যে আপনার ভ্রমণ বুক করুন",
+    "loginTitle": "ETP-তে লগইন করুন",
+    "loginDesc": "আপনার বুকিং দেখুন এবং ভ্রমণের তথ্য গুছিয়ে রাখুন",
+    "registerTitle": "আপনার ETP অ্যাকাউন্ট খুলুন",
+    "registerDesc": "কয়েক মিনিটেই আপনার অ্যাকাউন্ট খুলে ভ্রমণ বুক করতে পারবেন",
     "phone": "ফোন নম্বর",
     "password": "পাসওয়ার্ড",
     "fullName": "পূর্ণ নাম",
@@ -47,7 +47,7 @@
     "phonePlaceholder": "০১XXXXXXXXX",
     "passwordPlaceholder": "আপনার পাসওয়ার্ড লিখুন",
     "namePlaceholder": "আপনার পূর্ণ নাম",
-    "emailPlaceholder": "আপনার@ইমেল.কম",
+    "emailPlaceholder": "name@example.com",
     "passwordHint": "কমপক্ষে ৬ অক্ষর"
   },
   "account": {
@@ -66,13 +66,13 @@
     "account": "অ্যাকাউন্ট",
     "company": "কোম্পানি",
     "trust": "আস্থা ও নিরাপত্তা",
-    "aboutETP": "এটিপি সম্পর্কে",
+    "aboutETP": "ETP সম্পর্কে",
     "business": "ব্যবসা",
     "investorRelations": "বিনিয়োগকারী সম্পর্ক",
     "careers": "ক্যারিয়ার",
     "press": "প্রেস",
     "securePayments": "নিরাপদ পেমেন্ট",
-    "verifiedPartners": "যাচাইকৃত অংশীদার",
+    "verifiedPartners": "যাচাই করা পার্টনার",
     "bangladeshCoverage": "বাংলাদেশজুড়ে সেবা",
     "weAccept": "আমরা গ্রহণ করি",
     "privacy": "গোপনীয়তা",
@@ -97,10 +97,10 @@
     "yourJourney": "আপনার ভ্রমণ।",
     "oneETP": "একটি ইটিপি।",
     "heroDesc": "ভ্রমণের পরিকল্পনা, বুকিং এবং নতুন জায়গা ঘুরে দেখা—সবকিছু এক জায়গায়। পছন্দের বাস ও হোটেল বেছে নিন, কিউআর টিকিট নিন, আর প্রতিটি ভ্রমণে পয়েন্ট অর্জন করুন।",
-    "exploreBuses": "বাস অন্বেষণ করুন",
+    "exploreBuses": "বাস খুঁজুন",
     "planWithAI": "এআই সাহায্যে পরিকল্পনা",
     "stats": {
-      "busPartners": "বাস অংশীদার",
+      "busPartners": "বাস অপারেটর",
       "happyTravellers": "সন্তুষ্ট ভ্রমণকারী",
       "averageRating": "গড় রেটিং"
     }
@@ -179,7 +179,7 @@
     "totalSeats": "মোট আসন",
     "available": "পাওয়া যায়",
     "operator": "অপারেটর",
-    "verified": "যাচাইকৃত",
+    "verified": "যাচাই করা",
     "viewDetails": "বিস্তারিত দেখুন"
   },
   "ai": {
@@ -215,7 +215,7 @@
     "notesPlaceholder": "যেমন: কম খরচে সমুদ্র দেখতে চাই...",
     "planMyTrip": "ভ্রমণের পরিকল্পনা তৈরি করুন",
     "planning": "আপনার ভ্রমণের পরিকল্পনা তৈরি হচ্ছে...",
-    "unexpectedError": "একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। আবার চেষ্টা করুন।",
+    "unexpectedError": "একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।",
     "aiRecommendation": "আপনার জন্য পরামর্শ",
     "budgetBreakdown": "খরচের হিসাব",
     "busTicket": "বাস টিকিট",
@@ -519,7 +519,7 @@
     "selectMethod": "পেমেন্টের একটি মাধ্যম বেছে নিন",
     "missingBookingId": "বুকিং নম্বর পাওয়া যায়নি",
     "pay": "{amount} টাকা পরিশোধ করুন",
-    "processing": "প্রক্রিয়া চলছে...",
+    "processing": "কাজ চলছে...",
     "verifyPayment": "পেমেন্ট যাচাই করুন",
     "verifying": "পেমেন্ট যাচাই করা হচ্ছে...",
     "paymentVerified": "পেমেন্ট সফলভাবে যাচাই হয়েছে!",
