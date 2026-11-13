@@ -14,11 +14,17 @@ const cities = [
 
 export default function PlanTripPage() {
   const { t, locale } = useTranslation();
+  const cityNames: Record<string, string> = {
+    Dhaka: 'ঢাকা', Chittagong: 'চট্টগ্রাম', "Cox's Bazar": 'কক্সবাজার', Sylhet: 'সিলেট',
+    Khulna: 'খুলনা', Rajshahi: 'রাজশাহী', Barisal: 'বরিশাল', Kuakata: 'কুয়াকাটা',
+    Sundarbans: 'সুন্দরবন', Srimangal: 'শ্রীমঙ্গল', 'Saint Martin': 'সেন্ট মার্টিন', Bandarban: 'বান্দরবান',
+  };
+  const cityLabel = (city: string) => locale === 'bn' ? (cityNames[city] || city) : city;
   const [origin, setOrigin] = useState('Dhaka');
   const [destination, setDestination] = useState('');
   const [durationDays, setDurationDays] = useState(3);
   const [maxBudget, setMaxBudget] = useState(5000);
-  const [travelers, set{t('planTrip.travelers')}] = useState(1);
+  const [travelers, setTravelers] = useState(1);
   const { plan, isLoading, error, generatePlan } = useTripPlanner();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -69,7 +75,7 @@ export default function PlanTripPage() {
                   >
                     <option value="">{locale === 'bn' ? 'শহর বেছে নিন' : 'Select origin city'}</option>
                     {cities.map((city) => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city}>{cityLabel(city)}</option>
                     ))}
                   </select>
                 </div>
@@ -87,7 +93,7 @@ export default function PlanTripPage() {
                   >
                     <option value="">{locale === 'bn' ? 'গন্তব্য বেছে নিন' : 'Select destination'}</option>
                     {cities.filter(c => c !== origin).map((city) => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city}>{cityLabel(city)}</option>
                     ))}
                   </select>
                 </div>
@@ -128,7 +134,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Users className="inline w-4 h-4 mr-1" />
-                    Travelers
+                    {t('planTrip.travelers')}
                   </label>
                   <input
                     type="number"
@@ -316,14 +322,14 @@ export default function PlanTripPage() {
                   className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   <Bus className="w-4 h-4" />
-                  Book Transport
+                  {t('planTrip.bookTransport')}
                 </a>
                 <a
                   href="/destinations"
                   className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   <MapPin className="w-4 h-4" />
-                  Explore Destinations
+                  {t('planTrip.exploreDestinations')}
                 </a>
               </div>
             </div>
