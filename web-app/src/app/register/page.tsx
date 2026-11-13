@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
+import LangSwitcher from '../../i18n/components/LangSwitcher';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -37,7 +38,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="absolute top-4 right-4"><LangSwitcher /></div>
       <div className="max-w-md w-full space-y-8 p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
