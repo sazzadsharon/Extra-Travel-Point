@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 import LangSwitcher from '../../i18n/components/LangSwitcher';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 export default function RegisterPage() {
   const { register } = useAuth();
+  const { locale } = useTranslation();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -43,17 +45,17 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8 p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Create Your ETP Account
+            {locale === 'bn' ? 'ETP অ্যাকাউন্ট খুলুন' : 'Create Your ETP Account'}
           </h1>
           <p className="text-gray-600">
-            Start booking your travel in minutes
+            {locale === 'bn' ? 'কয়েক মিনিটেই অ্যাকাউন্ট খুলে ভ্রমণ বুক করতে পারবেন' : 'Start booking your travel in minutes'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number *
+              {locale === 'bn' ? 'মোবাইল নম্বর *' : 'Phone Number *'}
             </label>
             <input
               type="tel"
@@ -70,13 +72,13 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
+              {locale === 'bn' ? 'আপনার নাম' : 'Full Name'}
             </label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
+              placeholder={locale === 'bn' ? 'আপনার পুরো নাম লিখুন' : 'Your full name'}
               className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 loading ? 'opacity-80' : ''
               }`}
@@ -86,7 +88,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {locale === 'bn' ? 'ইমেইল' : 'Email'}
             </label>
             <input
               type="email"
@@ -102,13 +104,13 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password *
+              {locale === 'bn' ? 'পাসওয়ার্ড *' : 'Password *'}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder={locale === 'bn' ? 'কমপক্ষে ৬ অক্ষর দিন' : 'At least 6 characters'}
               minLength={6}
               className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 loading ? 'opacity-80' : ''
@@ -126,11 +128,11 @@ export default function RegisterPage() {
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Creating Account...
+                {locale === 'bn' ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'Creating Account...'}
               </>
             ) : (
               <>
-                Create Account
+                {locale === 'bn' ? 'অ্যাকাউন্ট খুলুন' : 'Create Account'}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -152,7 +154,7 @@ export default function RegisterPage() {
         )}
 
         <div className="text-center text-sm text-gray-500">
-          Already have an account?{' '}
+          {locale === 'bn' ? 'আগে থেকেই অ্যাকাউন্ট আছে?' : 'Already have an account?'}{' '}
           <Link
             href="/login"
             className="text-blue-600 hover:text-blue-800 font-medium"
