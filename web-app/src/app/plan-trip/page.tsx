@@ -303,8 +303,8 @@ export default function PlanTripPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{plan.alternativePlan.title}</h2>
                 <p className="text-sm text-gray-600 mb-3">{plan.alternativePlan.details}</p>
                 <div className="flex items-center gap-4">
-                  <span className="text-lg font-bold text-amber-700">BDT {plan.alternativePlan.totalCost.toLocaleString()}</span>
-                  <span className="text-sm text-green-600 font-medium">Save BDT {plan.alternativePlan.savings.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-amber-700">{formatCurrency(plan.alternativePlan.totalCost, locale)}</span>
+                  <span className="text-sm text-green-600 font-medium">{locale === 'bn' ? `${formatCurrency(plan.alternativePlan.savings, locale)} সাশ্রয়` : `Save ${formatCurrency(plan.alternativePlan.savings, locale)}`}</span>
                 </div>
               </div>
 
