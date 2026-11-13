@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Phone, Loader2, AlertCircle } from 'lucide-react';
 import { api, ApiError } from '../../lib/api';
+import { useAdminLanguage } from '../../i18n/LanguageProvider';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useAdminLanguage();
   const [phone, setPhone] = useState('01712345678');
   const [password, setPassword] = useState('admin123');
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function LoginPage() {
         }
       );
       if (res.user?.role !== 'admin') {
-        throw new Error('Admin credentials required');
+        throw new Error(t('adminCredentialsRequired'));
       }
       window.localStorage.setItem('etp_admin_token', res.tokens.accessToken);
       window.localStorage.setItem('etp_admin_user', JSON.stringify(res.user));
@@ -46,13 +48,13 @@ export default function LoginPage() {
           <div className="inline-flex w-14 h-14 bg-sky-600 text-white rounded-xl items-center justify-center mb-3">
             <Lock size={24} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">ETP Admin Panel</h1>
-          <p className="text-sm text-slate-500">Extra Travel Point Control Center</p>
+          <h1 className="text-2xl font-bold text-slate-800">{t('panelTitle')}</h1>
+          <p className="text-sm text-slate-500">{t('controlCenter')}</p>
         </div>
 
         <form onSubmit={submit} className="space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Phone</span>
+            <span className="text-sm font-medium text-slate-700">{t('phone')}</span>
             <div className="mt-1 relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -67,7 +69,7 @@ export default function LoginPage() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Password</span>
+            <span className="text-sm font-medium text-slate-700">{t('password')}</span>
             <div className="mt-1 relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -94,12 +96,12 @@ export default function LoginPage() {
             className="w-full bg-sky-600 hover:bg-sky-700 disabled:bg-slate-400 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('signingIn') : t('signIn')}
           </button>
         </form>
 
         <p className="mt-6 text-xs text-center text-slate-500">
-          Demo Admin: <code className="bg-slate-100 px-1 rounded">01712345678 / admin123</code>
+          {t('demoAdmin')}: <code className="bg-slate-100 px-1 rounded">01712345678 / admin123</code>
         </p>
       </div>
     </div>

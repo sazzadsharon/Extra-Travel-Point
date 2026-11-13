@@ -12,7 +12,8 @@ const aiRequestSchema = z.object({
   maxBudget: z.number().min(100).max(500000).optional(),
   origin: z.string().max(100).optional(),
   destination: z.string().max(100).optional(),
-  durationDays: z.number().min(1).max(30).optional()
+  durationDays: z.number().min(1).max(30).optional(),
+  locale: z.enum(['en', 'bn']).optional()
 });
 
 router.get('/health', async (req: Request, res: Response) => {
@@ -60,7 +61,7 @@ router.post('/assistant', async (req: Request, res: Response) => {
       return res.status(400).json({ error: parse.error.issues });
     }
 
-    const { prompt, maxBudget, origin, destination, durationDays } = parse.data;
+    const { prompt, maxBudget, origin, destination, durationDays, locale = 'en' } = parse.data;
 
     const budget = Math.max(1000, Number(maxBudget) || 5000);
     const dest = destination || 'Kuakata';
@@ -138,15 +139,15 @@ router.post('/assistant', async (req: Request, res: Response) => {
     const provider = aiFactory.getDefaultProvider();
 
     if (!provider) {
-      aiMessage = `Planning your ${days}-day trip to ${dest}...`;
+      aiMessage = locale === 'bn' ? `${dest} ভ্রমণের ${days} দিনের পরিকল্পনা তৈরি করা হচ্ছে...` : `Planning your ${days}-day trip to ${dest}...`;
     } else {
       try {
         const context = `You are a travel assistant for Extra Travel Point, a Bangladesh travel super app.
         A user wants to plan a trip from ${startCity} to ${dest} for ${days} days with a budget of BDT ${budget}.
-        Provide a helpful, concise response in Bengali mixed with English.`;
+        Respond in ${locale === 'bn' ? 'natural, simple Bangladesh-friendly Bangla. Do not translate word-for-word from English; use short, clear sentences.' : 'clear, natural English'}. Keep names, prices and verified availability accurate. Do not invent ETP services or prices.`;
 
         const userPrompt =
-          prompt || `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`;
+          prompt || (locale === 'bn' ? `${startCity} থেকে ${dest} যেতে ${days} দিনের ভ্রমণ পরিকল্পনা তৈরি করুন। বাজেট ${budget} টাকা।` : `Plan a ${days}-day trip from ${startCity} to ${dest} within BDT ${budget}`);
 
         const response = await provider.chat([
           { role: 'system', content: context },
@@ -158,7 +159,7 @@ router.post('/assistant', async (req: Request, res: Response) => {
           provider: provider.name,
           destination: dest
         });
-        aiMessage = `Planning your ${days}-day trip to ${dest}...`;
+        aiMessage = locale === 'bn' ? `${dest} ভ্রমণের ${days} দিনের পরিকল্পনা তৈরি করা হচ্ছে...` : `Planning your ${days}-day trip to ${dest}...`;
       }
     }
 
@@ -186,38 +187,38 @@ router.post('/assistant', async (req: Request, res: Response) => {
       dayByDayItinerary: [
         {
           day: 1,
-          title: `Arrival & ${dest} Beach Sunset View`,
-          activities: [`Night Bus from ${startCity} to ${dest}`, 'Hotel Check-in & Breakfast', 'Relaxation at Main Beach & Sunset view']
+          title: locale === 'bn' ? `${dest} পৌঁছানো ও সমুদ্রসৈকতে সূর্যাস্ত দেখা` : `Arrival & ${dest} Beach Sunset View`,
+          activities: locale === 'bn' ? [`${startCity} থেকে ${dest} যাওয়ার বাসযাত্রা`, 'হোটেলে ওঠা ও নাশতা', 'মূল সমুদ্রসৈকতে সময় কাটানো ও সূর্যাস্ত দেখা'] : [`Night Bus from ${startCity} to ${dest}`, 'Hotel Check-in & Breakfast', 'Relaxation at Main Beach & Sunset view']
         },
         {
           day: 2,
-          title: 'Sunrise, Local Spots & Beach',
-          activities: ['Early Morning Sunrise at Beach Viewpoint', 'Visit Jhau Bon & Buddhist Temple', 'Evening Beach Walk']
+          title: locale === 'bn' ? 'সূর্যোদয়, স্থানীয় দর্শনীয় স্থান ও সমুদ্রসৈকত' : 'Sunrise, Local Spots & Beach',
+          activities: locale === 'bn' ? ['সকালে সমুদ্রসৈকতে সূর্যোদয় দেখা', 'ঝাউবন ও বৌদ্ধমন্দির ঘুরে দেখা', 'বিকেলে সমুদ্রসৈকতে হাঁটা'] : ['Early Morning Sunrise at Beach Viewpoint', 'Visit Jhau Bon & Buddhist Temple', 'Evening Beach Walk']
         },
         {
           day: 3,
-          title: 'Souvenir Shopping & Return Journey',
-          activities: ['Morning Beach Walk', 'Souvenir & Local Craft Shopping', 'Return Bus Journey to Dhaka']
+          title: locale === 'bn' ? 'কেনাকাটা ও ফেরার যাত্রা' : 'Souvenir Shopping & Return Journey',
+          activities: locale === 'bn' ? ['সকালে সমুদ্রসৈকতে হাঁটা', 'স্মারক ও স্থানীয় পণ্য কেনাকাটা', `${dest} থেকে ফেরার বাসযাত্রা`] : ['Morning Beach Walk', 'Souvenir & Local Craft Shopping', 'Return Bus Journey to Dhaka']
         }
       ],
 
       weatherForecast: {
-        condition: 'Weather data unavailable',
+        condition: locale === 'bn' ? 'আবহাওয়ার তথ্য পাওয়া যায়নি' : 'Weather data unavailable',
         temperatureC: 0,
-        recommendation: 'No verified weather data available at this time.'
+        recommendation: locale === 'bn' ? 'এই মুহূর্তে যাচাই করা আবহাওয়ার তথ্য পাওয়া যাচ্ছে না।' : 'No verified weather data available at this time.'
       },
 
       suggestedBooking: {
         transport: { type: suggestedBusName, fare: suggestedBusFare },
         hotel: { name: suggestedHotelName, pricePerNight: suggestedHotelPrice },
-        recommendedAction: 'Review available ETP options'
+        recommendedAction: locale === 'bn' ? 'ETP-তে পাওয়া যাচ্ছে এমন সেবাগুলো দেখে নিন' : 'Review available ETP options'
       },
 
       alternativePlan: {
-        title: 'Super Saver Economy Plan',
+        title: locale === 'bn' ? 'কম খরচের বিকল্প পরিকল্পনা' : 'Super Saver Economy Plan',
         totalCost: 0,
         savings: 0,
-        details: 'Alternative ETP options may be available based on current inventory.'
+        details: locale === 'bn' ? 'বর্তমানে ETP-তে কী কী সেবা পাওয়া যাচ্ছে, তার ওপর ভিত্তি করে বিকল্প থাকতে পারে।' : 'Alternative ETP options may be available based on current inventory.'
       },
 
       aiMessage

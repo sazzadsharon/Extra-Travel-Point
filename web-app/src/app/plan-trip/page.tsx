@@ -5,12 +5,21 @@ import { MapPin, Calendar, Wallet, Users, Sparkles, ChevronRight, Bus, Hotel, Ut
 import Navbar from '../../components/layout/navbar';
 import Footer from '../../components/layout/footer';
 import { useTripPlanner } from '../../hooks/useTripPlanner';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
+import { formatCurrency, formatNumber } from '../../i18n/utils/formatter';
 
 const cities = [
   'Dhaka', 'Chittagong', 'Cox\'s Bazar', 'Sylhet', 'Khulna', 'Rajshahi', 'Barisal', 'Kuakata', 'Sundarbans', 'Srimangal', 'Saint Martin', 'Bandarban'
 ];
 
 export default function PlanTripPage() {
+  const { t, locale } = useTranslation();
+  const cityNames: Record<string, string> = {
+    Dhaka: 'ঢাকা', Chittagong: 'চট্টগ্রাম', "Cox's Bazar": 'কক্সবাজার', Sylhet: 'সিলেট',
+    Khulna: 'খুলনা', Rajshahi: 'রাজশাহী', Barisal: 'বরিশাল', Kuakata: 'কুয়াকাটা',
+    Sundarbans: 'সুন্দরবন', Srimangal: 'শ্রীমঙ্গল', 'Saint Martin': 'সেন্ট মার্টিন', Bandarban: 'বান্দরবান',
+  };
+  const cityLabel = (city: string) => locale === 'bn' ? (cityNames[city] || city) : city;
   const [origin, setOrigin] = useState('Dhaka');
   const [destination, setDestination] = useState('');
   const [durationDays, setDurationDays] = useState(3);
@@ -26,9 +35,12 @@ export default function PlanTripPage() {
       destination,
       durationDays,
       maxBudget,
-      prompt: `Plan a ${durationDays}-day trip from ${origin} to ${destination} for ${travelers} traveler(s) within BDT ${maxBudget}`,
+      locale,
+      prompt: locale === 'bn'
+        ? `${origin} থেকে ${destination} যেতে ${travelers} জনের জন্য ${durationDays} দিনের ভ্রমণ পরিকল্পনা তৈরি করুন। বাজেট ${maxBudget} টাকা। সহজ, স্বাভাবিক বাংলায় উত্তর দিন।`
+        : `Plan a ${durationDays}-day trip from ${origin} to ${destination} for ${travelers} traveler(s) within BDT ${maxBudget}.`,
     });
-  }, [origin, destination, durationDays, maxBudget, travelers, generatePlan]);
+  }, [origin, destination, durationDays, maxBudget, travelers, locale, generatePlan]);
 
   return (
     <>
@@ -38,9 +50,9 @@ export default function PlanTripPage() {
         <section className="relative bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-16">
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Plan Your Trip</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">{t('planTrip.pageTitle')}</h1>
             <p className="text-xl text-indigo-100 max-w-2xl mx-auto">
-              Get a personalized AI-powered itinerary with budget breakdown
+              {t('planTrip.pageDesc')}
             </p>
           </div>
         </section>
@@ -53,7 +65,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <MapPin className="inline w-4 h-4 mr-1" />
-                    From (Origin)
+                    {t('planTrip.origin')}
                   </label>
                   <select
                     value={origin}
@@ -61,9 +73,9 @@ export default function PlanTripPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     required
                   >
-                    <option value="">Select origin city</option>
+                    <option value="">{locale === 'bn' ? 'শহর বেছে নিন' : 'Select origin city'}</option>
                     {cities.map((city) => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city}>{cityLabel(city)}</option>
                     ))}
                   </select>
                 </div>
@@ -71,7 +83,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <MapPin className="inline w-4 h-4 mr-1" />
-                    To (Destination)
+                    {t('planTrip.destination')}
                   </label>
                   <select
                     value={destination}
@@ -79,9 +91,9 @@ export default function PlanTripPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     required
                   >
-                    <option value="">Select destination</option>
+                    <option value="">{locale === 'bn' ? 'গন্তব্য বেছে নিন' : 'Select destination'}</option>
                     {cities.filter(c => c !== origin).map((city) => (
-                      <option key={city} value={city}>{city}</option>
+                      <option key={city} value={city}>{cityLabel(city)}</option>
                     ))}
                   </select>
                 </div>
@@ -89,7 +101,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Calendar className="inline w-4 h-4 mr-1" />
-                    Duration (Days)
+                    {t('planTrip.duration')}
                   </label>
                   <input
                     type="number"
@@ -105,7 +117,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Wallet className="inline w-4 h-4 mr-1" />
-                    Budget (BDT)
+                    {t('planTrip.budget')}
                   </label>
                   <input
                     type="number"
@@ -122,7 +134,7 @@ export default function PlanTripPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Users className="inline w-4 h-4 mr-1" />
-                    Travelers
+                    {t('planTrip.travelers')}
                   </label>
                   <input
                     type="number"
@@ -144,12 +156,12 @@ export default function PlanTripPage() {
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Generating Plan...
+                    {t('planTrip.generating')}
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    Generate Trip Plan
+                    {t('planTrip.generatePlan')}
                   </>
                 )}
               </button>
@@ -179,26 +191,26 @@ export default function PlanTripPage() {
 
               {/* Trip Summary */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Trip Summary</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('planTrip.tripSummary')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <MapPin className="w-5 h-5 text-indigo-600 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">Route</p>
+                    <p className="text-xs text-gray-500">{t('planTrip.route')}</p>
                     <p className="text-sm font-medium">{plan.origin} → {plan.destination}</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Calendar className="w-5 h-5 text-indigo-600 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">Duration</p>
-                    <p className="text-sm font-medium">{plan.durationDays} Days</p>
+                    <p className="text-xs text-gray-500">{t('planTrip.duration')}</p>
+                    <p className="text-sm font-medium">{formatNumber(plan.durationDays, locale)} {t('planTrip.days')}</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Wallet className="w-5 h-5 text-indigo-600 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">Budget</p>
-                    <p className="text-sm font-medium">BDT {plan.totalBudget.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">{t('planTrip.budgetLabel')}</p>
+                    <p className="text-sm font-medium">{formatCurrency(plan.totalBudget, locale)}</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <Users className="w-5 h-5 text-indigo-600 mx-auto mb-1" />
-                    <p className="text-xs text-gray-500">Travelers</p>
+                    <p className="text-xs text-gray-500">{t('planTrip.travelers')}</p>
                     <p className="text-sm font-medium">{travelers}</p>
                   </div>
                 </div>
@@ -206,41 +218,41 @@ export default function PlanTripPage() {
 
               {/* Budget Breakdown */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Budget Breakdown</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">{t('planTrip.budgetBreakdown')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                     <Bus className="w-5 h-5 text-blue-600" />
                     <div>
-                      <p className="text-xs text-gray-500">Transport</p>
-                      <p className="text-sm font-medium">BDT {plan.budgetBreakdown.busTicket.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{t('planTrip.transport')}</p>
+                      <p className="text-sm font-medium">{formatCurrency(plan.budgetBreakdown.busTicket, locale)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
                     <Hotel className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="text-xs text-gray-500">Hotel</p>
-                      <p className="text-sm font-medium">BDT {plan.budgetBreakdown.hotelCost.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{t('planTrip.hotel')}</p>
+                      <p className="text-sm font-medium">{formatCurrency(plan.budgetBreakdown.hotelCost, locale)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg">
                     <Utensils className="w-5 h-5 text-amber-600" />
                     <div>
-                      <p className="text-xs text-gray-500">Food</p>
-                      <p className="text-sm font-medium">BDT {plan.budgetBreakdown.foodEstimate.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{t('planTrip.food')}</p>
+                      <p className="text-sm font-medium">{formatCurrency(plan.budgetBreakdown.foodEstimate, locale)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
                     <MapPin className="w-5 h-5 text-purple-600" />
                     <div>
-                      <p className="text-xs text-gray-500">Local Transport</p>
-                      <p className="text-sm font-medium">BDT {plan.budgetBreakdown.localTransport.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{t('planTrip.localTransport')}</p>
+                      <p className="text-sm font-medium">{formatCurrency(plan.budgetBreakdown.localTransport, locale)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
                     <AlertCircle className="w-5 h-5 text-red-600" />
                     <div>
-                      <p className="text-xs text-gray-500">Emergency</p>
-                      <p className="text-sm font-medium">BDT {plan.budgetBreakdown.emergencyExtra.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">{t('planTrip.emergency')}</p>
+                      <p className="text-sm font-medium">{formatCurrency(plan.budgetBreakdown.emergencyExtra, locale)}</p>
                     </div>
                   </div>
                 </div>
@@ -248,12 +260,12 @@ export default function PlanTripPage() {
 
               {/* Day-by-Day Itinerary */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Day-by-Day Itinerary</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">{t('planTrip.itinerary')}</h2>
                 <div className="space-y-4">
                   {plan.dayByDayItinerary.map((day) => (
                     <div key={day.day} className="border-l-4 border-indigo-500 pl-4">
                       <h3 className="font-semibold text-gray-900">
-                        Day {day.day}: {day.title}
+                        {locale === 'bn' ? `${formatNumber(day.day, locale)} দিন: ${day.title}` : `Day ${day.day}: ${day.title}`}
                       </h3>
                       <ul className="mt-2 space-y-1">
                         {day.activities.map((activity, i) => (
@@ -270,17 +282,17 @@ export default function PlanTripPage() {
 
               {/* Suggested Booking */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Suggested Booking</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">{t('planTrip.suggestedBooking')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Transport</p>
+                    <p className="text-xs text-gray-500 mb-1">{t('planTrip.transport')}</p>
                     <p className="font-medium text-gray-900">{plan.suggestedBooking.transport.type}</p>
-                    <p className="text-sm text-blue-600">BDT {plan.suggestedBooking.transport.fare.toLocaleString()}</p>
+                    <p className="text-sm text-blue-600">{formatCurrency(plan.suggestedBooking.transport.fare, locale)}</p>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">Hotel</p>
+                    <p className="text-xs text-gray-500 mb-1">{t('planTrip.hotel')}</p>
                     <p className="font-medium text-gray-900">{plan.suggestedBooking.hotel.name}</p>
-                    <p className="text-sm text-green-600">BDT {plan.suggestedBooking.hotel.pricePerNight.toLocaleString()}/night</p>
+                    <p className="text-sm text-green-600">{formatCurrency(plan.suggestedBooking.hotel.pricePerNight, locale)}{t('planTrip.perNight')}</p>
                   </div>
                 </div>
                 <p className="text-sm text-indigo-600 font-medium">{plan.suggestedBooking.recommendedAction}</p>
@@ -291,14 +303,14 @@ export default function PlanTripPage() {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{plan.alternativePlan.title}</h2>
                 <p className="text-sm text-gray-600 mb-3">{plan.alternativePlan.details}</p>
                 <div className="flex items-center gap-4">
-                  <span className="text-lg font-bold text-amber-700">BDT {plan.alternativePlan.totalCost.toLocaleString()}</span>
-                  <span className="text-sm text-green-600 font-medium">Save BDT {plan.alternativePlan.savings.toLocaleString()}</span>
+                  <span className="text-lg font-bold text-amber-700">{formatCurrency(plan.alternativePlan.totalCost, locale)}</span>
+                  <span className="text-sm text-green-600 font-medium">{locale === 'bn' ? `${formatCurrency(plan.alternativePlan.savings, locale)} সাশ্রয়` : `Save ${formatCurrency(plan.alternativePlan.savings, locale)}`}</span>
                 </div>
               </div>
 
               {/* Weather */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Weather Forecast</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{t('planTrip.weatherForecast')}</h2>
                 <p className="text-gray-600">{plan.weatherForecast.condition}, {plan.weatherForecast.temperatureC}°C</p>
                 <p className="text-sm text-indigo-600 mt-1">{plan.weatherForecast.recommendation}</p>
               </div>
@@ -310,14 +322,14 @@ export default function PlanTripPage() {
                   className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   <Bus className="w-4 h-4" />
-                  Book Transport
+                  {t('planTrip.bookTransport')}
                 </a>
                 <a
                   href="/destinations"
                   className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
                 >
                   <MapPin className="w-4 h-4" />
-                  Explore Destinations
+                  {t('planTrip.exploreDestinations')}
                 </a>
               </div>
             </div>
@@ -329,8 +341,8 @@ export default function PlanTripPage() {
               <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-indigo-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to plan your trip?</h3>
-              <p className="text-gray-600">Fill in the form above and get a personalized itinerary</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('planTrip.readyToPlan')}</h3>
+              <p className="text-gray-600">{t('planTrip.fillForm')}</p>
             </div>
           )}
         </div>

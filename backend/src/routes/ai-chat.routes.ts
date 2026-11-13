@@ -15,6 +15,7 @@ const chatRequestSchema = z.object({
   messages: z.array(chatMessageSchema).min(1).max(50),
   destination: z.string().max(100).optional(),
   maxBudget: z.number().min(0).max(500000).optional(),
+  locale: z.enum(['en', 'bn']).default('en'),
 });
 
 type ServiceIntent =
@@ -80,12 +81,12 @@ DECISION RULES:
 11. Include ONLY the services the customer asked for or clearly needs. An empty or small list is correct. Do not list every service.
 
 HONESTY RULES — NEVER invent prices, availability, hotels, buses or flight schedules:
-- If a price or availability is not confirmed, do NOT state a number. Say something like "লাইভ availability ও price এখনই confirm করা যাচ্ছে না — বুকিংয়ের সময় যাচাই করে নিন।"
+- If a price or availability is not confirmed, do NOT state a number. Clearly tell the customer that the price and availability must be checked before booking.
 - Never create fake hotel names, bus names, prices, seat counts or time schedules.
 - If you know a real price/offer from the provided context, you may mention it, otherwise say it must be confirmed.
 
 STYLE:
-- Reply in Bengali mixed with English (Banglish), warm and conversational.
+- Follow the response language selected by the customer request. Do not force Banglish when English is selected.
 - 2-4 short sentences max.
 - Ask follow-up questions if key info (destination / budget / duration) is missing.
 
@@ -697,17 +698,30 @@ function parseAIResult(raw: string): AIParsedResult | null {
   }
 }
 
-function fallbackReply(intents: ServiceIntent[], destination?: string | null, budget?: number | null): string {
+function fallbackReply(
+  intents: ServiceIntent[],
+  destination?: string | null,
+  budget?: number | null,
+  locale: 'en' | 'bn' = 'en'
+): string {
+  const isBangla = locale === 'bn';
   const parts: string[] = [];
   if (destination) parts.push(destination);
-  if (typeof budget === 'number') parts.push(`৳${budget.toLocaleString('en-BD')} বাজেট`);
+  if (typeof budget === 'number') {
+    const formatted = new Intl.NumberFormat(isBangla ? 'bn-BD' : 'en-BD').format(budget);
+    parts.push(isBangla ? `৳${formatted} বাজেট` : `budget ৳${formatted}`);
+  }
   const context = parts.length > 0 ? ` (${parts.join(', ')})` : '';
 
   if (intents.length === 0) {
-    return 'আপনার জন্য কোন সেবা নিশ্চিত করতে আরও তথ্য দরকার। কোথায় যেতে চান, কত দিন এবং কত বাজেট — বলুন!';
+    return isBangla
+      ? 'আপনার জন্য ঠিক কোন সেবাটি দরকার, তা বুঝতে আরও একটু তথ্য চাই। কোথায় যাবেন, কত দিন থাকবেন আর বাজেট কত—জানাবেন?'
+      : 'I need a little more information to find the right options. Where are you going, for how long, and what is your budget?';
   }
-  const names = intents.map((i) => INTENT_META[i].labelBn);
-  return `আপনার প্রয়োজনে ${names.join(', ')} খুঁজে দেওয়ার চেষ্টা করছি${context}। লাইভ availability ও চূড়ান্ত price বুকিংয়ের সময় confirm করা যাবে।`;
+  const names = intents.map((i) => isBangla ? INTENT_META[i].labelBn : INTENT_META[i].label);
+  return isBangla
+    ? `${names.join(', ')} খুঁজে দেখছি${context}। বুকিংয়ের আগে ভাড়া ও আসন খালি আছে কি না, তা যাচাই করে নেবেন।`
+    : `I’m checking ${names.join(', ')} options${context}. Please confirm the final price and availability before booking.`;
 }
 
 router.post('/chat', async (req: Request, res: Response) => {
@@ -717,11 +731,11 @@ router.post('/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: parse.error.issues });
     }
 
-    const { messages, destination, maxBudget } = parse.data;
+    const { messages, destination, maxBudget, locale } = parse.data;
 
     const provider = aiFactory.getDefaultProvider();
     if (!provider) {
-      return res.status(503).json({ error: 'AI assistant is temporarily unavailable.' });
+      return res.status(503).json({ error: locale === 'bn' ? 'এই মুহূর্তে এআই সহকারী পাওয়া যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।' : 'AI assistant is temporarily unavailable. Please try again shortly.' });
     }
 
     const contextParts: string[] = [];
@@ -730,7 +744,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     const contextHint = contextParts.length > 0 ? `\n\nKnown customer context from previous turns: ${contextParts.join('. ')}` : '';
 
     const chatMessages = [
-      { role: 'system' as const, content: SYSTEM_PROMPT + contextHint },
+      { role: 'system' as const, content: SYSTEM_PROMPT + (locale === 'bn' ? '\n\nLANGUAGE: Reply only in simple, natural Bangladesh Bangla. Use short, familiar phrases. Do not translate English word-for-word and do not mix English unnecessarily. Keep brand names, product names, prices and service IDs unchanged.' : '\n\nLANGUAGE: Reply only in clear, natural English. Keep brand names, product names, prices and service IDs unchanged.') + contextHint },
       ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     ];
 
@@ -790,12 +804,12 @@ router.post('/chat', async (req: Request, res: Response) => {
       card.availabilityNote =
         live.note ||
         (live.items.length === 0
-          ? 'লাইভ availability/price এখন confirm করা যাচ্ছে না — বুকিংয়ের সময় যাচাই করুন।'
+          ? (locale === 'bn' ? 'এখনই ভাড়া ও খালি আছে কি না নিশ্চিত করা যাচ্ছে না। বুকিংয়ের আগে যাচাই করে নিন।' : 'Live price and availability are not confirmed yet. Please check before booking.')
           : undefined);
       serviceCards.push(card);
     }
 
-    const reply = aiReply || fallbackReply(selected, destination, maxBudget);
+    const reply = aiReply || fallbackReply(selected, destination, maxBudget, locale);
     const setDest = destination || undefined;
     const setBudget = typeof maxBudget === 'number' ? maxBudget : undefined;
 
@@ -810,7 +824,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logError('Chat endpoint error', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ error: req.body?.locale === 'bn' ? 'একটি সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।' : (error.message || 'Internal server error') });
   }
 });
 

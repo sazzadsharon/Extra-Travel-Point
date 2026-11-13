@@ -3,6 +3,7 @@ export type LocaleCode = 'en' | 'bn';
 export interface LanguageConfig {
   code: LocaleCode;
   name: string;
+  nativeName: string;
   dir: 'ltr' | 'rtl';
 }
 
@@ -14,11 +15,13 @@ export const LANGUAGE_CONFIG: Record<LocaleCode, LanguageConfig> = {
   en: {
     code: 'en',
     name: 'English',
+    nativeName: 'English',
     dir: 'ltr',
   },
   bn: {
     code: 'bn',
     name: 'Bangla',
+    nativeName: 'বাংলা',
     dir: 'ltr',
   },
 };

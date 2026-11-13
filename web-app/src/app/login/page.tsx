@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
+import LangSwitcher from '../../i18n/components/LangSwitcher';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { locale } = useTranslation();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,21 +39,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="relative min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="absolute top-4 right-4"><LangSwitcher /></div>
       <div className="max-w-md w-full space-y-8 p-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Login to ETP
+            {locale === 'bn' ? 'ETP-তে লগইন করুন' : 'Login to ETP'}
           </h1>
           <p className="text-gray-600">
-            Access your bookings and manage your travel
+            {locale === 'bn' ? 'আপনার বুকিং দেখুন এবং ভ্রমণের তথ্য গুছিয়ে রাখুন' : 'Access your bookings and manage your travel'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
+              {locale === 'bn' ? 'মোবাইল নম্বর' : 'Phone Number'}
             </label>
             <input
               type="tel"
@@ -67,13 +71,13 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              {locale === 'bn' ? 'পাসওয়ার্ড' : 'Password'}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={locale === 'bn' ? 'আপনার পাসওয়ার্ড লিখুন' : 'Enter your password'}
               className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 loading ? 'opacity-80' : ''
               }`}
@@ -90,11 +94,11 @@ export default function LoginPage() {
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Logging in...
+                {locale === 'bn' ? 'লগইন হচ্ছে...' : 'Logging in...'}
               </>
             ) : (
               <>
-                Login
+                {locale === 'bn' ? 'লগইন করুন' : 'Login'}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -116,12 +120,12 @@ export default function LoginPage() {
         )}
 
         <div className="text-center text-sm text-gray-500">
-          Don&apos;t have an account?{' '}
+          {locale === 'bn' ? 'এখনও অ্যাকাউন্ট নেই?' : "Don't have an account?"}{' '}
           <Link
             href="/register"
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
-            Register here
+            {locale === 'bn' ? 'এখানে অ্যাকাউন্ট খুলুন' : 'Register here'}
           </Link>
         </div>
       </div>
