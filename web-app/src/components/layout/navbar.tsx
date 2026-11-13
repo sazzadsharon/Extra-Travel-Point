@@ -5,24 +5,27 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, ChevronDown, Bell, User, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
+import LangSwitcher from '../../i18n/components/LangSwitcher';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   const accountHref = user?.role === 'vendor' ? '/vendor' : user?.role === 'admin' ? '/admin/vendors' : '/dashboard';
-  const accountLabel = user?.role === 'vendor' ? 'Vendor' : user?.role === 'admin' ? 'Admin' : 'Dashboard';
+  const accountLabel = user?.role === 'vendor' ? t('nav.vendor') : user?.role === 'admin' ? t('nav.admin') : t('nav.dashboard');
 
   const navItems = [
-    { href: '/', label: 'Home' },
-    { href: '/destinations', label: 'Destinations' },
-    { href: '/hotels', label: 'Hotels' },
-    { href: '/plan-trip', label: 'Plan Trip' },
-    { href: '/transport/bus', label: 'Buses' },
-    { href: '/ai-chat', label: 'AI Chat' },
-    { href: '/ai-assistant', label: 'AI Trips' },
+    { href: '/', label: t('nav.home') },
+    { href: '/destinations', label: t('nav.destinations') },
+    { href: '/hotels', label: t('nav.hotels') },
+    { href: '/plan-trip', label: t('nav.planTrip') },
+    { href: '/transport/bus', label: t('nav.buses') },
+    { href: '/ai-chat', label: t('nav.aiChat') },
+    { href: '/ai-assistant', label: t('nav.aiTrips') },
   ];
 
   const isActive = (href: string) => {
@@ -65,11 +68,9 @@ export default function Navbar() {
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-ink-600 bg-ink-50 rounded-lg font-medium">
-              EN <span className="w-px h-3 bg-ink-200" /> ৳ BDT
-            </span>
+            <LangSwitcher />
 
-            <button className="relative p-2 rounded-lg text-ink-500 hover:text-etp-700 hover:bg-ink-50 transition-colors" aria-label="Notifications">
+            <button className="relative p-2 rounded-lg text-ink-500 hover:text-etp-700 hover:bg-ink-50 transition-colors" aria-label={t('nav.notifications')}>
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-etp-500 rounded-full ring-2 ring-white" />
             </button>
@@ -113,7 +114,7 @@ export default function Navbar() {
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
-                        Sign Out
+                        {t('nav.signOut')}
                       </button>
                     </div>
                   </>
@@ -122,13 +123,13 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-ink-700 hover:text-etp-700 hover:bg-ink-50 transition-colors">
-                  Sign In
+                  {t('nav.signIn')}
                 </Link>
                 <Link
                   href="/register"
                   className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-etp-700 to-indigo-700 hover:from-etp-800 hover:to-indigo-800 transition-colors shadow-etp-sm"
                 >
-                  Sign Up
+                  {t('nav.signUp')}
                 </Link>
               </div>
             )}
@@ -137,7 +138,7 @@ export default function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 rounded-lg text-ink-600 hover:text-etp-700 hover:bg-ink-50 transition-colors"
-            aria-label="Toggle menu"
+            aria-label={t('nav.toggleMenu')}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -161,8 +162,9 @@ export default function Navbar() {
                 </Link>
               ))}
               <div className="pt-2 mt-2 border-t border-ink-100">
+                <div className="px-3 py-2"><LangSwitcher variant="full" /></div>
                 <p className="px-3 pb-2 text-xs font-semibold text-ink-400 uppercase tracking-wider">
-                  {user ? 'Account' : 'Get Started'}
+                  {user ? t('nav.account') : t('nav.getStarted')}
                 </p>
                 {user ? (
                   <>
@@ -190,14 +192,14 @@ export default function Navbar() {
                       onClick={() => setIsOpen(false)}
                       className="px-4 py-2.5 rounded-lg text-sm font-medium text-center border border-ink-200 text-ink-700 hover:bg-ink-50"
                     >
-                      Sign In
+                      {t('nav.signIn')}
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setIsOpen(false)}
                       className="px-4 py-2.5 rounded-lg text-sm font-medium text-center text-white bg-gradient-to-r from-etp-700 to-indigo-700"
                     >
-                      Sign Up
+                      {t('nav.signUp')}
                     </Link>
                   </div>
                 )}
