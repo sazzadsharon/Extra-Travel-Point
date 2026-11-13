@@ -7,12 +7,22 @@
   },
   "nav": {
     "home": "হোম",
-    "destinations": "গন্তব্যস্থল",
+    "destinations": "ঘোরার জায়গা",
     "hotels": "হোটেল",
-    "planTrip": "ভ্রমণ পরিকল্পনা",
+    "planTrip": "ভ্রমণের পরিকল্পনা",
     "buses": "বাস",
     "aiChat": "এআই চ্যাট",
-    "aiTrips": "এআই ট্রিপস"
+    "aiTrips": "এআই ভ্রমণ",
+    "vendor": "সেবা প্রদানকারী",
+    "admin": "অ্যাডমিন",
+    "dashboard": "ড্যাশবোর্ড",
+    "notifications": "নোটিফিকেশন",
+    "account": "অ্যাকাউন্ট",
+    "getStarted": "শুরু করুন",
+    "signOut": "লগআউট",
+    "signIn": "লগইন",
+    "signUp": "নতুন অ্যাকাউন্ট খুলুন",
+    "toggleMenu": "মেনু খুলুন বা বন্ধ করুন"
   },
   "auth": {
     "signIn": "সাইন ইন",
