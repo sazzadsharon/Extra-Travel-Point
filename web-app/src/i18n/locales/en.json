@@ -12,7 +12,17 @@
     "planTrip": "Plan Trip",
     "buses": "Buses",
     "aiChat": "AI Chat",
-    "aiTrips": "AI Trips"
+    "aiTrips": "AI Trips",
+    "vendor": "Vendor",
+    "admin": "Admin",
+    "dashboard": "Dashboard",
+    "notifications": "Notifications",
+    "account": "Account",
+    "getStarted": "Get Started",
+    "signOut": "Sign Out",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "toggleMenu": "Toggle menu"
   },
   "auth": {
     "signIn": "Sign In",
