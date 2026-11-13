@@ -744,7 +744,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     const contextHint = contextParts.length > 0 ? `\n\nKnown customer context from previous turns: ${contextParts.join('. ')}` : '';
 
     const chatMessages = [
-      { role: 'system' as const, content: SYSTEM_PROMPT + (locale === 'bn' ? '\\n\\nLANGUAGE: Reply only in simple, natural Bangladesh Bangla. Use short, familiar phrases. Do not translate English word-for-word and do not mix English unnecessarily. Keep brand names, product names, prices and service IDs unchanged.' : '\\n\\nLANGUAGE: Reply only in clear, natural English. Keep brand names, product names, prices and service IDs unchanged.') + contextHint },
+      { role: 'system' as const, content: SYSTEM_PROMPT + (locale === 'bn' ? '\n\nLANGUAGE: Reply only in simple, natural Bangladesh Bangla. Use short, familiar phrases. Do not translate English word-for-word and do not mix English unnecessarily. Keep brand names, product names, prices and service IDs unchanged.' : '\n\nLANGUAGE: Reply only in clear, natural English. Keep brand names, product names, prices and service IDs unchanged.') + contextHint },
       ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     ];
 
