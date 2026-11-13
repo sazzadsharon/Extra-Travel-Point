@@ -8,7 +8,7 @@ import { useAdminLanguage } from '../../i18n/LanguageProvider';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { locale, t } = useAdminLanguage();
+  const { t } = useAdminLanguage();
   const [phone, setPhone] = useState('01712345678');
   const [password, setPassword] = useState('admin123');
   const [error, setError] = useState<string | null>(null);
