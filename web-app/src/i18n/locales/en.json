@@ -118,7 +118,8 @@
     "booked": "Booked",
     "locked": "Locked",
     "unavailable": "Unavailable",
-    "maxSeatsError": "You can only select up to {count} seats"
+    "maxSeatsError": "You can only select up to {count} seats",
+    "lockError": "Failed to lock seats. Please try again."
   },
   "bookingForm": {
     "passengerDetails": "Passenger Details",
@@ -227,7 +228,8 @@
   "language": {
     "english": "English",
     "bangla": "Bangla",
-    "switchLanguage": "Switch Language"
+    "switchLanguage": "Switch Language",
+    "selectLanguage": "Select language"
   },
   "notFound": {
     "routeNotDiscovered": "Route not discovered",
@@ -516,67 +518,6 @@
     "creatingBooking": "Creating booking...",
     "passengerDetails": "Passenger Information",
     "enterPassenger": "Enter passenger details for your journey"
-  },
-  "seatMap": {
-    "driver": "Driver",
-    "available": "Available",
-    "selected": "Selected",
-    "booked": "Booked",
-    "locked": "Locked",
-    "unavailable": "Unavailable",
-    "maxSeatsError": "You can only select up to {count} seats",
-    "lockError": "Failed to lock seats. Please try again."
-  },
-  "bookingForm": {
-    "passengerDetails": "Passenger Details",
-    "passenger": "Passenger",
-    "fullName": "Full Name *",
-    "email": "Email *",
-    "phone": "Phone Number *",
-    "age": "Age",
-    "contactInfo": "Contact Information (for booking confirmation)",
-    "specialRequests": "Special Requests (Optional)",
-    "specialRequestsPlaceholder": "Any special requirements (wheelchair, meal preference, etc.)",
-    "continueToPayment": "Continue to Payment",
-    "processing": "Processing...",
-    "nameRequired": "Name is required",
-    "emailRequired": "Email is required",
-    "invalidEmail": "Invalid email",
-    "phoneRequired": "Phone is required",
-    "invalidBdPhone": "Invalid BD phone (01X-XXXXXXXX)",
-    "contactPhoneRequired": "Contact phone is required",
-    "invalidBdPhoneFormat": "Invalid BD phone format",
-    "invalidEmailFormat": "Invalid email format",
-    "namePlaceholder": "Full name",
-    "emailPlaceholder": "Email address",
-    "phonePlaceholder": "01XXXXXXXXX",
-    "agePlaceholder": "Age",
-    "seat": "Seat"
-  },
-  "busCard": {
-    "id": "ID",
-    "departure": "Departure",
-    "arrival": "Arrival",
-    "scheduled": "Scheduled",
-    "fare": "Fare",
-    "capacity": "Capacity",
-    "city": "City",
-    "notAvailable": "N/A",
-    "vehicle": "Vehicle",
-    "standard": "Standard",
-    "viewDetails": "View details",
-    "reviews": "reviews"
-  },
-  "busMvpCard": {
-    "tripId": "TRIP ID",
-    "departure": "Departure",
-    "arrival": "Arrival",
-    "farePerSeat": "Fare / Seat",
-    "totalSeats": "Total Seats",
-    "available": "Available",
-    "operator": "Operator",
-    "verified": "Verified",
-    "viewDetails": "View Details"
   },
   "rewards": {
     "rewardsClub": "ETP Rewards Club",
