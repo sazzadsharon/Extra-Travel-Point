@@ -93,12 +93,12 @@ const iconMap: Record<string, any> = {
 
 
 export default function AIChatPage() {
+  const { locale } = useTranslation();
+  const greeting = locale === 'bn'
+    ? 'আসসালামু আলাইকুম! 👋 আমি ETP AI। কোথায় যেতে চান, বাজেট কত আর কী ধরনের সেবা দরকার—বলুন। আপনার প্রয়োজন অনুযায়ী সাহায্য করব।'
+    : 'Hello! 👋 I’m ETP AI, your travel assistant. Tell me where you want to go, your budget, and what you need. I’ll help you find relevant options.';
   const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content:
-        'আসসালামু আলাইকুম! 👋 আমি ETP AI — আপনার ভ্রমণ সঙ্গী। কোথায় যেতে চান, কত বাজেট আছে এবং কী কী দরকার — বলুন! আপনার প্রয়োজনের ভিত্তিতে শুধু প্রাসঙ্গিক সেবা দেখিয়ে দেবো।',
-    },
+    { role: 'assistant', content: greeting },
   ]);
   const [services, setServices] = useState<ServiceRecommendation[]>([]);
   const [input, setInput] = useState('');
