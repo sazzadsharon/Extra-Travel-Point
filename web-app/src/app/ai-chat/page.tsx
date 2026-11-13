@@ -90,16 +90,7 @@ const iconMap: Record<string, any> = {
   cng: Bike,
 };
 
-const suggestionChips = [
-  'আমার বাজেট ৫০০০ টাকা, ২ জন, ৩ দিন — ৫ তারিখে কক্সবাজার যাব',
-  'খাবারের option দেখাও',
-  'Flight দিয়ে গেলে কত লাগবে?',
-  'গাড়ি ভাড়া চাই',
-  'ঘোরার জায়গা দেখাও',
-  'কক্সবাজারে লোকাল গাইড চাই',
-  'সিএনজি লাগবে',
-  'প্রাইভেট গাড়ি লাগবে',
-];
+
 
 export default function AIChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
