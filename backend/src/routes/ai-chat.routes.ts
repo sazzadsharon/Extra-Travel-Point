@@ -15,6 +15,7 @@ const chatRequestSchema = z.object({
   messages: z.array(chatMessageSchema).min(1).max(50),
   destination: z.string().max(100).optional(),
   maxBudget: z.number().min(0).max(500000).optional(),
+  locale: z.enum(['en', 'bn']).default('en'),
 });
 
 type ServiceIntent =
@@ -85,7 +86,7 @@ HONESTY RULES — NEVER invent prices, availability, hotels, buses or flight sch
 - If you know a real price/offer from the provided context, you may mention it, otherwise say it must be confirmed.
 
 STYLE:
-- Reply in Bengali mixed with English (Banglish), warm and conversational.
+- Follow the response language selected by the customer request. Do not force Banglish when English is selected.
 - 2-4 short sentences max.
 - Ask follow-up questions if key info (destination / budget / duration) is missing.
 
@@ -717,11 +718,11 @@ router.post('/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: parse.error.issues });
     }
 
-    const { messages, destination, maxBudget } = parse.data;
+    const { messages, destination, maxBudget, locale } = parse.data;
 
     const provider = aiFactory.getDefaultProvider();
     if (!provider) {
-      return res.status(503).json({ error: 'AI assistant is temporarily unavailable.' });
+      return res.status(503).json({ error: locale === 'bn' ? 'এই মুহূর্তে এআই সহকারী পাওয়া যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।' : 'AI assistant is temporarily unavailable. Please try again shortly.' });
     }
 
     const contextParts: string[] = [];
@@ -730,7 +731,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     const contextHint = contextParts.length > 0 ? `\n\nKnown customer context from previous turns: ${contextParts.join('. ')}` : '';
 
     const chatMessages = [
-      { role: 'system' as const, content: SYSTEM_PROMPT + contextHint },
+      { role: 'system' as const, content: SYSTEM_PROMPT + (locale === 'bn' ? '\\n\\nLANGUAGE: Reply only in simple, natural Bangladesh Bangla. Use short, familiar phrases. Do not translate English word-for-word and do not mix English unnecessarily. Keep brand names, product names, prices and service IDs unchanged.' : '\\n\\nLANGUAGE: Reply only in clear, natural English. Keep brand names, product names, prices and service IDs unchanged.') + contextHint },
       ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     ];
 
@@ -795,7 +796,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       serviceCards.push(card);
     }
 
-    const reply = aiReply || fallbackReply(selected, destination, maxBudget);
+    const reply = aiReply || fallbackReply(selected, destination, maxBudget, locale);
     const setDest = destination || undefined;
     const setBudget = typeof maxBudget === 'number' ? maxBudget : undefined;
 
@@ -810,7 +811,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     logError('Chat endpoint error', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    return res.status(500).json({ error: locale === 'bn' ? 'একটি সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।' : (error.message || 'Internal server error') });
   }
 });
 
