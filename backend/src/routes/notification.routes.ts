@@ -33,22 +33,42 @@ router.post('/dispatch', authenticateJWT, async (req: AuthRequest, res) => {
 
 // GET /api/v1/notifications
 router.get('/', authenticateJWT, async (req: AuthRequest, res) => {
-  return res.json([
-    {
-      id: 1,
-      title: 'Booking Reminder 🔔',
-      message: 'Your Bus to Cox\'s Bazar departs tomorrow at 08:00 AM.',
-      read: false,
-      createdAt: new Date()
-    },
-    {
-      id: 2,
-      title: 'Combo Discount Unlocked 🎉',
-      message: 'You received 15% discount on your hotel booking!',
-      read: true,
-      createdAt: new Date()
-    }
-  ]);
+  const isBangla = req.query.locale === 'bn';
+  const notifications = isBangla
+    ? [
+        {
+          id: 1,
+          title: 'বুকিংয়ের কথা মনে করিয়ে দিচ্ছি 🔔',
+          message: 'কক্সবাজারগামী আপনার বাসটি আগামীকাল সকাল ৮টায় ছাড়বে।',
+          read: false,
+          createdAt: new Date()
+        },
+        {
+          id: 2,
+          title: 'কম্বো ছাড় পেয়েছেন 🎉',
+          message: 'হোটেল বুকিংয়ে ১৫% ছাড় পেয়েছেন!',
+          read: true,
+          createdAt: new Date()
+        }
+      ]
+    : [
+        {
+          id: 1,
+          title: 'Booking Reminder 🔔',
+          message: "Your bus to Cox's Bazar departs tomorrow at 08:00 AM.",
+          read: false,
+          createdAt: new Date()
+        },
+        {
+          id: 2,
+          title: 'Combo Discount Unlocked 🎉',
+          message: 'You received 15% discount on your hotel booking!',
+          read: true,
+          createdAt: new Date()
+        }
+      ];
+
+  return res.json(notifications);
 });
 
 // POST /api/v1/notifications/send-push
