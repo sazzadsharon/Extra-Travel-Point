@@ -27,6 +27,7 @@ import {
 import api from '../../lib/apiClient';
 import Navbar from '../../components/layout/navbar';
 import Footer from '../../components/layout/footer';
+import { useTranslation } from '../../i18n/hooks/useTranslation';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -118,6 +119,12 @@ export default function AIChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setMessages((current) => current.length === 1 && current[0].role === 'assistant'
+      ? [{ role: 'assistant', content: greeting }]
+      : current);
+  }, [greeting]);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, services, isLoading]);
 
@@ -138,6 +145,7 @@ export default function AIChatPage() {
         messages: updatedMessages,
         destination,
         maxBudget: budget,
+        locale,
       });
 
       const data = response.data;
@@ -151,12 +159,12 @@ export default function AIChatPage() {
         setBudget(data.extractedInfo.budget);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Something went wrong. Please try again.');
+      setError(err.response?.data?.error || err.message || (locale === 'bn' ? 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।' : 'Something went wrong. Please try again.'));
       setMessages([
         ...updatedMessages,
         {
           role: 'assistant',
-          content: 'দুঃখিত, আমি এখন উত্তর দিতে পারছি না। একটু পরে আবার চেষ্টা করুন। 🙏',
+          content: locale === 'bn' ? 'দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। একটু পরে আবার চেষ্টা করুন। 🙏' : 'Sorry, I can’t reply right now. Please try again in a moment. 🙏',
         },
       ]);
     } finally {
@@ -171,8 +179,35 @@ export default function AIChatPage() {
 
   const formatCurrency = (amount?: number, currency: string = 'BDT') => {
     if (typeof amount !== 'number') return '';
-    return `${currency === 'BDT' ? '৳' : currency + ' '}${amount.toLocaleString('en-BD')}`;
+    return new Intl.NumberFormat(locale === 'bn' ? 'bn-BD' : 'en-BD', {
+      style: 'currency', currency, maximumFractionDigits: 0,
+    }).format(amount);
   };
+
+  const localizedServiceDescription: Record<string, string> = {
+    bus: 'বাসের টিকিট ও যাতায়াতের বিকল্প দেখুন',
+    hotel: 'থাকার জন্য হোটেল ও রিসোর্ট খুঁজুন',
+    restaurant: 'খাবারের জায়গা ও রেস্তোরাঁ দেখুন',
+    flight: 'ফ্লাইটের বিকল্প খুঁজুন',
+    car: 'গাড়ি ভাড়ার ব্যবস্থা দেখুন',
+    activity: 'ঘোরার জায়গা ও কী কী করা যায় দেখুন',
+    boat: 'নৌকা ও লঞ্চে যাওয়ার বিকল্প দেখুন',
+    local_transport: 'গন্তব্যে স্থানীয় যাতায়াতের ব্যবস্থা দেখুন',
+    student_deal: 'শিক্ষার্থীদের জন্য ছাড় ও অফার দেখুন',
+    local_guide: 'এলাকার গাইড খুঁজুন',
+    cng: 'সিএনজি ভাড়ার ব্যবস্থা দেখুন',
+    private_car: 'ব্যক্তিগত গাড়ি ভাড়ার ব্যবস্থা দেখুন',
+  };
+
+  const suggestionChips = locale === 'bn' ? [
+    'আমার বাজেট ৫০০০ টাকা, ২ জন, ৩ দিন — ৫ তারিখে কক্সবাজার যাব',
+    'খাবারের জায়গা দেখাও', 'ফ্লাইটে গেলে কত খরচ হবে?', 'গাড়ি ভাড়া চাই',
+    'ঘোরার জায়গা দেখাও', 'কক্সবাজারে স্থানীয় গাইড চাই', 'সিএনজি লাগবে', 'প্রাইভেট গাড়ি লাগবে',
+  ] : [
+    'My budget is BDT 5,000 for 2 people and 3 days in Cox’s Bazar',
+    'Show me places to eat', 'How much would a flight cost?', 'I need a rental car',
+    'Show me places to visit', 'I need a local guide in Cox’s Bazar', 'I need a CNG', 'I need a private car',
+  ];
 
   return (
     <>
@@ -183,9 +218,9 @@ export default function AIChatPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-r from-etp-600 to-indigo-600 rounded-2xl mb-4">
               <MessageCircle className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">ETP AI Chat</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{locale === 'bn' ? 'ETP AI সহকারী' : 'ETP AI Chat'}</h1>
             <p className="text-gray-600">
-              আপনার কথাবার্তার ভিত্তিতে শুধু প্রাসঙ্গিক সেবা দেখানো হয় — যেমন বাস, হোটেল, রেস্তোরাঁ
+              {locale === 'bn' ? 'আপনার প্রয়োজন বুঝে শুধু দরকারি সেবাগুলো দেখানো হবে—যেমন বাস, হোটেল বা রেস্তোরাঁ।' : 'Get helpful travel options based on what you ask for, such as buses, hotels, and restaurants.'}
             </p>
           </div>
 
@@ -198,7 +233,7 @@ export default function AIChatPage() {
                 <div className="font-semibold text-gray-900 text-sm">ETP AI</div>
                 <div className="text-xs text-green-600 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Online
+                  {locale === 'bn' ? 'অনলাইনে' : 'Online'}
                 </div>
               </div>
               {(destination || budget) && (
@@ -212,7 +247,7 @@ export default function AIChatPage() {
                   {typeof budget === 'number' && (
                     <span className="flex items-center gap-1">
                       <Wallet className="w-3 h-3 text-etp-600" />
-                      ৳{budget.toLocaleString()}
+                      {formatCurrency(budget)}
                     </span>
                   )}
                 </div>
@@ -264,7 +299,7 @@ export default function AIChatPage() {
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     <Sparkles className="w-4 h-4 text-etp-600" />
-                    আপনার আবেদন অনুযায়ী সেবা
+                    {locale === 'bn' ? 'আপনার প্রয়োজন অনুযায়ী সেবা' : 'Services based on your needs'}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -280,16 +315,15 @@ export default function AIChatPage() {
                               <IconComp className="w-5 h-5 text-etp-600" />
                             </div>
                             <div>
-                              <div className="font-semibold text-gray-900 text-sm">{service.label}</div>
-                              <div className="text-xs text-gray-500">{service.labelBn}</div>
+                              <div className="font-semibold text-gray-900 text-sm">{locale === 'bn' ? service.labelBn : service.label}</div>
                             </div>
                           </div>
-                          <p className="text-xs text-gray-600 mb-3">{service.description}</p>
+                          <p className="text-xs text-gray-600 mb-3">{locale === 'bn' ? (localizedServiceDescription[service.intent] || 'আপনার প্রয়োজন অনুযায়ী সেবার তথ্য দেখুন') : service.description}</p>
 
                           {service.liveData && service.liveData.length > 0 && (
                             <div className="mb-3 space-y-2">
                               <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-                                Live Options
+                                {locale === 'bn' ? 'এখন পাওয়া যাচ্ছে' : 'Live options'}
                               </div>
                               {service.liveData.map((item, itemIdx) => (
                                 <div
@@ -328,7 +362,7 @@ export default function AIChatPage() {
                           {service.subServices && service.subServices.length > 0 && (
                             <div className="mb-3">
                               <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
-                                ভেতরে দেখুন
+                                {locale === 'bn' ? 'আরও দেখুন' : 'Explore more'}
                               </div>
                               <div className="flex flex-wrap gap-1.5">
                                 {service.subServices.map((sub, subIdx) => {
@@ -341,8 +375,7 @@ export default function AIChatPage() {
                                     >
                                       <SubIcon className="w-3.5 h-3.5 text-etp-600" />
                                       <span className="text-xs text-gray-700 font-medium">
-                                        {sub.label}
-                                        <span className="ml-1 text-[10px] text-gray-400">· {sub.labelBn}</span>
+                                        {locale === 'bn' ? sub.labelBn : sub.label}
                                       </span>
                                     </a>
                                   );
@@ -355,7 +388,7 @@ export default function AIChatPage() {
                             href={service.link}
                             className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-etp-700 hover:text-etp-800"
                           >
-                            সব দেখুন
+                            {locale === 'bn' ? 'সব দেখুন' : 'View all'}
                             <ArrowRight className="w-3 h-3" />
                           </a>
                         </div>
@@ -396,7 +429,7 @@ export default function AIChatPage() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="কোথায় যেতে চান, কত বাজেট, কী দরকার? লিখুন..."
+                  placeholder={locale === 'bn' ? 'কোথায় যেতে চান, বাজেট কত, কী দরকার—লিখুন...' : 'Where would you like to go? What is your budget and what do you need?'}
                   className="flex-1 px-4 py-2.5 border border-gray-300 rounded-full focus:ring-2 focus:ring-etp-400 focus:border-etp-400 outline-none text-sm transition-all"
                   disabled={isLoading}
                 />
@@ -404,7 +437,7 @@ export default function AIChatPage() {
                   type="submit"
                   disabled={isLoading || !input.trim()}
                   className="w-10 h-10 rounded-full bg-gradient-to-r from-etp-600 to-indigo-600 hover:from-etp-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-300 text-white flex items-center justify-center transition-all flex-shrink-0"
-                  aria-label="Send"
+                  aria-label={locale === 'bn' ? 'পাঠান' : 'Send'}
                 >
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
